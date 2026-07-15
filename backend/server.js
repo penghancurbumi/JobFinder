@@ -13,6 +13,7 @@ import { getBuilderSections, getSuggestion } from "./cvBuilder.js"
 import { chat } from "./chatbot.js"
 import { runBot } from "./telegramBot.js"
 import { EXPERTISE_AREAS } from "./constants.js"
+import { fetchAll } from "./db.js"
 
 const app = express()
 const httpServer = createServer(app)
@@ -26,7 +27,6 @@ const PORT = process.env.PORT || 3000
 app.use(cors())
 app.use(express.json())
 
-let scrapedJobs = []
 let isScraping = false
 
 async function performScrape() {
@@ -34,14 +34,9 @@ async function performScrape() {
   isScraping = true
   io.emit("scrape-status", { status: "scraping" })
   try {
-    const newJobs = await scrapeAll()
-    // Merge new jobs, avoiding duplicates by title & company
-    const existingIds = new Set(scrapedJobs.map(j => `${j.title}-${j.company}`))
-    const uniqueNewJobs = newJobs.filter(j => !existingIds.has(`${j.title}-${j.company}`))
-    scrapedJobs = [...uniqueNewJobs, ...scrapedJobs]
-    
-    console.log(`Scraped ${newJobs.length} jobs. Total unique: ${scrapedJobs.length}`)
-    io.emit("jobs-updated", getFilteredJobs())
+    await scrapeAll() // This now inserts into DB
+    const jobs = await getFilteredJobs()
+    io.emit("jobs-updated", jobs)
     io.emit("scrape-status", { status: "idle", lastUpdated: new Date() })
   } catch (e) {
     console.error("Scrape failed:", e.message)
@@ -51,51 +46,75 @@ async function performScrape() {
   }
 }
 
-function getFilteredJobs(search = "", jobType = "all") {
-  const currentDate = new Date("2026-07-15T00:00:00Z")
-  let filtered = scrapedJobs.filter(j => {
-    if (j.deadlineDate) {
-      const deadline = new Date(j.deadlineDate)
-      if (deadline < currentDate) return false
-    }
-    return true
-  })
+async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy = "newest") {
+  let query = "SELECT * FROM jobs WHERE 1=1"
+  const params = []
+  
+  if (bidang && bidang !== 'all') {
+    query += " AND jobType LIKE ?"
+    params.push(`%${bidang}%`)
+  }
 
+  if (tipe && tipe !== 'all') {
+    query += " AND (description LIKE ? OR title LIKE ?)"
+    params.push(`%${tipe}%`, `%${tipe}%`)
+  }
+  
   if (search) {
-    const q = search.toLowerCase()
-    filtered = filtered.filter(j => 
-      j.expertise.toLowerCase().includes(q) || 
-      j.title.toLowerCase().includes(q)
-    )
+    query += " AND (title LIKE ? OR expertise LIKE ? OR company LIKE ?)"
+    const term = `%${search}%`
+    params.push(term, term, term)
   }
-  if (jobType && jobType !== 'all') {
-    filtered = filtered.filter(j => j.jobType === jobType)
+  
+  if (sortBy === "az") {
+    query += " ORDER BY title ASC"
+  } else if (sortBy === "za") {
+    query += " ORDER BY title DESC"
+  } else if (sortBy === "oldest") {
+    query += " ORDER BY postedDate ASC, id ASC"
+  } else if (sortBy === "newest") {
+    query += " ORDER BY postedDate DESC, id DESC"
+  } else {
+    query += " ORDER BY postedDate DESC, id DESC"
   }
-  return filtered
+  
+  query += " LIMIT 200"
+  
+  try {
+    const jobs = await fetchAll(query, params)
+    return jobs
+  } catch (err) {
+    console.error("DB Error:", err.message)
+    return []
+  }
 }
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   console.log("Client connected via WebSocket")
-  socket.emit("jobs-updated", getFilteredJobs())
+  const jobs = await getFilteredJobs()
+  socket.emit("jobs-updated", jobs)
   
   socket.on("request-scrape", () => {
     performScrape()
   })
 
-  socket.on("filter-jobs", ({ search, jobType }) => {
-    socket.emit("jobs-updated", getFilteredJobs(search, jobType))
+  socket.on("filter-jobs", async ({ search, bidang, tipe, sortBy }) => {
+    const jobs = await getFilteredJobs(search, bidang, tipe, sortBy)
+    socket.emit("jobs-updated", jobs)
   })
 })
 
 // Initial scrape and periodic refresh
-performScrape()
+// We don't necessarily want to scrape immediately on server start anymore since it takes long,
+// but we'll fetch existing jobs on mount and only auto-scrape every 30 mins
 setInterval(performScrape, 30 * 60 * 1000)
 
 app.get("/api/expertise-areas", (req, res) => res.json(EXPERTISE_AREAS))
 
-app.get("/api/jobs", (req, res) => {
-  const { search, jobType } = req.query
-  res.json(getFilteredJobs(search, jobType))
+app.get("/api/jobs", async (req, res) => {
+  const { search, bidang, tipe, sortBy } = req.query
+  const jobs = await getFilteredJobs(search, bidang, tipe, sortBy)
+  res.json(jobs)
 })
 
 app.post("/api/cv/analyze", upload.single("cv"), async (req, res) => {

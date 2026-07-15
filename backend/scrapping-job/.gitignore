@@ -1,0 +1,38 @@
+# Environment
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/*.log
+
+# Exports
+exports/json/*.json
+exports/csv/*.csv
+exports/excel/*.xlsx
+
+# Storage
+storage/*
+!storage/.gitkeep
+
+# OS
+Thumbs.db
+.DS_Store
