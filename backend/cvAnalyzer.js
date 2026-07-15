@@ -3,55 +3,69 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 
 const MODEL = "gemma-4-26b-a4b-it"
 
-function getClient() {
+function getClient(systemInstruction) {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey || apiKey === "your_api_key_here") return null
   const genAI = new GoogleGenerativeAI(apiKey)
-  return genAI.getGenerativeModel({ model: MODEL })
+  return genAI.getGenerativeModel({ model: MODEL, systemInstruction })
+}
+
+// Normalisasi teks PDF: collapse spasi ganda, hapus karakter aneh
+function normalizePdfText(text) {
+  return text
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/([a-zA-Z]) ([a-zA-Z])/g, "$1$2")
+    .replace(/[^\x20-\x7E\n\r\u00C0-\u024F\u1E00-\u1EFF]/g, " ")
+    .replace(/ {2,}/g, " ")
+    .trim()
 }
 
 export async function analyzeCV(cvText, expertise) {
-  const atsResult = checkATSFormat(cvText)
-  if (!atsResult.isATS) {
-    return { ats: atsResult, eligible: false, message: "CV not in ATS format — blacklisted. Please reformat your CV.", analysis: null }
-  }
+  const normalizedText = normalizePdfText(cvText)
+  const atsResult = checkATSFormat(normalizedText)
 
-  const model = getClient()
+  // Selalu analisis dengan AI, tidak pernah blacklist
+  const model = getClient(`Kamu adalah AI agent handal yang ahli dalam merekrut, menganalisis CV, dan mencari pekerjaan/internship di bidang ${expertise}. Jawab dalam bahasa Indonesia. Jangan gunakan asterisks (**) untuk bold. Jangan tampilkan proses berpikirmu.`)
   if (!model) {
     return { ats: atsResult, eligible: true, analysis: "AI analysis unavailable (API key not configured)." }
   }
 
-  const prompt = `System Prompt: Kamu adalah AI agent handal yang ahli dalam merekrut, menganalisis CV (Resume), dan mencari pekerjaan/internship di bidang ${expertise}.
+  const prompt = `Analisis CV berikut untuk posisi ${expertise}.
 
-Tugasmu adalah menganalisis CV berikut untuk posisi ${expertise}.
-Buatlah output dengan rapi, jangan gunakan asterisks (**) untuk bold, gunakan tag HTML <b> </b> jika perlu, atau text biasa. 
-Sajikan hasilnya dalam bentuk yang terstruktur:
-1. Match Percentage (0-100%).
-2. Tabel Komparasi: Buat tabel (gunakan format HTML <table>) yang membandingkan "Keahlian di CV" vs "Keahlian yang Dibutuhkan untuk ${expertise}".
-3. Kekuatan (Strengths).
-4. Saran Perbaikan.
+Sajikan hasilnya dalam format yang rapi dan terstruktur:
+1. Skor Kesesuaian (Match Percentage 0-100%).
+2. Tabel Komparasi: gunakan format HTML <table> yang membandingkan "Keahlian di CV" vs "Keahlian yang Dibutuhkan untuk ${expertise}".
+3. Kekuatan (Strengths) dari CV ini.
+4. Saran Perbaikan yang spesifik.
+5. Apakah CV ini sudah ATS-friendly? Jelaskan alasannya.
 
 CV Text:
-${cvText.slice(0, 3000)}`
+${normalizedText.slice(0, 3000)}`
 
   try {
     const result = await model.generateContent(prompt)
-    return { ats: atsResult, eligible: true, analysis: result.response.text() }
+    let analysis = result.response.text()
+    analysis = analysis.replace(/\*\*(.*?)\*\*/g, "$1")
+    return { ats: atsResult, eligible: true, analysis }
   } catch (e) {
     return { ats: atsResult, eligible: true, analysis: `Analysis error: ${e.message}` }
   }
 }
 
 const ATS_PATTERNS = [
-  /pendidikan|education|university/i,
-  /pengalaman|experience/i,
-  /keahlian|skills?/i,
-  /pekerjaan|employment/i,
-  /nama|name/i,
-  /kontak|contact|email|phone|telepon/i,
-  /ringkasan|summary|profil|profile/i,
-  /organisasi|organization/i,
-  /sertifikat|certification/i,
+  /pendidikan|education|university|universitas|sekolah|school/i,
+  /pengalaman|experience|work\s*history/i,
+  /keahlian|skills?|kemampuan|competenc/i,
+  /pekerjaan|employment|jabatan|position/i,
+  /nama|name|fullname/i,
+  /kontak|contact|email|phone|telepon|whatsapp|linkedin|github/i,
+  /ringkasan|summary|profil|profile|tentang\s*saya|about\s*me|objective/i,
+  /organisasi|organization|volunteering|komunitas/i,
+  /sertifikat|certification|lisensi|license/i,
+  /proyek|project|portofolio|portfolio/i,
+  /bahasa|language/i,
+  /alamat|address|domisili|lokasi/i,
 ]
 
 function checkATSFormat(cvText) {
@@ -64,7 +78,7 @@ function checkATSFormat(cvText) {
     }
   }
   const percentage = Math.round((score / ATS_PATTERNS.length) * 100)
-  return { isATS: percentage >= 50, score: percentage, matchedSections: matched, totalSections: ATS_PATTERNS.length }
+  return { isATS: percentage >= 25, score: percentage, matchedSections: matched, totalSections: ATS_PATTERNS.length }
 }
 
 export { checkATSFormat }

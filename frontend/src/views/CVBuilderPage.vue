@@ -394,7 +394,7 @@ function downloadPDF() {
     border: none !important;
     box-shadow: none !important;
   }
-  .no-print, .telegram-fab {
+  .no-print {
     display: none !important;
   }
   .no-print-shadow {

@@ -19,6 +19,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
         company TEXT,
         location TEXT,
         jobType TEXT,
+        workType TEXT,
         expertise TEXT,
         source TEXT,
         url TEXT UNIQUE,
@@ -29,6 +30,20 @@ const db = new sqlite3.Database(dbPath, (err) => {
       )
     `, (err) => {
       if (err) console.error('Error creating table:', err.message)
+    })
+
+    // Add workType column if missing (migration for existing DBs)
+    db.run("ALTER TABLE jobs ADD COLUMN workType TEXT", () => {})
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS chat_sessions (
+        session_id TEXT PRIMARY KEY,
+        messages TEXT DEFAULT '[]',
+        created_at TEXT DEFAULT (datetime('now')),
+        updated_at TEXT DEFAULT (datetime('now'))
+      )
+    `, (err) => {
+      if (err) console.error('Error creating chat_sessions table:', err.message)
     })
   }
 })

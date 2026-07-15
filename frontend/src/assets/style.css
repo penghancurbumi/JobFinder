@@ -62,11 +62,13 @@ h1, h2, h3, h4, h5 { font-weight: 500; letter-spacing: -0.02em; }
   border-radius: 9999px; font-size: 11px; font-weight: 600; 
   letter-spacing: 0.05em; text-transform: uppercase;
 }
-.badge-technology { background: var(--pastel-blue-bg); color: var(--pastel-blue-text); }
-.badge-accounting { background: var(--pastel-yellow-bg); color: var(--pastel-yellow-text); }
-.badge-marketing { background: var(--pastel-red-bg); color: var(--pastel-red-text); }
-.badge-design { background: var(--pastel-green-bg); color: var(--pastel-green-text); }
-.badge-healthcare { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+.badge-intern { background: var(--pastel-green-bg); color: var(--pastel-green-text); }
+.badge-freelance { background: var(--pastel-blue-bg); color: var(--pastel-blue-text); }
+.badge-fulltime { background: var(--pastel-yellow-bg); color: var(--pastel-yellow-text); }
+.badge-parttime { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+.badge-contract { background: var(--pastel-red-bg); color: var(--pastel-red-text); }
+.badge-work-type { background: var(--bg-canvas); color: var(--text-muted); border: 1px solid var(--border-color); }
+.badge-default { background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border-color); }
 .badge-expertise { background: var(--pastel-yellow-bg); color: var(--pastel-yellow-text); }
 .badge-error { background: var(--pastel-red-bg); color: var(--pastel-red-text); }
 
@@ -112,3 +114,8 @@ th { background-color: #F9F9F8; font-weight: 500; color: var(--text-muted); text
 .stagger-1 { animation-delay: 80ms; opacity: 0; animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .stagger-2 { animation-delay: 160ms; opacity: 0; animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .stagger-3 { animation-delay: 240ms; opacity: 0; animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* Print Styles */
+@media print {
+  nav, .telegram-fab { display: none !important; }
+}

@@ -4,7 +4,7 @@ import cors from "cors"
 import multer from "multer"
 import { createRequire } from "module"
 const require = createRequire(import.meta.url)
-const pdfParse = require("pdf-parse")
+const { PDFParse } = require("pdf-parse")
 import { createServer } from "http"
 import { Server } from "socket.io"
 import { scrapeAll } from "./scrapers/index.js"
@@ -13,7 +13,7 @@ import { getBuilderSections, getSuggestion } from "./cvBuilder.js"
 import { chat } from "./chatbot.js"
 import { runBot } from "./telegramBot.js"
 import { EXPERTISE_AREAS } from "./constants.js"
-import { fetchAll } from "./db.js"
+import { fetchAll, fetchOne, runQuery } from "./db.js"
 
 const app = express()
 const httpServer = createServer(app)
@@ -56,8 +56,26 @@ async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy
   }
 
   if (tipe && tipe !== 'all') {
-    query += " AND (description LIKE ? OR title LIKE ?)"
-    params.push(`%${tipe}%`, `%${tipe}%`)
+    // Map frontend filter values to actual DB columns
+    if (tipe === "hybrid" || tipe === "remote" || tipe === "onsite") {
+      query += " AND LOWER(workType) LIKE ?"
+      params.push(`%${tipe}%`)
+    } else if (tipe === "fulltime") {
+      query += " AND LOWER(jobType) LIKE ?"
+      params.push(`%full%time%`)
+    } else if (tipe === "parttime") {
+      query += " AND LOWER(jobType) LIKE ?"
+      params.push(`%part%time%`)
+    } else if (tipe === "intern") {
+      query += " AND (LOWER(jobType) LIKE ? OR jobType = 'Internship' OR jobType = 'Magang')"
+      params.push(`%intern%`)
+    } else if (tipe === "freelance") {
+      query += " AND LOWER(jobType) LIKE ?"
+      params.push(`%freelance%`)
+    } else if (tipe === "contract") {
+      query += " AND LOWER(jobType) LIKE ?"
+      params.push(`%contract%`)
+    }
   }
   
   if (search) {
@@ -125,8 +143,13 @@ app.post("/api/cv/analyze", upload.single("cv"), async (req, res) => {
     }
     
     if (req.file.mimetype === "application/pdf") {
-      const pdfData = await pdfParse(req.file.buffer)
-      cvText = pdfData.text
+      try {
+        const parser = new PDFParse({ data: req.file.buffer })
+        const pdfData = await parser.getText()
+        cvText = pdfData.text
+      } catch (err) {
+        throw new Error("Failed to parse PDF: " + err.message)
+      }
     } else {
       cvText = req.file.buffer.toString("utf-8")
     }
@@ -154,10 +177,48 @@ app.post("/api/cv/suggestion", async (req, res) => {
 })
 
 app.post("/api/chat", async (req, res) => {
-  const { message, history } = req.body
+  const { message, sessionId } = req.body
   if (!message) return res.status(400).json({ error: "message required" })
-  const reply = await chat(message, history)
-  res.json({ reply })
+
+  let chatHistory = []
+  if (sessionId) {
+    try {
+      const row = await fetchOne("SELECT messages FROM chat_sessions WHERE session_id = ?", [sessionId])
+      if (row) chatHistory = JSON.parse(row.messages)
+    } catch { /* start fresh */ }
+  }
+
+  // Get jobs from DB for chatbot context
+  let dbJobs = []
+  try {
+    dbJobs = await fetchAll("SELECT * FROM jobs LIMIT 200")
+  } catch { /* ignore */ }
+
+  const reply = await chat(message, chatHistory, dbJobs)
+
+  const updatedHistory = [...chatHistory, { role: "user", content: message }, { role: "assistant", content: reply }]
+
+  if (sessionId) {
+    try {
+      await runQuery(
+        "INSERT OR REPLACE INTO chat_sessions (session_id, messages, updated_at) VALUES (?, ?, datetime('now'))",
+        [sessionId, JSON.stringify(updatedHistory)]
+      )
+    } catch { /* ignore */ }
+  }
+
+  res.json({ reply, history: updatedHistory })
+})
+
+app.get("/api/chat/history/:sessionId", async (req, res) => {
+  const { sessionId } = req.params
+  try {
+    const row = await fetchOne("SELECT messages FROM chat_sessions WHERE session_id = ?", [sessionId])
+    const messages = row ? JSON.parse(row.messages) : []
+    res.json({ messages })
+  } catch {
+    res.json({ messages: [] })
+  }
 })
 
 httpServer.listen(PORT, () => {

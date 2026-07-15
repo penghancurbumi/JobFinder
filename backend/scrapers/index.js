@@ -43,14 +43,15 @@ async function insertScrapedFiles(jobTypeFilter) {
           // Insert into SQLite (ignoring duplicates on URL)
           const query = `
             INSERT OR IGNORE INTO jobs 
-            (title, company, location, jobType, expertise, source, url, description, postedDate, deadlineDate, salary)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (title, company, location, jobType, workType, expertise, source, url, description, postedDate, deadlineDate, salary)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `
           const params = [
             item.title || "Unknown Title",
             item.company_name || "Unknown Company",
             item.location || "Remote",
-            jobTypeFilter,
+            item.job_type || "Full-time",
+            item.work_type || "On-site",
             expertise,
             item.platform || "Scraper",
             item.source_url || "",
@@ -80,31 +81,30 @@ async function insertScrapedFiles(jobTypeFilter) {
 }
 
 export async function scrapeAll() {
-  console.log("Starting Python Scrapy jobs for 4 categories...")
+  console.log("Starting Python Scrapy jobs for 5 job types...")
   
-  const categories = [
-    { type: "Technology", cmd: "python -m scrapy crawl_all -a keyword=technology -a max_pages=1" },
-    { type: "Accounting", cmd: "python -m scrapy crawl_all -a keyword=accounting -a max_pages=1" },
-    { type: "Marketing", cmd: "python -m scrapy crawl_all -a keyword=marketing -a max_pages=1" },
-    { type: "Design", cmd: "python -m scrapy crawl_all -a keyword=design -a max_pages=1" },
-    { type: "Healthcare", cmd: "python -m scrapy crawl_all -a keyword=healthcare -a max_pages=1" }
+  const jobTypes = [
+    { type: "fulltime", cmd: "python -m scrapy crawl_all --job-type=fulltime --max-pages=1" },
+    { type: "parttime", cmd: "python -m scrapy crawl_all --job-type=parttime --max-pages=1" },
+    { type: "intern", cmd: "python -m scrapy crawl_all --job-type=internship --max-pages=1" },
+    { type: "hybrid", cmd: "python -m scrapy crawl_all --work-type=hybrid --max-pages=1" },
+    { type: "freelance", cmd: "python -m scrapy crawl_all --job-type=contract --max-pages=1" }
   ]
   
   let totalNew = 0
   
-  for (const cat of categories) {
-    console.log(`Scraping category: ${cat.type}...`)
+  for (const jt of jobTypes) {
+    console.log(`Scraping category: ${jt.type}...`)
     try {
-      await execPromise(cat.cmd, { cwd: SCRAPY_PROJECT_DIR, timeout: 120000 })
-      const added = await insertScrapedFiles(cat.type)
-      console.log(`=> Added ${added} new ${cat.type} jobs to database.`)
+      await execPromise(jt.cmd, { cwd: SCRAPY_PROJECT_DIR, timeout: 120000 })
+      const added = await insertScrapedFiles(jt.type)
+      console.log(`=> Added ${added} new ${jt.type} jobs to database.`)
       totalNew += added
     } catch (e) {
-      console.error(`Scrape failed for ${cat.type}:`, e.message)
+      console.error(`Scrape failed for ${jt.type}:`, e.message)
     }
   }
 
   console.log(`Scrapy execution completed. Total new jobs added: ${totalNew}`)
-  // No need to return the jobs array anymore since we read from DB
   return totalNew 
 }
