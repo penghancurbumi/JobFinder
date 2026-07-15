@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap');
+
+:root {
+  --bg-canvas: #FBFBFA;
+  --bg-surface: #FFFFFF;
+  --text-primary: #111111;
+  --text-muted: #787774;
+  --border-color: #EAEAEA;
+  
+  --pastel-red-bg: #FDEBEC; --pastel-red-text: #9F2F2D;
+  --pastel-blue-bg: #E1F3FE; --pastel-blue-text: #1F6C9F;
+  --pastel-green-bg: #EDF3EC; --pastel-green-text: #346538;
+  --pastel-yellow-bg: #FBF3DB; --pastel-yellow-text: #956400;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { 
+  font-family: 'Geist', 'SF Pro Display', 'Helvetica Neue', sans-serif; 
+  background: var(--bg-canvas); 
+  color: var(--text-primary); 
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5 { font-weight: 500; letter-spacing: -0.02em; }
+.editorial-serif { font-family: 'Newsreader', 'Playfair Display', serif; }
+.mono { font-family: 'Geist Mono', monospace; }
+
+.container { max-width: 1024px; margin: 0 auto; padding: 0 24px; }
+.page { padding: 96px 0; animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* Components */
+.card { 
+  background: var(--bg-surface); 
+  border: 1px solid var(--border-color); 
+  border-radius: 8px; 
+  padding: 32px; 
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+
+.btn { 
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; 
+  padding: 10px 20px; 
+  border-radius: 4px; 
+  font-size: 14px; font-weight: 500; 
+  cursor: pointer; transition: all 0.2s; text-decoration: none; 
+}
+.btn-primary { background: var(--text-primary); color: #fff; border: 1px solid var(--text-primary); }
+.btn-primary:hover { background: #333333; transform: scale(0.98); }
+.btn-primary:active { transform: scale(0.96); }
+
+.btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
+.btn-outline:hover { background: #f9f9f9; transform: scale(0.98); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+
+.badge { 
+  display: inline-flex; align-items: center; padding: 2px 8px; 
+  border-radius: 9999px; font-size: 11px; font-weight: 600; 
+  letter-spacing: 0.05em; text-transform: uppercase;
+}
+.badge-intern { background: var(--pastel-blue-bg); color: var(--pastel-blue-text); }
+.badge-job { background: var(--pastel-green-bg); color: var(--pastel-green-text); }
+.badge-expertise { background: var(--pastel-yellow-bg); color: var(--pastel-yellow-text); }
+.badge-error { background: var(--pastel-red-bg); color: var(--pastel-red-text); }
+
+input, textarea, select { 
+  width: 100%; padding: 12px 16px; 
+  border: 1px solid var(--border-color); 
+  border-radius: 4px; font-size: 14px; 
+  background: var(--bg-surface);
+  transition: border-color 0.2s, box-shadow 0.2s; 
+  font-family: inherit;
+}
+input:focus, textarea:focus, select:focus { 
+  outline: none; border-color: #999; box-shadow: 0 0 0 3px rgba(0,0,0,0.03);
+}
+label { display: block; font-weight: 500; margin-bottom: 6px; font-size: 13px; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.02em; }
+.hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; display: block; }
+
+/* Grid Layouts */
+.grid { display: grid; gap: 24px; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+@media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+/* Typography */
+.page-title { font-size: 2.5rem; font-family: 'Newsreader', serif; font-weight: 400; margin-bottom: 32px; letter-spacing: -0.03em; line-height: 1.1; }
+
+/* Tables (For CV Analyzer) */
+table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+th, td { padding: 12px 16px; border: 1px solid var(--border-color); text-align: left; }
+th { background-color: #F9F9F8; font-weight: 500; color: var(--text-muted); text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em; }
+
+/* Animations */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stagger-1 { animation-delay: 80ms; opacity: 0; animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.stagger-2 { animation-delay: 160ms; opacity: 0; animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.stagger-3 { animation-delay: 240ms; opacity: 0; animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
