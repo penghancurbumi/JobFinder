@@ -1,107 +1,147 @@
 <template>
-  <div class="page">
-    <div class="header-action stagger-1">
-      <h1 class="page-title" style="margin-bottom: 0;">Daftar Pekerjaan & Magang</h1>
-      <button @click="requestScrape" class="btn btn-outline btn-sm" :disabled="isScraping" style="display: flex; align-items: center; gap: 8px;">
-        <svg v-if="isScraping" class="spinner" viewBox="0 0 24 24" width="16" height="16">
-          <circle class="spinner-circle" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
-        </svg>
-        {{ isScraping ? 'Mencari Data...' : 'Perbarui Data' }}
-      </button>
-    </div>
-
-    <div class="card stagger-2" style="margin-bottom: 32px; padding: 24px;">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label>Filter Tipe</label>
-          <select v-model="activeTipe" class="form-select" style="width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-canvas); color: var(--text-primary); font-size: 14px;">
-            <option value="all">Semua Tipe</option>
-            <option value="fulltime">Fulltime</option>
-            <option value="hybrid">Hybrid</option>
-            <option value="freelance">Freelance</option>
-            <option value="parttime">Parttime</option>
-            <option value="intern">Internship</option>
-          </select>
+  <div class="page" style="padding-top: var(--spacing-section);">
+    <div class="container">
+      <div class="header-action stagger-1" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--spacing-xl); padding-bottom: var(--spacing-lg); border-bottom: 1px solid var(--color-hairline-soft);">
+        <div>
+          <span class="mono-eyebrow">Eksplorasi</span>
+          <h1 class="display-md" style="margin-bottom: 0;">Daftar Pekerjaan & Magang</h1>
         </div>
-        
-        <div class="filter-group">
-          <label>Urutkan</label>
-          <select v-model="sortBy" class="form-select" style="width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-canvas); color: var(--text-primary); font-size: 14px;">
-            <option value="all">Semua</option>
-            <option value="newest">Terbaru</option>
-            <option value="oldest">Terlama</option>
-            <option value="az">Abjad (A - Z)</option>
-            <option value="za">Abjad (Z - A)</option>
-          </select>
-        </div>
-
-        <div class="filter-group" style="flex: 2;">
-          <label>Cari Keahlian atau Jabatan</label>
-          <input type="text" v-model="searchQuery" placeholder="Contoh: Software Development, UI/UX..." />
-        </div>
-
-        <div class="filter-group" style="flex: 0; align-self: flex-end;">
-          <button @click="resetFilters" class="btn btn-outline" style="height: 42px; padding: 0 16px;">Reset</button>
-        </div>
+        <button @click="requestScrape" class="btn btn-primary-on-light" :disabled="isScraping" style="display: flex; align-items: center; gap: 8px;">
+          <svg v-if="isScraping" class="spinner" viewBox="0 0 24 24" width="16" height="16">
+            <circle class="spinner-circle" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
+          </svg>
+          {{ isScraping ? 'Mencari Data Baru...' : 'Perbarui Data (Scrape)' }}
+        </button>
       </div>
-    </div>
 
-    <div v-if="loading" class="bento-grid stagger-3">
-      <div v-for="n in 6" :key="'skeleton-' + n" class="card job-card skeleton-card">
-        <div class="skeleton skeleton-title"></div>
-        <div class="skeleton-badge-row">
-          <div class="skeleton skeleton-badge"></div>
-          <div class="skeleton skeleton-badge"></div>
-        </div>
-        <div class="skeleton skeleton-meta"></div>
-        <div class="skeleton skeleton-source"></div>
-        <div class="skeleton skeleton-dates"></div>
-        <div class="skeleton skeleton-desc"></div>
-        <div class="skeleton skeleton-desc"></div>
-        <div class="skeleton skeleton-desc" style="width: 80%;"></div>
-        <div class="skeleton skeleton-button"></div>
-      </div>
-    </div>
-    <div v-else-if="jobs.length === 0" class="card stagger-3" style="text-align:center;padding:64px; border-style: dashed;">
-      <p style="color: var(--text-muted); font-family: 'Newsreader', serif; font-style: italic; font-size: 1.2rem;">Tidak ada peluang yang sesuai dengan filter.</p>
-    </div>
-    <div v-else class="bento-grid stagger-3">
-      <div v-for="job in jobs" :key="job.title + job.company" class="card job-card">
-        <div class="job-header">
-          <h3 style="font-family: 'Newsreader', serif; font-size: 1.25rem;">{{ job.title }}</h3>
-          <div class="job-badges">
-            <span :class="['badge', 'badge-' + job.jobType.toLowerCase()]">
-              {{ job.jobType.charAt(0).toUpperCase() + job.jobType.slice(1) }}
-            </span>
-            <span class="badge badge-expertise">{{ job.expertise }}</span>
+      <div class="grid stagger-2" style="grid-template-columns: 280px 1fr; align-items: start;">
+        <!-- Filter Sidebar -->
+        <aside class="card" style="position: sticky; top: 100px; padding: var(--spacing-lg);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+            <h3 class="heading-sm">Filter</h3>
+            <button @click="resetFilters" class="btn btn-ghost-dark" style="color: var(--color-brand); padding: 0;">Reset</button>
           </div>
-        </div>
-        
-        <div class="job-meta">
-          <span style="font-weight: 500;">{{ job.company }}</span>
-          <span style="color: var(--text-muted);">{{ job.location }}</span>
-        </div>
-        
-        <div style="font-size: 12px; margin-bottom: 12px; color: var(--text-muted); word-break: break-all;">
-          Sumber: <a :href="job.url" target="_blank" style="color: inherit; text-decoration: underline;">{{ job.source }} ({{ job.url === '#' ? job.source.toLowerCase() + '.com' : job.url }})</a>
-        </div>
 
-        <div class="job-dates" v-if="job.postedDate || job.deadlineDate || job.salary">
-           <span v-if="job.postedDate">Diposting: {{ job.postedDate }}</span>
-           <span v-if="job.deadlineDate" class="deadline-text">Batas Waktu: {{ job.deadlineDate }}</span>
-           <span v-if="job.salary" class="salary-text" style="color: var(--pastel-green-text); font-weight: 500;">Gaji: {{ job.salary }}</span>
-        </div>
-        
-        <div class="job-desc-container">
-          <p :class="['job-desc', { 'collapsed': !isExpanded(job) }]" style="white-space: pre-wrap;">{{ job.description }}</p>
-          <button v-if="needsTruncation(job.description)" 
-                  @click="toggleExpand(job)" 
-                  style="padding: 0; color: var(--text-primary); font-weight: 600; cursor: pointer; background: none; border: none; text-decoration: underline; margin-bottom: 16px; font-size: 14px;">
-            {{ isExpanded(job) ? 'Tampilkan Lebih Sedikit' : 'Selengkapnya' }}
-          </button>
-        </div>
-        
-        <a :href="job.url" target="_blank" class="btn btn-sm btn-primary" style="align-self: flex-start; margin-top: auto;">Lamar Sekarang</a>
+          <div class="filter-group">
+            <label>Pencarian Kata Kunci</label>
+            <input type="text" v-model="searchQuery" placeholder="Software, UI/UX, Sales..." style="margin-bottom: var(--spacing-lg);" />
+          </div>
+          
+          <div class="filter-group">
+            <label>Lokasi</label>
+            <input type="text" v-model="locationQuery" placeholder="Jakarta, Remote, Bali..." style="margin-bottom: var(--spacing-lg);" />
+          </div>
+
+          <div class="filter-group">
+            <label>Tipe Pekerjaan</label>
+            <select v-model="activeTipe" style="margin-bottom: var(--spacing-lg);">
+              <option value="all">Semua Tipe</option>
+              <option value="fulltime">Full-time</option>
+              <option value="parttime">Part-time</option>
+              <option value="contract">Contract</option>
+              <option value="freelance">Freelance</option>
+              <option value="intern">Internship</option>
+              <option value="remote">Remote</option>
+              <option value="hybrid">Hybrid</option>
+              <option value="onsite">On-site</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Tingkat Pengalaman</label>
+            <select v-model="experienceLevel" style="margin-bottom: var(--spacing-lg);">
+              <option value="all">Semua Pengalaman</option>
+              <option value="entry">Entry Level / Junior</option>
+              <option value="mid">Mid Level</option>
+              <option value="senior">Senior Level</option>
+              <option value="manager">Manager / Director</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Rentang Gaji</label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 14px; text-transform: none; cursor: pointer;">
+              <input type="checkbox" v-model="hasSalary" style="width: 16px; height: 16px;" />
+              Hanya tampilkan yang mencantumkan gaji
+            </label>
+          </div>
+
+          <div class="filter-group" style="margin-top: var(--spacing-xl);">
+            <label>Urutkan Berdasarkan</label>
+            <select v-model="sortBy">
+              <option value="newest">Terbaru</option>
+              <option value="oldest">Terlama</option>
+              <option value="az">Abjad (A - Z)</option>
+              <option value="za">Abjad (Z - A)</option>
+            </select>
+          </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main>
+          <div v-if="loading" class="grid grid-2 stagger-3">
+            <div v-for="n in 6" :key="'skeleton-' + n" class="card job-card skeleton-card">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton-badge-row">
+                <div class="skeleton skeleton-badge"></div>
+                <div class="skeleton skeleton-badge"></div>
+              </div>
+              <div class="skeleton skeleton-meta"></div>
+              <div class="skeleton skeleton-source"></div>
+              <div class="skeleton skeleton-dates"></div>
+              <div class="skeleton skeleton-desc"></div>
+              <div class="skeleton skeleton-desc"></div>
+              <div class="skeleton skeleton-desc" style="width: 80%;"></div>
+              <div class="skeleton skeleton-button"></div>
+            </div>
+          </div>
+
+          <div v-else-if="jobs.length === 0" class="card stagger-3" style="text-align:center; padding: 64px; border: 1px dashed var(--color-hairline);">
+            <p class="subtitle" style="color: var(--color-mute); font-style: italic;">Tidak ada peluang yang sesuai dengan filter.</p>
+            <button @click="resetFilters" class="btn btn-outline" style="margin-top: var(--spacing-lg);">Reset Filter</button>
+          </div>
+
+          <div v-else class="grid grid-2 stagger-3">
+            <div v-for="job in jobs" :key="job.title + job.company + job.id" class="card job-card" style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
+              <div class="job-header">
+                <h3 class="heading-sm">{{ job.title }}</h3>
+                <div class="job-badges">
+                  <span class="badge-filled" style="background: var(--color-canvas-soft); color: var(--color-on-primary);">
+                    {{ job.jobType.charAt(0).toUpperCase() + job.jobType.slice(1) }}
+                  </span>
+                  <span class="badge-neutral" style="background: rgba(243, 100, 88, 0.1); color: var(--color-brand); border: 1px solid rgba(243, 100, 88, 0.2);">{{ job.expertise }}</span>
+                </div>
+              </div>
+              
+              <div class="job-meta" style="display: flex; gap: var(--spacing-sm); font-size: 14px; flex-wrap: wrap;">
+                <strong style="color: var(--color-on-primary);">{{ job.company }}</strong>
+                <span style="color: var(--color-mute);">•</span>
+                <span style="color: var(--color-ash);">{{ job.location || 'Lokasi tidak disebutkan' }}</span>
+              </div>
+              
+              <div class="meta" style="color: var(--color-mute); word-break: break-all;">
+                Sumber: <a :href="job.url" target="_blank" style="color: var(--color-link-blue); text-decoration: none;">{{ job.source }}</a>
+              </div>
+
+              <div class="job-dates" v-if="job.postedDate || job.deadlineDate || job.salary" style="display: flex; flex-wrap: wrap; gap: var(--spacing-sm); background: var(--color-canvas); padding: var(--spacing-sm); border-radius: var(--rounded-app-md); margin-top: var(--spacing-xs);">
+                 <span v-if="job.postedDate" class="meta" style="color: var(--color-ash);">Diposting: {{ job.postedDate }}</span>
+                 <span v-if="job.deadlineDate" class="meta" style="color: var(--color-error); font-weight: 500;">Batas Waktu: {{ job.deadlineDate }}</span>
+                 <span v-if="job.salary" class="meta" style="color: var(--color-success); font-weight: 500; width: 100%;">Gaji: {{ job.salary }}</span>
+              </div>
+              
+              <div class="job-desc-container" style="margin-top: var(--spacing-sm); flex: 1; display: flex; flex-direction: column;">
+                <p :class="['job-desc', { 'collapsed': !isExpanded(job) }]" class="body-sm" style="color: var(--color-ash); white-space: pre-wrap; margin-bottom: var(--spacing-xs);">{{ job.description }}</p>
+                <button v-if="needsTruncation(job.description)" 
+                        @click="toggleExpand(job)" 
+                        class="meta" style="padding: 0; color: var(--color-link-blue); font-weight: 500; cursor: pointer; background: none; border: none; text-align: left; margin-bottom: var(--spacing-md);">
+                  {{ isExpanded(job) ? 'Tampilkan Lebih Sedikit' : 'Selengkapnya' }}
+                </button>
+              </div>
+              
+              <a :href="job.url" target="_blank" class="btn btn-primary-on-light" style="align-self: flex-start; margin-top: auto; padding: 0 var(--spacing-lg); height: 36px; font-size: 14px;">Lamar Sekarang</a>
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   </div>
@@ -114,27 +154,42 @@ import { io } from "socket.io-client"
 const jobs = ref([])
 const loading = ref(true)
 const isScraping = ref(false)
+
+// Filters
 const activeTipe = ref("all")
 const searchQuery = ref("")
-const sortBy = ref("all")
+const locationQuery = ref("")
+const experienceLevel = ref("all")
+const hasSalary = ref(false)
+const sortBy = ref("newest")
+
 const expandedJobs = ref({})
 let socket = null
 
 function isExpanded(job) {
-  return !!expandedJobs.value[job.title + job.company]
+  return !!expandedJobs.value[job.id || (job.title + job.company)]
 }
 
 function toggleExpand(job) {
-  const id = job.title + job.company
+  const id = job.id || (job.title + job.company)
   expandedJobs.value[id] = !expandedJobs.value[id]
 }
 
 function needsTruncation(desc) {
   if (!desc) return false
-  return desc.length > 250 // Roughly 4 lines of text
+  return desc.length > 200 // Truncate longer descriptions
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // Fetch existing jobs from REST API as primary data source (no scraping triggered)
+  try {
+    const res = await fetch("http://localhost:3000/api/jobs")
+    if (res.ok) {
+      jobs.value = await res.json()
+      loading.value = false
+    }
+  } catch { /* socket will be fallback */ }
+
   socket = io("http://localhost:3000")
   
   socket.on("jobs-updated", (data) => {
@@ -146,9 +201,9 @@ onMounted(() => {
     isScraping.value = data.status === "scraping"
   })
 
-  // Automatically request a scrape when page loads and socket connects
   socket.on("connect", () => {
-    requestScrape()
+    loading.value = false
+    // Don't auto-scrape - just show existing data
   })
 })
 
@@ -157,7 +212,7 @@ onUnmounted(() => {
 })
 
 let searchTimeout;
-watch([activeTipe, searchQuery, sortBy], () => {
+watch([activeTipe, searchQuery, locationQuery, experienceLevel, hasSalary, sortBy], () => {
   loading.value = true
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
@@ -166,16 +221,22 @@ watch([activeTipe, searchQuery, sortBy], () => {
         search: searchQuery.value, 
         bidang: "all", 
         tipe: activeTipe.value,
-        sortBy: sortBy.value 
+        sortBy: sortBy.value,
+        location: locationQuery.value,
+        experience: experienceLevel.value,
+        hasSalary: hasSalary.value
       })
     }
-  }, 300) // debounce
+  }, 400) // debounce
 })
 
 function resetFilters() {
   activeTipe.value = "all"
-  sortBy.value = "all"
+  sortBy.value = "newest"
   searchQuery.value = ""
+  locationQuery.value = ""
+  experienceLevel.value = "all"
+  hasSalary.value = false
 }
 
 function requestScrape() {
@@ -187,25 +248,27 @@ function requestScrape() {
 </script>
 
 <style scoped>
-.header-action { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; }
-.filter-row { display: flex; gap: 24px; flex-wrap: wrap; align-items: end; }
-.filter-group { flex: 1; min-width: 200px; }
-.tab-group { display: flex; gap: 4px; background: var(--bg-canvas); padding: 4px; border-radius: 6px; border: 1px solid var(--border-color); }
-.tab { flex: 1; padding: 8px 16px; border: none; border-radius: 4px; font-size: 13px; cursor: pointer; background: transparent; transition: all 0.2s; color: var(--text-muted); }
-.tab.active { background: var(--bg-surface); font-weight: 500; color: var(--text-primary); box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
-.job-card { display: flex; flex-direction: column; gap: 12px; }
-.job-header { display: flex; flex-direction: column; gap: 12px; }
-.job-badges { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
-.job-meta { display: flex; gap: 12px; font-size: 13px; color: var(--text-primary); margin-bottom: -4px; flex-wrap: wrap; }
-.job-dates { display: flex; gap: 16px; color: var(--text-muted); font-size: 12px; background: var(--bg-canvas); padding: 8px 12px; border-radius: 4px; border: 1px solid var(--border-color); flex-wrap: wrap;}
-.deadline-text { color: var(--pastel-red-text); font-weight: 500; }
-.job-desc { color: var(--text-primary); font-size: 14px; line-height: 1.6; margin-bottom: 16px; flex: 1; }
-.job-desc.collapsed { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
-.loading { text-align: center; padding: 64px; color: var(--text-muted); font-family: 'Newsreader', serif; font-style: italic; font-size: 1.2rem; }
+.filter-group label {
+  color: var(--color-mute);
+}
+
+.job-badges { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; margin-top: 8px; }
+
+.job-card {
+  height: 420px;
+}
+
+.job-desc.collapsed { 
+  display: -webkit-box; 
+  -webkit-line-clamp: 3; 
+  -webkit-box-orient: vertical; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+}
 
 /* Skeleton */
 .skeleton {
-  background: linear-gradient(90deg, var(--border-color) 25%, var(--bg-surface) 50%, var(--border-color) 75%);
+  background: linear-gradient(90deg, var(--color-hairline) 25%, var(--color-canvas-light) 50%, var(--color-hairline) 75%);
   background-size: 200% 100%;
   animation: loading-skeleton 1.5s infinite;
   border-radius: 4px;
@@ -241,5 +304,22 @@ function requestScrape() {
   0% { stroke-dasharray: 1, 200; stroke-dashoffset: 0; }
   50% { stroke-dasharray: 40, 200; stroke-dashoffset: -20px; }
   100% { stroke-dasharray: 40, 200; stroke-dashoffset: -60px; }
+}
+
+@media (max-width: 960px) {
+  .grid[style*="grid-template-columns: 280px"] {
+    grid-template-columns: 1fr !important;
+  }
+  aside {
+    position: static !important;
+    margin-bottom: var(--spacing-lg);
+  }
+}
+@media (max-width: 768px) {
+  .header-action {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: var(--spacing-md);
+  }
 }
 </style>

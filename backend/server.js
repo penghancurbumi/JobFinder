@@ -46,7 +46,7 @@ async function performScrape() {
   }
 }
 
-async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy = "newest") {
+async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy = "newest", location = "", experience = "", hasSalary = false) {
   let query = "SELECT * FROM jobs WHERE 1=1"
   const params = []
   
@@ -56,7 +56,6 @@ async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy
   }
 
   if (tipe && tipe !== 'all') {
-    // Map frontend filter values to actual DB columns
     if (tipe === "hybrid" || tipe === "remote" || tipe === "onsite") {
       query += " AND LOWER(workType) LIKE ?"
       params.push(`%${tipe}%`)
@@ -69,12 +68,9 @@ async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy
     } else if (tipe === "intern") {
       query += " AND (LOWER(jobType) LIKE ? OR jobType = 'Internship' OR jobType = 'Magang')"
       params.push(`%intern%`)
-    } else if (tipe === "freelance") {
+    } else if (tipe === "freelance" || tipe === "contract") {
       query += " AND LOWER(jobType) LIKE ?"
-      params.push(`%freelance%`)
-    } else if (tipe === "contract") {
-      query += " AND LOWER(jobType) LIKE ?"
-      params.push(`%contract%`)
+      params.push(`%${tipe}%`)
     }
   }
   
@@ -82,6 +78,28 @@ async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy
     query += " AND (title LIKE ? OR expertise LIKE ? OR company LIKE ?)"
     const term = `%${search}%`
     params.push(term, term, term)
+  }
+
+  if (location && location !== 'all') {
+    query += " AND LOWER(location) LIKE ?"
+    params.push(`%${location.toLowerCase()}%`)
+  }
+
+  if (hasSalary) {
+    query += " AND salary IS NOT NULL AND salary != ''"
+  }
+
+  if (experience && experience !== 'all') {
+    // Basic heuristics based on job title
+    if (experience === 'entry') {
+      query += " AND (LOWER(title) LIKE '%junior%' OR LOWER(title) LIKE '%entry%' OR LOWER(title) LIKE '%staff%')"
+    } else if (experience === 'mid') {
+      query += " AND LOWER(title) NOT LIKE '%junior%' AND LOWER(title) NOT LIKE '%senior%' AND LOWER(title) NOT LIKE '%lead%' AND LOWER(title) NOT LIKE '%manager%'"
+    } else if (experience === 'senior') {
+      query += " AND (LOWER(title) LIKE '%senior%' OR LOWER(title) LIKE '%lead%' OR LOWER(title) LIKE '%principal%')"
+    } else if (experience === 'manager') {
+      query += " AND (LOWER(title) LIKE '%manager%' OR LOWER(title) LIKE '%head%' OR LOWER(title) LIKE '%director%')"
+    }
   }
   
   if (sortBy === "az") {
@@ -116,8 +134,8 @@ io.on("connection", async (socket) => {
     performScrape()
   })
 
-  socket.on("filter-jobs", async ({ search, bidang, tipe, sortBy }) => {
-    const jobs = await getFilteredJobs(search, bidang, tipe, sortBy)
+  socket.on("filter-jobs", async ({ search, bidang, tipe, sortBy, location, experience, hasSalary }) => {
+    const jobs = await getFilteredJobs(search, bidang, tipe, sortBy, location, experience, hasSalary)
     socket.emit("jobs-updated", jobs)
   })
 })
@@ -130,8 +148,16 @@ setInterval(performScrape, 30 * 60 * 1000)
 app.get("/api/expertise-areas", (req, res) => res.json(EXPERTISE_AREAS))
 
 app.get("/api/jobs", async (req, res) => {
-  const { search, bidang, tipe, sortBy } = req.query
-  const jobs = await getFilteredJobs(search, bidang, tipe, sortBy)
+  const { search, bidang, tipe, sortBy, location, experience, hasSalary } = req.query
+  const jobs = await getFilteredJobs(
+    search, 
+    bidang, 
+    tipe, 
+    sortBy, 
+    location, 
+    experience, 
+    hasSalary === 'true' || hasSalary === true
+  )
   res.json(jobs)
 })
 

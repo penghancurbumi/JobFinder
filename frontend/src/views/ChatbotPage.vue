@@ -1,39 +1,42 @@
 <template>
-  <div class="page">
-    <h1 class="page-title stagger-1">Asisten AI</h1>
-    <p class="hint stagger-2" style="margin-bottom: 32px; font-size: 14px;">Konsultasikan perjalanan karir Anda, struktur dokumen CV, hingga strategi wawancara.</p>
+  <div class="page" style="padding-top: var(--spacing-section);">
+    <div class="container" style="max-width: 800px;">
+      <h1 class="display-md stagger-1" style="margin-bottom: var(--spacing-xs);">Asisten AI</h1>
+      <p class="subtitle stagger-2" style="color: var(--color-mute); margin-bottom: var(--spacing-xl);">Konsultasikan perjalanan karir Anda, struktur dokumen CV, hingga strategi wawancara.</p>
 
-    <div class="chat-container card stagger-3" style="padding: 0; overflow: hidden;">
-      <div class="chat-messages" ref="chatRef">
-        <div v-if="loadingHistory" class="loading-msg mono">Memuat riwayat...</div>
+      <div class="card stagger-3" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; height: 600px; border-radius: var(--rounded-marketing);">
+        <div class="chat-messages" ref="chatRef">
+          <div v-if="loadingHistory" class="mono-micro" style="text-align: center; color: var(--color-mute); padding: var(--spacing-lg);">Memuat riwayat...</div>
 
-        <div v-for="(msg, i) in messages" :key="i" :class="['msg', msg.role]">
-          <div class="msg-bubble" :class="{ 'editorial-serif': msg.role === 'assistant' }">
-            {{ msg.content }}
+          <div v-for="(msg, i) in messages" :key="i" :class="['msg', msg.role]">
+            <div class="msg-bubble" :class="{ 'editorial-bubble': msg.role === 'assistant', 'user-bubble': msg.role === 'user' }">
+              {{ msg.content }}
+            </div>
+          </div>
+
+          <div v-if="loading" class="msg assistant">
+            <div class="msg-bubble editorial-bubble typing mono-caps" style="color: var(--color-mute);">Menganalisis...</div>
           </div>
         </div>
 
-        <div v-if="loading" class="msg assistant">
-          <div class="msg-bubble typing mono" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Menganalisis...</div>
+        <div class="quick-replies-container">
+          <div class="quick-replies">
+            <button
+              v-for="q in quickQuestions"
+              :key="q.text"
+              class="badge-neutral"
+              style="cursor: pointer; border: 1px solid var(--color-hairline); background: var(--color-canvas-light);"
+              @click="sendQuick(q.text)"
+            >
+              {{ q.label }}
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div class="quick-replies-container">
-        <div class="quick-replies">
-          <button
-            v-for="q in quickQuestions"
-            :key="q.text"
-            class="quick-btn"
-            @click="sendQuick(q.text)"
-          >
-            {{ q.label }}
-          </button>
+        <div class="chat-input" style="background: var(--color-canvas-paper); padding: var(--spacing-sm); border-top: 1px solid var(--color-hairline);">
+          <input v-model="input" placeholder="Tanyakan seputar persiapan karir..." @keyup.enter="send" :disabled="loading" style="border: none; box-shadow: none; background: transparent;" />
+          <button class="btn btn-primary-on-light" @click="send" :disabled="loading || !input.trim()" style="border-radius: var(--rounded-app-md); height: 40px; padding: 0 var(--spacing-md);">Kirim</button>
         </div>
-      </div>
-
-      <div class="chat-input">
-        <input v-model="input" placeholder="Tanyakan seputar persiapan karir..." @keyup.enter="send" :disabled="loading" style="border: none; box-shadow: none;" />
-        <button class="btn btn-primary btn-sm" @click="send" :disabled="loading || !input.trim()" style="border-radius: 4px;">Kirim</button>
       </div>
     </div>
   </div>
@@ -51,12 +54,10 @@ const chatRef = ref(null)
 const sessionId = ref("")
 
 const quickQuestions = [
-  { label: "Cari lowongan Software Dev", text: "Saya ingin cari lowongan software development" },
-  { label: "Cari magang UI/UX Design", text: "Saya ingin cari magang di bidang UI/UX design" },
-  { label: "Lowongan Graphic Design", text: "Ada lowongan graphic design tidak?" },
+  { label: "Lowongan Software Dev", text: "Saya ingin cari lowongan software development" },
+  { label: "Magang UI/UX Design", text: "Saya ingin cari magang di bidang UI/UX design" },
   { label: "Tips membuat CV ATS", text: "Bagaimana cara membuat CV yang ramah ATS?" },
-  { label: "Persiapan wawancara", text: "Berikan tips persiapan wawancara kerja" },
-  { label: "Info seputar karir IT", text: "Ceritakan tentang prospek karir di bidang IT" },
+  { label: "Persiapan wawancara", text: "Berikan tips persiapan wawancara kerja" }
 ]
 
 onMounted(async () => {
@@ -128,35 +129,27 @@ function scrollDown() {
 </script>
 
 <style scoped>
-.chat-container { display: flex; flex-direction: column; height: 600px; }
-.chat-messages { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 24px; }
-.loading-msg { text-align: center; padding: 20px; color: var(--text-muted); font-size: 12px; }
+.chat-messages { flex: 1; overflow-y: auto; padding: var(--spacing-xl); display: flex; flex-direction: column; gap: var(--spacing-lg); background: var(--color-canvas-light); }
 .msg { display: flex; }
 .msg.user { justify-content: flex-end; }
 .msg.assistant { justify-content: flex-start; }
-.msg-bubble { max-width: 80%; padding: 16px 24px; border-radius: 4px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
-.user .msg-bubble { background: var(--text-primary); color: #fff; }
-.assistant .msg-bubble { background: var(--bg-canvas); color: var(--text-primary); border: 1px solid var(--border-color); font-size: 1.05rem; }
+.msg-bubble { max-width: 80%; padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--rounded-app-md); font-size: 15px; line-height: 1.6; white-space: pre-wrap; }
+.user-bubble { background: var(--color-ink); color: var(--color-on-primary); border-bottom-right-radius: 4px; }
+.editorial-bubble { background: var(--color-canvas-paper); color: var(--color-ink); font-family: inherit; font-size: 16px; border-bottom-left-radius: 4px; }
 
 .quick-replies-container {
   width: 100%;
   overflow-x: auto;
-  border-top: 1px solid var(--border-color);
-  background: var(--bg-surface);
+  border-top: 1px solid var(--color-hairline);
+  background: var(--color-canvas-light);
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 .quick-replies-container::-webkit-scrollbar { display: none; }
-.quick-replies { display: flex; flex-wrap: nowrap; gap: 8px; padding: 12px 16px; width: max-content; }
-.quick-btn {
-  padding: 8px 16px; background: var(--bg-canvas); border: 1px solid var(--border-color); border-radius: 9999px; font-size: 12px; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); color: var(--text-primary);
-  white-space: nowrap;
-}
-.quick-btn:hover { background: var(--border-color); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-.quick-btn:active { transform: translateY(0); }
+.quick-replies { display: flex; flex-wrap: nowrap; gap: var(--spacing-xs); padding: var(--spacing-sm) var(--spacing-lg); width: max-content; }
 
 .typing { animation: pulse 1.5s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-.chat-input { display: flex; gap: 12px; padding: 16px; border-top: 1px solid var(--border-color); background: var(--bg-surface); }
-.chat-input input { flex: 1; background: transparent; padding: 8px; }
+.chat-input { display: flex; gap: var(--spacing-sm); }
+.chat-input input:focus { outline: none; }
 </style>

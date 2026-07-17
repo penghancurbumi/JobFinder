@@ -18,6 +18,8 @@ class Platform(str, Enum):
     LINKEDIN = "linkedin"
     JOBSDB = "jobsdb"
     TECHINASIA = "techinasia"
+    KITALULUS = "kitalulus"
+    PINTARNYA = "pintarnya"
 
 
 class JobType(str, Enum):

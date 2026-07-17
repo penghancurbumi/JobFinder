@@ -84,11 +84,11 @@ export async function scrapeAll() {
   console.log("Starting Python Scrapy jobs for 5 job types...")
   
   const jobTypes = [
-    { type: "fulltime", cmd: "python -m scrapy crawl_all --job-type=fulltime --max-pages=1" },
-    { type: "parttime", cmd: "python -m scrapy crawl_all --job-type=parttime --max-pages=1" },
-    { type: "intern", cmd: "python -m scrapy crawl_all --job-type=internship --max-pages=1" },
-    { type: "hybrid", cmd: "python -m scrapy crawl_all --work-type=hybrid --max-pages=1" },
-    { type: "freelance", cmd: "python -m scrapy crawl_all --job-type=contract --max-pages=1" }
+    { type: "fulltime", cmd: "python -m scrapy crawl_all -a job_type=fulltime -a max_pages=3" },
+    { type: "parttime", cmd: "python -m scrapy crawl_all -a job_type=parttime -a max_pages=3" },
+    { type: "intern", cmd: "python -m scrapy crawl_all -a job_type=internship -a max_pages=3" },
+    { type: "hybrid", cmd: "python -m scrapy crawl_all -a work_type=hybrid -a max_pages=3" },
+    { type: "freelance", cmd: "python -m scrapy crawl_all -a job_type=contract -a max_pages=3" }
   ]
   
   let totalNew = 0

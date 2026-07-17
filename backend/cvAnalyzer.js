@@ -33,23 +33,39 @@ export async function analyzeCV(cvText, expertise) {
 
   const prompt = `Analisis CV berikut untuk posisi ${expertise}.
 
-Sajikan hasilnya dalam format yang rapi dan terstruktur:
-1. Skor Kesesuaian (Match Percentage 0-100%).
-2. Tabel Komparasi: gunakan format HTML <table> yang membandingkan "Keahlian di CV" vs "Keahlian yang Dibutuhkan untuk ${expertise}".
-3. Kekuatan (Strengths) dari CV ini.
-4. Saran Perbaikan yang spesifik.
-5. Apakah CV ini sudah ATS-friendly? Jelaskan alasannya.
+Tolong balas HANYA dengan sebuah JSON object yang valid (tanpa blok markdown seperti \`\`\`json). Format JSON-nya adalah:
+{
+  "overallScore": 85,
+  "summary": "Ringkasan profesional CV dalam 1-2 kalimat.",
+  "strengths": ["Kekuatan 1", "Kekuatan 2"],
+  "weaknesses": ["Kekurangan 1", "Kekurangan 2"],
+  "missingSkills": ["Skill yang kurang 1", "Skill yang kurang 2"],
+  "keywordMatch": ["Keyword cocok 1", "Keyword cocok 2"],
+  "recommendations": ["Saran 1", "Saran 2"],
+  "categories": {
+    "Skills": 80,
+    "Experience": 75,
+    "Education": 90,
+    "Projects": 60,
+    "Certificates": 50,
+    "SoftSkills": 85
+  }
+}
+
+Skor harus berupa angka 0-100.
 
 CV Text:
 ${normalizedText.slice(0, 3000)}`
 
   try {
     const result = await model.generateContent(prompt)
-    let analysis = result.response.text()
-    analysis = analysis.replace(/\*\*(.*?)\*\*/g, "$1")
-    return { ats: atsResult, eligible: true, analysis }
+    let analysisStr = result.response.text()
+    // Bersihkan dari markdown jika ada
+    analysisStr = analysisStr.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
+    const analysisObj = JSON.parse(analysisStr)
+    return { ats: atsResult, eligible: true, analysis: analysisObj }
   } catch (e) {
-    return { ats: atsResult, eligible: true, analysis: `Analysis error: ${e.message}` }
+    return { ats: atsResult, eligible: true, analysis: { error: "Failed to parse AI response as JSON", message: e.message } }
   }
 }
 
