@@ -1,2 +1,4 @@
 node_modules/
 .env
+scrapping-job/exports/**/*.json
+scrapping-job/exports/json/archive/

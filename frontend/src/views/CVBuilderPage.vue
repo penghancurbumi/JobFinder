@@ -1,59 +1,60 @@
 <template>
-  <div class="page cv-wizard-container">
-    <div class="no-print" style="margin-bottom: var(--spacing-xl);">
-      <span class="mono-eyebrow stagger-1" style="color: var(--color-mute); margin-bottom: var(--spacing-sm); display: block;">Sistem Pembangun Dokumen ATS</span>
-      <h1 class="display-md stagger-1">Pembuat CV</h1>
-      <p class="subtitle stagger-2" style="margin-top: var(--spacing-sm); color: var(--color-ash); font-size: 14px;">Rakit bagian-bagian CV Anda langkah demi langkah. Tanda <span style="color:var(--color-error);">*</span> wajib diisi.</p>
+  <div class="min-h-screen pt-[88px] bg-canvas-dark text-on-dark font-sans w-full max-w-[1200px] mx-auto px-xl">
+    <div class="print:hidden mb-xl">
+      <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-sm block">Sistem Pembangun Dokumen ATS</span>
+      <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark">Pembuat CV</h1>
+      <p class="mt-sm text-on-dark-mute text-[14px] font-normal leading-[1.5]">Rakit bagian-bagian CV Anda langkah demi langkah. Tanda <span class="text-accent-danger">*</span> wajib diisi.</p>
     </div>
 
     <!-- Wizard Layout -->
-    <div class="wizard-layout no-print">
+    <div class="flex flex-col md:flex-row gap-xl print:hidden items-start">
       <!-- Sidebar Navigation -->
-      <aside class="wizard-sidebar stagger-3">
-        <div class="form-group" style="margin-bottom: 24px; padding: 0 16px;">
-          <label style="font-size: 12px; margin-bottom: 4px;">Target Keahlian / Bidang</label>
-          <select v-model="targetExpertise" style="width: 100%; font-size: 14px; padding: 6px 8px;">
-            <option v-for="a in expertiseAreas" :key="a" :value="a">{{ a }}</option>
+      <aside class="w-full md:w-[280px] shrink-0 md:sticky top-[100px] bg-surface-elevated rounded-[20px] py-xl">
+        <div class="mb-[24px] px-[16px]">
+          <label class="text-[12px] mb-[4px] text-on-dark-mute block font-semibold">Target Keahlian / Bidang</label>
+          <select v-model="targetExpertise" class="w-full text-[14px] bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-primary focus:outline-none appearance-none">
+            <option v-for="a in expertiseAreas" :key="a" :value="a" class="bg-surface-elevated text-on-dark">{{ a }}</option>
           </select>
         </div>
         
-        <ul class="step-list">
+        <ul class="list-none m-0 p-0 flex md:block overflow-x-auto md:overflow-visible pb-[12px] md:pb-0">
           <li v-for="(section, index) in steps" :key="section.id" 
-              class="step-item"
-              :class="{ active: currentStep === index, completed: currentStep > index }"
+              class="flex shrink-0 items-center px-[16px] py-[12px] cursor-pointer rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent"
+              :class="{ 'bg-surface-deep !text-on-dark font-medium !border-primary': currentStep === index, 'completed': currentStep > index }"
               @click="goToStep(index)">
-            <div class="step-indicator">{{ index + 1 }}</div>
-            <div class="step-title">{{ section.title }}</div>
+            <div class="w-[28px] h-[28px] rounded-full border border-hairline-dark flex items-center justify-center text-[12px] mr-[12px] shrink-0 transition-colors" :class="{ 'bg-primary text-on-primary border-primary': currentStep > index }">{{ index + 1 }}</div>
+            <div class="text-[14px]">{{ section.title }}</div>
           </li>
-          <li class="step-item"
-              :class="{ active: currentStep === steps.length }" 
+          <li class="flex shrink-0 items-center px-[16px] py-[12px] cursor-pointer rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent"
+              :class="{ 'bg-surface-deep !text-on-dark font-medium !border-primary': currentStep === steps.length }" 
               @click="goToStep(steps.length)">
-            <div class="step-indicator">✓</div>
-            <div class="step-title">Preview & Export</div>
+            <div class="w-[28px] h-[28px] rounded-full border border-hairline-dark flex items-center justify-center text-[12px] mr-[12px] shrink-0 transition-colors">✓</div>
+            <div class="text-[14px]">Preview &amp; Export</div>
           </li>
         </ul>
       </aside>
 
       <!-- Main Content Panel -->
-      <main class="wizard-content stagger-3 card">
+      <main class="flex-grow min-w-0 bg-surface-elevated rounded-[20px] p-xl md:p-xxl w-full">
         <!-- Active Form Section -->
-        <div v-if="currentStep < steps.length" class="wizard-form-section">
-          <h3 class="heading-md" style="margin-bottom: 24px;">
+        <div v-if="currentStep < steps.length">
+          <h3 class="text-[24px] font-medium leading-[1.33] mb-[24px] text-on-dark">
             {{ steps[currentStep].title }}
           </h3>
           
-          <div class="section-fields">
-            <div v-for="field in steps[currentStep].fields" :key="field.key" class="field-group">
-              <label>
+          <div class="flex flex-col gap-[20px]">
+            <div v-for="field in steps[currentStep].fields" :key="field.key" class="flex flex-col">
+              <label class="mb-[8px] font-semibold text-on-dark-mute">
                 {{ field.label }} 
-                <span v-if="field.required" style="color: var(--color-error); font-weight: bold;">*</span>
-                <button v-if="field.key === 'description' || field.key === 'summary' || field.key === 'technical_skills' || field.key === 'soft_skills'" class="suggestion-btn" @click.prevent="getSuggestion(field)" title="Minta saran AI">💡 AI Suggestion</button>
+                <span v-if="field.required" class="text-accent-danger font-bold">*</span>
+                <button v-if="field.key === 'description' || field.key === 'summary' || field.key === 'technical_skills' || field.key === 'soft_skills'" class="bg-transparent border-none text-primary cursor-pointer text-[12px] ml-[12px] px-[8px] py-[2px] rounded-full transition-colors duration-200 hover:bg-primary/12" @click.prevent="getSuggestion(field)" title="Minta saran AI">💡 AI Suggestion</button>
               </label>
               
               <input 
                 v-if="field.key !== 'gpa' && field.key !== 'description' && field.key !== 'summary' && field.key !== 'email' && field.key !== 'linkedin'" 
                 v-model="formData[field.key]" 
                 :placeholder="field.placeholder" 
+                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-primary focus:outline-none placeholder:text-stone"
               />
               
               <input 
@@ -62,6 +63,7 @@
                 v-model="formData[field.key]" 
                 :placeholder="field.placeholder" 
                 @input="validateEmail"
+                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-primary focus:outline-none placeholder:text-stone"
               />
 
               <input 
@@ -70,6 +72,7 @@
                 v-model="formData[field.key]" 
                 :placeholder="field.placeholder" 
                 @input="validateLinkedIn"
+                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-primary focus:outline-none placeholder:text-stone"
               />
 
               <input 
@@ -77,6 +80,7 @@
                 v-model="formData[field.key]" 
                 :placeholder="field.placeholder" 
                 @input="validateGPA"
+                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-primary focus:outline-none placeholder:text-stone"
               />
 
               <textarea 
@@ -84,48 +88,49 @@
                 v-model="formData[field.key]" 
                 :placeholder="field.placeholder"
                 rows="4"
+                class="w-full bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-primary focus:outline-none placeholder:text-stone resize-y"
               ></textarea>
               
-              <span class="hint">{{ field.hint }}</span>
-              <div v-if="errors[field.key]" class="error-text">{{ errors[field.key] }}</div>
+              <span class="text-[12px] text-stone mt-[6px]">{{ field.hint }}</span>
+              <div v-if="errors[field.key]" class="text-accent-danger text-[12px] mt-[6px]">{{ errors[field.key] }}</div>
               
-              <div v-if="suggestions[field.key]" class="suggestion-box">
-                <span style="font-weight: 500; color: var(--text-primary);">Saran AI:</span> {{ suggestions[field.key] }}
+              <div v-if="suggestions[field.key]" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px] border-l-[3px] border-primary">
+                <span class="font-semibold text-primary">Saran AI:</span> {{ suggestions[field.key] }}
               </div>
             </div>
           </div>
 
           <!-- Wizard Actions -->
-          <div class="wizard-actions">
-            <button class="btn btn-outline" :disabled="currentStep === 0" @click="prevStep">Sebelumnya</button>
-            <button class="btn btn-primary" @click="nextStep">Selanjutnya</button>
+          <div class="flex justify-between mt-[32px] pt-[24px] border-t border-hairline-dark">
+            <button class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed" :disabled="currentStep === 0" @click="prevStep">Sebelumnya</button>
+            <button class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90" @click="nextStep">Selanjutnya</button>
           </div>
         </div>
 
         <!-- Preview Section -->
-        <div v-else class="preview-step">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h3 class="heading-md">Pratinjau Dokumen</h3>
-            <div style="display: flex; gap: 12px;">
-              <button class="btn btn-outline btn-sm" @click="analyzeBuiltCV" :disabled="analyzing">
+        <div v-else>
+          <div class="flex justify-between items-center mb-[24px] flex-wrap gap-[12px]">
+            <h3 class="text-[24px] font-medium leading-[1.33] text-on-dark">Pratinjau Dokumen</h3>
+            <div class="flex gap-[12px]">
+              <button class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[13px] px-[16px] h-[32px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed" @click="analyzeBuiltCV" :disabled="analyzing">
                 {{ analyzing ? 'Memindai...' : 'Scan ATS Score' }}
               </button>
-              <button class="btn btn-primary btn-sm" @click="downloadPDF">
+              <button class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[13px] px-[16px] h-[32px] bg-on-dark text-ink hover:bg-white/90" @click="downloadPDF">
                 Unduh PDF
               </button>
             </div>
           </div>
           
-          <div v-if="analysisResult" style="margin-bottom: 24px; padding: 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-canvas);">
-            <h4 class="heading-sm" style="margin-bottom: 12px;">Hasil Analisis AI</h4>
+          <div v-if="analysisResult" class="mb-[24px] p-xl border border-hairline-dark rounded-[20px] bg-surface-deep">
+            <h4 class="text-[20px] font-medium leading-[1.4] mb-[12px] text-on-dark">Hasil Analisis AI</h4>
             <div v-html="analysisResult" class="analysis-content"></div>
           </div>
 
-          <div class="ats-preview" v-if="formData.full_name || formData.summary">
+          <div class="bg-white text-black p-[40px] rounded-[20px] leading-[1.5] max-w-[800px] mx-auto" v-if="formData.full_name || formData.summary">
             <!-- CV Visual Preview -->
-            <div class="ats-header">
-                <h2>{{ formData.full_name || '[Nama Anda]' }}</h2>
-                <p>
+            <div class="text-center mb-[24px]">
+                <h2 class="text-[24px] mb-[4px] uppercase tracking-[1px] font-bold">{{ formData.full_name || '[Nama Anda]' }}</h2>
+                <p class="text-[14px]">
                     {{ (!errors.email && formData.email) ? formData.email + ' | ' : '' }}
                     {{ formData.phone ? formData.phone + ' | ' : '' }}
                     {{ formData.address ? formData.address + ' | ' : '' }}
@@ -133,74 +138,74 @@
                 </p>
             </div>
             
-            <div class="ats-section" v-if="formData.summary">
-                <h4>RINGKASAN PROFESIONAL</h4>
-                <div class="ats-divider"></div>
-                <p>{{ formData.summary }}</p>
+            <div class="mb-[20px]" v-if="formData.summary">
+                <h4 class="text-[14px] uppercase mb-[4px] font-bold">RINGKASAN PROFESIONAL</h4>
+                <div class="border-b border-black mb-[12px]"></div>
+                <p class="text-[14px]">{{ formData.summary }}</p>
             </div>
             
-            <div class="ats-section" v-if="formData.degree || formData.institution">
-                <h4>PENDIDIKAN</h4>
-                <div class="ats-divider"></div>
-                <div class="ats-item">
-                    <div class="ats-item-header">
+            <div class="mb-[20px]" v-if="formData.degree || formData.institution">
+                <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENDIDIKAN</h4>
+                <div class="border-b border-black mb-[12px]"></div>
+                <div class="mb-[12px]">
+                    <div class="flex justify-between">
                         <strong>{{ formData.institution || '[Institusi]' }}</strong>
                         <span v-if="formData.gpa && !errors.gpa">IPK: {{ formData.gpa }}</span>
                     </div>
-                    <div>{{ formData.degree || '[Gelar]' }}</div>
+                    <div class="text-[14px]">{{ formData.degree || '[Gelar]' }}</div>
                 </div>
             </div>
             
-            <div class="ats-section" v-if="formData.company || formData.position || formData.description">
-                <h4>PENGALAMAN</h4>
-                <div class="ats-divider"></div>
-                <div class="ats-item">
-                    <div class="ats-item-header">
+            <div class="mb-[20px]" v-if="formData.company || formData.position || formData.description">
+                <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENGALAMAN</h4>
+                <div class="border-b border-black mb-[12px]"></div>
+                <div class="mb-[12px]">
+                    <div class="flex justify-between">
                         <strong>{{ formData.position || '[Posisi]' }}</strong>
                         <span>{{ formData.company || '[Perusahaan]' }}</span>
                     </div>
-                    <ul class="ats-list" v-if="formData.description">
-                        <li v-for="(point, idx) in formData.description.split('\n').filter(p => p.trim())" :key="idx">
+                    <ul class="mt-[6px] pl-[24px] list-disc" v-if="formData.description">
+                        <li v-for="(point, idx) in formData.description.split('\n').filter(p => p.trim())" :key="idx" class="text-[14px] mb-[4px]">
                             {{ point }}
                         </li>
                     </ul>
                 </div>
             </div>
             
-            <div class="ats-section" v-if="formData.technical_skills || formData.soft_skills">
-                <h4>KEAHLIAN</h4>
-                <div class="ats-divider"></div>
-                <p v-if="formData.technical_skills"><strong>Keahlian Teknis:</strong> {{ formData.technical_skills }}</p>
-                <p v-if="formData.soft_skills"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
+            <div class="mb-[20px]" v-if="formData.technical_skills || formData.soft_skills">
+                <h4 class="text-[14px] uppercase mb-[4px] font-bold">KEAHLIAN</h4>
+                <div class="border-b border-black mb-[12px]"></div>
+                <p v-if="formData.technical_skills" class="text-[14px]"><strong>Keahlian Teknis:</strong> {{ formData.technical_skills }}</p>
+                <p v-if="formData.soft_skills" class="text-[14px]"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
             </div>
             
-            <div class="ats-section" v-if="formData.cert_name">
-                <h4>SERTIFIKASI</h4>
-                <div class="ats-divider"></div>
-                <div class="ats-item">
-                    <div class="ats-item-header">
+            <div class="mb-[20px]" v-if="formData.cert_name">
+                <h4 class="text-[14px] uppercase mb-[4px] font-bold">SERTIFIKASI</h4>
+                <div class="border-b border-black mb-[12px]"></div>
+                <div class="mb-[12px]">
+                    <div class="flex justify-between text-[14px]">
                         <strong>{{ formData.cert_name }}</strong>
                         <span>{{ formData.issuer }}</span>
                     </div>
                 </div>
             </div>
           </div>
-          <div v-else class="preview-empty">
+          <div v-else class="text-stone text-center p-[40px] italic border border-dashed border-hairline-dark rounded-[20px]">
             Mulai isi data Anda pada tahapan sebelumnya untuk melihat pratinjau.
           </div>
 
-          <div class="wizard-actions" style="margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-            <button class="btn btn-outline" @click="prevStep">Sebelumnya</button>
+          <div class="flex justify-between mt-[32px] pt-[16px] border-t border-hairline-dark">
+            <button class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated" @click="prevStep">Sebelumnya</button>
           </div>
         </div>
       </main>
     </div>
 
     <!-- Hidden Print Container -->
-    <div class="print-only print-area ats-preview">
-        <div class="ats-header">
-            <h2>{{ formData.full_name || '[Nama Anda]' }}</h2>
-            <p>
+    <div class="hidden print:block absolute left-0 top-0 w-full m-0 p-[40px] border-none shadow-none rounded-none bg-white text-black leading-[1.5]">
+        <div class="text-center mb-[24px]">
+            <h2 class="text-[24px] mb-[4px] uppercase tracking-[1px] font-bold">{{ formData.full_name || '[Nama Anda]' }}</h2>
+            <p class="text-[14px]">
                 {{ (!errors.email && formData.email) ? formData.email + ' | ' : '' }}
                 {{ formData.phone ? formData.phone + ' | ' : '' }}
                 {{ formData.address ? formData.address + ' | ' : '' }}
@@ -208,52 +213,52 @@
             </p>
         </div>
         
-        <div class="ats-section" v-if="formData.summary">
-            <h4>RINGKASAN PROFESIONAL</h4>
-            <div class="ats-divider"></div>
-            <p>{{ formData.summary }}</p>
+        <div class="mb-[20px]" v-if="formData.summary">
+            <h4 class="text-[14px] uppercase mb-[4px] font-bold">RINGKASAN PROFESIONAL</h4>
+            <div class="border-b border-black mb-[12px]"></div>
+            <p class="text-[14px]">{{ formData.summary }}</p>
         </div>
         
-        <div class="ats-section" v-if="formData.degree || formData.institution">
-            <h4>PENDIDIKAN</h4>
-            <div class="ats-divider"></div>
-            <div class="ats-item">
-                <div class="ats-item-header">
+        <div class="mb-[20px]" v-if="formData.degree || formData.institution">
+            <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENDIDIKAN</h4>
+            <div class="border-b border-black mb-[12px]"></div>
+            <div class="mb-[12px]">
+                <div class="flex justify-between text-[14px]">
                     <strong>{{ formData.institution || '[Institusi]' }}</strong>
                     <span v-if="formData.gpa && !errors.gpa">IPK: {{ formData.gpa }}</span>
                 </div>
-                <div>{{ formData.degree || '[Gelar]' }}</div>
+                <div class="text-[14px]">{{ formData.degree || '[Gelar]' }}</div>
             </div>
         </div>
         
-        <div class="ats-section" v-if="formData.company || formData.position || formData.description">
-            <h4>PENGALAMAN</h4>
-            <div class="ats-divider"></div>
-            <div class="ats-item">
-                <div class="ats-item-header">
+        <div class="mb-[20px]" v-if="formData.company || formData.position || formData.description">
+            <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENGALAMAN</h4>
+            <div class="border-b border-black mb-[12px]"></div>
+            <div class="mb-[12px]">
+                <div class="flex justify-between text-[14px]">
                     <strong>{{ formData.position || '[Posisi]' }}</strong>
                     <span>{{ formData.company || '[Perusahaan]' }}</span>
                 </div>
-                <ul class="ats-list" v-if="formData.description">
-                    <li v-for="(point, idx) in formData.description.split('\n').filter(p => p.trim())" :key="idx">
+                <ul class="mt-[6px] pl-[24px] list-disc" v-if="formData.description">
+                    <li v-for="(point, idx) in formData.description.split('\n').filter(p => p.trim())" :key="idx" class="text-[14px] mb-[4px]">
                         {{ point }}
                     </li>
                 </ul>
             </div>
         </div>
         
-        <div class="ats-section" v-if="formData.technical_skills || formData.soft_skills">
-            <h4>KEAHLIAN</h4>
-            <div class="ats-divider"></div>
-            <p v-if="formData.technical_skills"><strong>Keahlian Teknis:</strong> {{ formData.technical_skills }}</p>
-            <p v-if="formData.soft_skills"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
+        <div class="mb-[20px]" v-if="formData.technical_skills || formData.soft_skills">
+            <h4 class="text-[14px] uppercase mb-[4px] font-bold">KEAHLIAN</h4>
+            <div class="border-b border-black mb-[12px]"></div>
+            <p v-if="formData.technical_skills" class="text-[14px]"><strong>Keahlian Teknis:</strong> {{ formData.technical_skills }}</p>
+            <p v-if="formData.soft_skills" class="text-[14px]"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
         </div>
         
-        <div class="ats-section" v-if="formData.cert_name">
-            <h4>SERTIFIKASI</h4>
-            <div class="ats-divider"></div>
-            <div class="ats-item">
-                <div class="ats-item-header">
+        <div class="mb-[20px]" v-if="formData.cert_name">
+            <h4 class="text-[14px] uppercase mb-[4px] font-bold">SERTIFIKASI</h4>
+            <div class="border-b border-black mb-[12px]"></div>
+            <div class="mb-[12px]">
+                <div class="flex justify-between text-[14px]">
                     <strong>{{ formData.cert_name }}</strong>
                     <span>{{ formData.issuer }}</span>
                 </div>
@@ -470,188 +475,20 @@ function downloadPDF() {
 </script>
 
 <style scoped>
-.cv-wizard-container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.wizard-layout {
-  display: flex;
-  gap: 32px;
-  align-items: flex-start;
-}
-
-.wizard-sidebar {
-  width: 280px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 100px;
-}
-
-.step-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.step-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  cursor: pointer;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  transition: all 0.2s;
-  color: var(--text-muted);
-}
-
-.step-item:hover {
-  background: var(--bg-canvas-soft, #f0f0f0);
-}
-
-.step-item.active {
-  background: var(--bg-card, #fff);
-  color: var(--text-primary);
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  border: 1px solid var(--border-color);
-}
-
-.step-item.completed .step-indicator {
-  background: var(--primary-color, #f36458);
-  color: white;
-  border-color: var(--primary-color, #f36458);
-}
-
-.step-indicator {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 1px solid currentColor;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  margin-right: 12px;
-}
-
-.wizard-content {
-  flex-grow: 1;
-  min-width: 0;
-  padding: 32px;
-}
-
-.section-fields { display: flex; flex-direction: column; gap: 20px; }
-.field-group { display: flex; flex-direction: column; }
-.field-group label { margin-bottom: 8px; font-weight: 500; }
-
-.suggestion-btn { 
-  background: none; 
-  border: none;
-  color: var(--primary-color, #f36458);
-  cursor: pointer; 
-  font-size: 12px; 
-  margin-left: 12px; 
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: background 0.2s; 
-}
-.suggestion-btn:hover { background: rgba(243, 100, 88, 0.1); }
-
-.suggestion-box { background: var(--bg-canvas); padding: 12px 16px; border-radius: 4px; font-size: 13px; color: var(--text-muted); margin-top: 8px; border: 1px solid var(--border-color); }
-.error-text { color: var(--color-error); font-size: 12px; margin-top: 6px; }
-
-.wizard-actions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border-color);
-}
-
-/* Inputs inherit from global style.css */
-
-/* ATS Format Styling for both Screen and Print */
-.ats-preview {
-    background: white;
-    color: black;
-    padding: 40px;
-    border: 1px solid var(--border-color);
-    line-height: 1.5;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.ats-header { text-align: center; margin-bottom: 24px; }
-.ats-header h2 { font-size: 24px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
-.ats-header p { font-size: 14px; }
-.ats-section { margin-bottom: 20px; }
-.ats-section h4 { font-size: 14px; text-transform: uppercase; margin-bottom: 4px; font-weight: bold; }
-.ats-divider { border-bottom: 1px solid #000; margin-bottom: 12px; }
-.ats-item { margin-bottom: 12px; }
-.ats-item-header { display: flex; justify-content: space-between; }
-.ats-list { margin-top: 6px; padding-left: 24px; }
-.ats-list li { font-size: 14px; margin-bottom: 4px; }
-
-.preview-empty { color: var(--color-mute); text-align: center; padding: 40px; font-style: italic; border: 1px dashed var(--color-hairline); }
-
 .analysis-content :deep(table) { margin: 16px 0; width: 100%; border-collapse: collapse; }
-.analysis-content :deep(th), .analysis-content :deep(td) { padding: 8px 12px; border: 1px solid var(--border-color); }
-.analysis-content :deep(th) { background: #f9f9f9; text-align: left; }
+.analysis-content :deep(th), .analysis-content :deep(td) { padding: 8px 12px; border: 1px solid var(--color-hairline-dark); }
+.analysis-content :deep(th) { background: var(--color-surface-deep); text-align: left; color: var(--color-on-dark); }
 
-.print-only {
-  display: none;
-}
-
-/* Printing Styles */
 @media print {
   @page { margin: 0; }
   body * {
     visibility: hidden;
   }
-  .print-only {
-    display: block !important;
+  .print\:block {
+    visibility: visible !important;
   }
-  .print-area, .print-area * {
+  .print\:block * {
     visibility: visible;
-  }
-  .print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 40px !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-  .no-print {
-    display: none !important;
-  }
-  .page { padding: 0 !important; }
-}
-
-@media (max-width: 768px) {
-  .wizard-layout {
-    flex-direction: column;
-  }
-  .wizard-sidebar {
-    width: 100%;
-    position: static;
-  }
-  .wizard-content {
-    width: 100%;
-    padding: 20px;
-  }
-  .step-list {
-    display: flex;
-    overflow-x: auto;
-    gap: 8px;
-    padding-bottom: 12px;
-  }
-  .step-item {
-    flex-shrink: 0;
-    margin-bottom: 0;
   }
 }
 </style>

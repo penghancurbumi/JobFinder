@@ -1,42 +1,40 @@
 <template>
-  <div class="page" style="padding-top: var(--spacing-section);">
-    <div class="container" style="max-width: 800px;">
-      <h1 class="display-md stagger-1" style="margin-bottom: var(--spacing-xs);">Asisten AI</h1>
-      <p class="subtitle stagger-2" style="color: var(--color-mute); margin-bottom: var(--spacing-xl);">Konsultasikan perjalanan karir Anda, struktur dokumen CV, hingga strategi wawancara.</p>
+  <div class="min-h-screen pt-[50px] bg-canvas-dark text-on-dark font-sans w-full max-w-[1200px] mx-auto px-xl">
+    <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark mb-xs">Asisten AI</h1>
+    <p class="text-[18px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute mb-xl">Konsultasikan perjalanan karir Anda, struktur dokumen CV, hingga strategi wawancara.</p>
 
-      <div class="card stagger-3" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; height: 600px; border-radius: var(--rounded-marketing);">
-        <div class="chat-messages" ref="chatRef">
-          <div v-if="loadingHistory" class="mono-micro" style="text-align: center; color: var(--color-mute); padding: var(--spacing-lg);">Memuat riwayat...</div>
+    <div class="bg-surface-elevated rounded-[20px] overflow-hidden flex flex-col h-[500px]">
+      <div class="flex-1 overflow-y-auto p-xl flex flex-col gap-lg bg-surface-deep" ref="chatRef">
+        <div v-if="loadingHistory" class="font-mono text-[11px] uppercase tracking-[0.5px] font-semibold text-center text-stone p-xl">Memuat riwayat...</div>
 
-          <div v-for="(msg, i) in messages" :key="i" :class="['msg', msg.role]">
-            <div class="msg-bubble" :class="{ 'editorial-bubble': msg.role === 'assistant', 'user-bubble': msg.role === 'user' }">
-              {{ msg.content }}
-            </div>
-          </div>
-
-          <div v-if="loading" class="msg assistant">
-            <div class="msg-bubble editorial-bubble typing mono-caps" style="color: var(--color-mute);">Menganalisis...</div>
+        <div v-for="(msg, i) in messages" :key="i" class="flex" :class="msg.role === 'user' ? 'justify-end' : 'justify-start'">
+          <div class="max-w-[80%] px-[16px] py-[12px] rounded-[20px] text-[15px] leading-[1.6] whitespace-pre-wrap tracking-[0.24px]" 
+               :class="msg.role === 'user' ? 'bg-white text-ink rounded-br-[4px]' : 'bg-surface-elevated text-on-dark rounded-bl-[4px]'">
+            {{ msg.content }}
           </div>
         </div>
 
-        <div class="quick-replies-container">
-          <div class="quick-replies">
-            <button
-              v-for="q in quickQuestions"
-              :key="q.text"
-              class="badge-neutral"
-              style="cursor: pointer; border: 1px solid var(--color-hairline); background: var(--color-canvas-light);"
-              @click="sendQuick(q.text)"
-            >
-              {{ q.label }}
-            </button>
-          </div>
+        <div v-if="loading" class="flex justify-start">
+          <div class="max-w-[80%] px-[16px] py-[12px] rounded-[20px] text-[15px] leading-[1.6] whitespace-pre-wrap tracking-[0.24px] bg-surface-elevated text-on-dark rounded-bl-[4px] typing">Menganalisis...</div>
         </div>
+      </div>
 
-        <div class="chat-input" style="background: var(--color-canvas-paper); padding: var(--spacing-sm); border-top: 1px solid var(--color-hairline);">
-          <input v-model="input" placeholder="Tanyakan seputar persiapan karir..." @keyup.enter="send" :disabled="loading" style="border: none; box-shadow: none; background: transparent;" />
-          <button class="btn btn-primary-on-light" @click="send" :disabled="loading || !input.trim()" style="border-radius: var(--rounded-app-md); height: 40px; padding: 0 var(--spacing-md);">Kirim</button>
+      <div class="w-full overflow-x-auto border-t border-hairline-dark bg-surface-deep scrollbar-hide">
+        <div class="flex flex-nowrap gap-sm px-xl py-sm w-max">
+          <button
+            v-for="q in quickQuestions"
+            :key="q.text"
+            class="bg-surface-elevated text-on-dark-mute border border-hairline-dark rounded-full px-[14px] py-[6px] text-[13px] font-sans cursor-pointer transition-all duration-200 whitespace-nowrap hover:bg-canvas-dark hover:text-on-dark hover:border-primary"
+            @click="sendQuick(q.text)"
+          >
+            {{ q.label }}
+          </button>
         </div>
+      </div>
+
+      <div class="flex gap-sm px-lg py-sm bg-surface-elevated border-t border-hairline-dark items-center">
+        <input class="border-none bg-transparent text-on-dark h-[44px] flex-1 focus:outline-none focus:ring-0 placeholder:text-stone" v-model="input" placeholder="Tanyakan seputar persiapan karir..." @keyup.enter="send" :disabled="loading" />
+        <button class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] h-[40px] text-[14px] shrink-0 disabled:opacity-50 disabled:cursor-not-allowed" @click="send" :disabled="loading || !input.trim()">Kirim</button>
       </div>
     </div>
   </div>
@@ -129,27 +127,21 @@ function scrollDown() {
 </script>
 
 <style scoped>
-.chat-messages { flex: 1; overflow-y: auto; padding: var(--spacing-xl); display: flex; flex-direction: column; gap: var(--spacing-lg); background: var(--color-canvas-light); }
-.msg { display: flex; }
-.msg.user { justify-content: flex-end; }
-.msg.assistant { justify-content: flex-start; }
-.msg-bubble { max-width: 80%; padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--rounded-app-md); font-size: 15px; line-height: 1.6; white-space: pre-wrap; }
-.user-bubble { background: var(--color-ink); color: var(--color-on-primary); border-bottom-right-radius: 4px; }
-.editorial-bubble { background: var(--color-canvas-paper); color: var(--color-ink); font-family: inherit; font-size: 16px; border-bottom-left-radius: 4px; }
-
-.quick-replies-container {
-  width: 100%;
-  overflow-x: auto;
-  border-top: 1px solid var(--color-hairline);
-  background: var(--color-canvas-light);
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
-.quick-replies-container::-webkit-scrollbar { display: none; }
-.quick-replies { display: flex; flex-wrap: nowrap; gap: var(--spacing-xs); padding: var(--spacing-sm) var(--spacing-lg); width: max-content; }
-
-.typing { animation: pulse 1.5s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-.chat-input { display: flex; gap: var(--spacing-sm); }
-.chat-input input:focus { outline: none; }
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.typing::after {
+  content: " ";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background-color: currentColor;
+  border-radius: 50%;
+  margin-left: 4px;
+  animation: pulse-opacity 1s infinite;
+}
 </style>

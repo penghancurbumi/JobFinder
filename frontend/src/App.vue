@@ -1,107 +1,54 @@
 <template>
-  <div id="app-root" class="theme-dark">
-    <nav class="nav-bar-dark">
-      <div class="container nav-inner">
-        <router-link to="/" class="logo">
-          <span class="brand-dot"></span>
+  <div id="app-root" class="min-h-screen flex flex-col bg-canvas-dark text-on-dark font-sans">
+    <nav 
+      :class="[
+        'h-[72px] px-xl flex items-center sticky top-0 z-50 transition-all duration-300 border-b',
+        isScrolled ? 'bg-canvas-dark border-hairline-dark' : 'bg-transparent border-transparent'
+      ]"
+    >
+      <div class="w-full max-w-[1200px] mx-auto px-xl flex items-center justify-between">
+        <router-link to="/" class="text-[20px] font-medium text-on-dark no-underline tracking-[-0.02em] flex items-center gap-[8px]">
+          <span class="w-3 h-3 rounded-full bg-primary inline-block"></span>
           JobFinder
         </router-link>
-        <div class="nav-links">
-          <router-link to="/" class="nav-link">Home</router-link>
-          <router-link to="/jobs" class="nav-link">Peluang</router-link>
-          <router-link to="/cv-analyzer" class="nav-link">Analisis CV</router-link>
-          <router-link to="/cv-builder" class="nav-link">Pembuat CV</router-link>
-          <router-link to="/chatbot" class="nav-link">Asisten AI</router-link>
+        <div class="hidden lg:flex gap-sm">
+          <router-link to="/" class="bg-transparent text-on-dark-mute text-[16px] font-medium leading-[1.5] tracking-[0.24px] px-[12px] py-[8px] no-underline transition-colors duration-200 rounded-full hover:text-on-dark hover:bg-surface-deep" active-class="text-on-dark bg-surface-elevated">Home</router-link>
+          <router-link to="/jobs" class="bg-transparent text-on-dark-mute text-[16px] font-medium leading-[1.5] tracking-[0.24px] px-[12px] py-[8px] no-underline transition-colors duration-200 rounded-full hover:text-on-dark hover:bg-surface-deep" active-class="text-on-dark bg-surface-elevated">Peluang</router-link>
+          <router-link to="/cv-analyzer" class="bg-transparent text-on-dark-mute text-[16px] font-medium leading-[1.5] tracking-[0.24px] px-[12px] py-[8px] no-underline transition-colors duration-200 rounded-full hover:text-on-dark hover:bg-surface-deep" active-class="text-on-dark bg-surface-elevated">Analisis CV</router-link>
+          <router-link to="/cv-builder" class="bg-transparent text-on-dark-mute text-[16px] font-medium leading-[1.5] tracking-[0.24px] px-[12px] py-[8px] no-underline transition-colors duration-200 rounded-full hover:text-on-dark hover:bg-surface-deep" active-class="text-on-dark bg-surface-elevated">Pembuat CV</router-link>
+          <router-link to="/chatbot" class="bg-transparent text-on-dark-mute text-[16px] font-medium leading-[1.5] tracking-[0.24px] px-[12px] py-[8px] no-underline transition-colors duration-200 rounded-full hover:text-on-dark hover:bg-surface-deep" active-class="text-on-dark bg-surface-elevated">Asisten AI</router-link>
         </div>
-        <div class="nav-actions">
-          <a href="#" class="btn btn-secondary-dark">Masuk</a>
-          <router-link to="/cv-builder" class="btn btn-primary">Mulai Gratis</router-link>
+        <div class="hidden lg:flex gap-md items-center">
+          <a href="#" class="px-5 py-2 text-[14px] font-semibold text-on-dark bg-surface-elevated hover:bg-surface-deep rounded-full transition-colors border border-hairline-dark">Masuk</a>
+          <router-link to="/cv-builder" class="h-[40px] px-[20px] py-[8px] text-[14px] font-semibold bg-on-dark text-ink rounded-full hover:bg-white/90 transition-colors flex items-center justify-center">Mulai Gratis</router-link>
         </div>
       </div>
     </nav>
-    <!-- Render main pages using the standard container; we remove 'container' from main here because some pages like LandingPage will have full-width bands. The pages themselves should use the .container class internally. -->
-    <main>
+    <main class="flex-grow flex flex-col">
       <router-view />
     </main>
   </div>
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+
+const isScrolled = ref(false)
+
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 20
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <style scoped>
-/* App Root is scoped with dark theme */
-#app-root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.nav-bar-dark { 
-  background: var(--color-canvas); 
-  height: 64px;
-  padding: 0 var(--spacing-lg);
-  display: flex;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  border-bottom: 1px solid var(--color-hairline-soft);
-}
-
-.nav-inner { 
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
-  width: 100%;
-}
-
-.logo { 
-  font-size: 24px; 
-  font-weight: 500; 
-  color: var(--color-on-primary); 
-  text-decoration: none; 
-  letter-spacing: -0.02em; 
-  display: flex;
-  align-items: center;
-}
-
-.brand-dot {
-  margin-right: 8px;
-}
-
-.nav-links { 
-  display: flex; 
-  gap: var(--spacing-sm); 
-}
-
-.nav-link { 
-  background: var(--color-canvas);
-  color: var(--color-on-primary);
-  font-size: 16px; 
-  font-weight: 500; 
-  line-height: 1.5;
-  padding: var(--spacing-xs); 
-  text-decoration: none; 
-  transition: opacity 0.2s; 
-}
-.nav-link:hover { opacity: 0.8; }
-.nav-link.router-link-active { 
-  border-bottom: 2px solid var(--color-brand); 
-  padding-bottom: 6px; 
-}
-
-.nav-actions {
-  display: flex;
-  gap: var(--spacing-md);
-  align-items: center;
-}
-
-@media (max-width: 960px) {
-  .nav-links { display: none; }
-  .nav-actions { display: none; }
-}
-
 @media print {
   nav { display: none !important; }
 }
