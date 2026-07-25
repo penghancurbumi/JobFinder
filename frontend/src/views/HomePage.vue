@@ -1,7 +1,7 @@
 <template>
-  <div class="home bg-canvas-dark text-on-dark font-sans">
+  <div class="home bg-transparent text-on-dark font-sans">
     <!-- Hero Section (Dark Canvas) -->
-    <section class="bg-canvas-dark py-[100px]">
+    <section class="bg-transparent py-[100px]">
       <div class="w-full max-w-[1200px] mx-auto px-xl">
         <div class="max-w-[960px]">
           <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-lg block text-stone">Job Aggregator Indonesia</span>
@@ -27,16 +27,15 @@
           </div>
 
           <div class="flex gap-sm flex-wrap">
-            <router-link to="/jobs" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[16px] px-[24px] h-[48px] bg-on-dark text-ink hover:bg-white/90">Cari Lowongan</router-link>
-            <router-link to="/cv-analyzer" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[16px] px-[24px] h-[48px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Analisis CV</router-link>
-            <router-link to="/cv-builder" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[16px] px-[24px] h-[48px] bg-transparent text-on-dark hover:bg-surface-elevated">Buat CV</router-link>
+            <router-link to="/documentation" class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[18px] px-[24px] h-[48px] bg-on-dark text-ink hover:bg-white/90">Documentation</router-link>
+            <router-link to="/jobs" class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[18px] px-[24px] h-[48px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Get Started</router-link>
           </div>
         </div>
       </div>
     </section>
 
     <!-- Features Section (Dark Canvas) -->
-    <section class="bg-canvas-dark py-[80px]">
+    <section class="bg-transparent py-[80px]">
       <div class="w-full max-w-[1200px] mx-auto px-xl">
         <div class="mb-xxl">
           <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-lg block">Fitur Unggulan</span>
@@ -76,7 +75,7 @@
     </section>
 
     <!-- Documentation Section -->
-    <section class="bg-canvas-dark py-[80px]">
+    <section class="bg-transparent py-[80px]">
       <div class="w-full max-w-[1200px] mx-auto px-xl">
         <div class="mb-xxl">
           <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-lg block">Panduan</span>
@@ -84,17 +83,17 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-xl">
           <div class="bg-surface-elevated rounded-[20px] p-xxl flex flex-col border border-hairline-dark shadow-sm">
-            <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-primary mb-sm block">Langkah 1</span>
+            <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-white mb-sm block">Langkah 1</span>
             <h3 class="text-[20px] font-medium leading-[1.4] mb-sm text-on-dark">Jelajahi Lowongan</h3>
             <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute">Gunakan filter canggih untuk menemukan posisi yang sesuai dengan keahlian dan preferensimu.</p>
           </div>
           <div class="bg-surface-elevated rounded-[20px] p-xxl flex flex-col border border-hairline-dark shadow-sm">
-            <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-primary mb-sm block">Langkah 2</span>
+            <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-white mb-sm block">Langkah 2</span>
             <h3 class="text-[20px] font-medium leading-[1.4] mb-sm text-on-dark">Analisis CV</h3>
             <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute">Uji CV-mu terhadap standar ATS dan dapatkan rekomendasi perbaikan yang spesifik.</p>
           </div>
           <div class="bg-surface-elevated rounded-[20px] p-xxl flex flex-col border border-hairline-dark shadow-sm">
-            <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-primary mb-sm block">Langkah 3</span>
+            <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-white mb-sm block">Langkah 3</span>
             <h3 class="text-[20px] font-medium leading-[1.4] mb-sm text-on-dark">Buat &amp; Lamar</h3>
             <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute">Bangun CV yang dioptimalkan untuk ATS dan lamar pekerjaan impianmu dengan percaya diri.</p>
           </div>
@@ -108,7 +107,6 @@
         <div class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr_1fr] gap-xxl md:gap-xl mb-block">
           <div class="flex flex-col gap-sm">
             <div class="flex items-center gap-xs mb-sm">
-              <span class="w-3 h-3 rounded-full bg-primary inline-block"></span>
               <span class="text-[20px] font-medium leading-[1.4] text-on-dark">JobFinder</span>
             </div>
             <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute max-w-[280px]">Platform agregasi lowongan kerja dan alat karier untuk pencari kerja di Indonesia.</p>

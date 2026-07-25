@@ -1,6 +1,7 @@
 <template>
-  <div class="min-h-screen pt-[88px] bg-canvas-dark text-on-dark font-sans w-full max-w-[1200px] mx-auto px-xl">
-    <div class="print:hidden mb-xl">
+  <div class="min-h-screen pt-[88px] bg-canvas-dark text-on-dark font-sans">
+    <div class="w-full max-w-[1200px] mx-auto px-xl">
+      <div class="print:hidden mb-xl">
       <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-sm block">Sistem Pembangun Dokumen ATS</span>
       <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark">Pembuat CV</h1>
       <p class="mt-sm text-on-dark-mute text-[14px] font-normal leading-[1.5]">Rakit bagian-bagian CV Anda langkah demi langkah. Tanda <span class="text-accent-danger">*</span> wajib diisi.</p>
@@ -12,7 +13,7 @@
       <aside class="w-full md:w-[280px] shrink-0 md:sticky top-[100px] bg-surface-elevated rounded-[20px] py-xl">
         <div class="mb-[24px] px-[16px]">
           <label class="text-[12px] mb-[4px] text-on-dark-mute block font-semibold">Target Keahlian / Bidang</label>
-          <select v-model="targetExpertise" class="w-full text-[14px] bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-primary focus:outline-none appearance-none">
+          <select v-model="targetExpertise" class="w-full text-[14px] bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
             <option v-for="a in expertiseAreas" :key="a" :value="a" class="bg-surface-elevated text-on-dark">{{ a }}</option>
           </select>
         </div>
@@ -20,13 +21,13 @@
         <ul class="list-none m-0 p-0 flex md:block overflow-x-auto md:overflow-visible pb-[12px] md:pb-0">
           <li v-for="(section, index) in steps" :key="section.id" 
               class="flex shrink-0 items-center px-[16px] py-[12px] cursor-pointer rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent"
-              :class="{ 'bg-surface-deep !text-on-dark font-medium !border-primary': currentStep === index, 'completed': currentStep > index }"
+              :class="{ 'bg-surface-deep !text-on-dark font-medium !border-white': currentStep === index, 'completed': currentStep > index }"
               @click="goToStep(index)">
-            <div class="w-[28px] h-[28px] rounded-full border border-hairline-dark flex items-center justify-center text-[12px] mr-[12px] shrink-0 transition-colors" :class="{ 'bg-primary text-on-primary border-primary': currentStep > index }">{{ index + 1 }}</div>
+            <div class="w-[28px] h-[28px] rounded-full border border-hairline-dark flex items-center justify-center text-[12px] mr-[12px] shrink-0 transition-colors" :class="{ 'bg-white text-ink border-white': currentStep > index }">{{ index + 1 }}</div>
             <div class="text-[14px]">{{ section.title }}</div>
           </li>
           <li class="flex shrink-0 items-center px-[16px] py-[12px] cursor-pointer rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent"
-              :class="{ 'bg-surface-deep !text-on-dark font-medium !border-primary': currentStep === steps.length }" 
+              :class="{ 'bg-surface-deep !text-on-dark font-medium !border-white': currentStep === steps.length }" 
               @click="goToStep(steps.length)">
             <div class="w-[28px] h-[28px] rounded-full border border-hairline-dark flex items-center justify-center text-[12px] mr-[12px] shrink-0 transition-colors">✓</div>
             <div class="text-[14px]">Preview &amp; Export</div>
@@ -47,14 +48,14 @@
               <label class="mb-[8px] font-semibold text-on-dark-mute">
                 {{ field.label }} 
                 <span v-if="field.required" class="text-accent-danger font-bold">*</span>
-                <button v-if="field.key === 'description' || field.key === 'summary' || field.key === 'technical_skills' || field.key === 'soft_skills'" class="bg-transparent border-none text-primary cursor-pointer text-[12px] ml-[12px] px-[8px] py-[2px] rounded-full transition-colors duration-200 hover:bg-primary/12" @click.prevent="getSuggestion(field)" title="Minta saran AI">💡 AI Suggestion</button>
+                <button v-if="field.key === 'description' || field.key === 'summary' || field.key === 'technical_skills' || field.key === 'soft_skills'" class="bg-transparent border-none text-white cursor-pointer text-[12px] ml-[12px] px-[8px] py-[2px] rounded-full transition-colors duration-200 hover:bg-white/10" @click.prevent="getSuggestion(field)" title="Minta saran AI">💡 AI Suggestion</button>
               </label>
               
               <input 
                 v-if="field.key !== 'gpa' && field.key !== 'description' && field.key !== 'summary' && field.key !== 'email' && field.key !== 'linkedin'" 
                 v-model="formData[field.key]" 
                 :placeholder="field.placeholder" 
-                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-primary focus:outline-none placeholder:text-stone"
+                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone"
               />
               
               <input 
@@ -63,7 +64,7 @@
                 v-model="formData[field.key]" 
                 :placeholder="field.placeholder" 
                 @input="validateEmail"
-                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-primary focus:outline-none placeholder:text-stone"
+                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone"
               />
 
               <input 
@@ -72,7 +73,7 @@
                 v-model="formData[field.key]" 
                 :placeholder="field.placeholder" 
                 @input="validateLinkedIn"
-                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-primary focus:outline-none placeholder:text-stone"
+                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone"
               />
 
               <input 
@@ -80,7 +81,7 @@
                 v-model="formData[field.key]" 
                 :placeholder="field.placeholder" 
                 @input="validateGPA"
-                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-primary focus:outline-none placeholder:text-stone"
+                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone"
               />
 
               <textarea 
@@ -88,14 +89,14 @@
                 v-model="formData[field.key]" 
                 :placeholder="field.placeholder"
                 rows="4"
-                class="w-full bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-primary focus:outline-none placeholder:text-stone resize-y"
+                class="w-full bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-y"
               ></textarea>
               
               <span class="text-[12px] text-stone mt-[6px]">{{ field.hint }}</span>
               <div v-if="errors[field.key]" class="text-accent-danger text-[12px] mt-[6px]">{{ errors[field.key] }}</div>
               
-              <div v-if="suggestions[field.key]" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px] border-l-[3px] border-primary">
-                <span class="font-semibold text-primary">Saran AI:</span> {{ suggestions[field.key] }}
+              <div v-if="suggestions[field.key]" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px] border-l-[3px] border-white">
+                <span class="font-semibold text-white">Saran AI:</span> {{ suggestions[field.key] }}
               </div>
             </div>
           </div>
@@ -264,6 +265,7 @@
                 </div>
             </div>
         </div>
+      </div>
     </div>
   </div>
 </template>
