@@ -6,7 +6,7 @@
           <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Eksplorasi</span>
           <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark mb-0">Daftar Pekerjaan Yang Tersedia</h1>
         </div>
-        <button @click="requestScrape" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] py-[8px] h-[40px] text-[14px] gap-[8px]" :disabled="isScraping">
+        <button @click="requestScrape" class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] py-[8px] h-[40px] text-[14px] gap-[8px]" :disabled="isScraping">
           <svg v-if="isScraping" class="animate-[spin_1s_linear_infinite]" viewBox="0 0 24 24" width="16" height="16">
             <circle class="animate-[dash_1.5s_ease-in-out_infinite] [stroke-dasharray:60] [stroke-dashoffset:60]" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
           </svg>
@@ -133,7 +133,7 @@
                 <p :class="['text-[12px] font-normal leading-[1.5] text-on-dark-mute whitespace-pre-wrap mb-xs', { 'line-clamp-3 overflow-hidden text-ellipsis': !isExpanded(job) }]">{{ job.description }}</p>
               </div>
               
-              <a :href="job.url" target="_blank" class="self-start inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] py-[8px] h-[36px] text-[12px] no-underline">Lamar Sekarang</a>
+              <a :href="job.url" target="_blank" class="self-start inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] py-[8px] h-[36px] text-[12px] no-underline">Lamar Sekarang</a>
             </div>
           </div>
         </main>

@@ -190,7 +190,7 @@
                       </div>
                       <div class="flex flex-col">
                         <label class="mb-[6px] text-[13px] font-semibold text-on-dark-mute">Deskripsi <span class="text-accent-danger font-bold">*</span></label>
-                        <textarea v-model="eduExpForm.description" placeholder="Deskripsi kegiatan..." rows="2" class="w-full bg-transparent border border-hairline-dark rounded-[12px] p-[12px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-y"></textarea>
+                        <textarea v-model="eduExpForm.description" placeholder="Deskripsi kegiatan..." rows="2" class="w-full h-40 bg-transparent border border-hairline-dark rounded-[12px] p-[12px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
                       </div>
                     </div>
                     <div v-if="eduExpErrors.general" class="text-accent-danger text-[12px] mt-[8px]">{{ eduExpErrors.general }}</div>
@@ -308,7 +308,7 @@
                   <div class="flex flex-col gap-[8px]">
                     <div v-for="(jd, jdIdx) in workForm.jobDescriptions" :key="'jd-'+jdIdx" class="flex gap-[8px] items-start">
                       <span class="text-on-dark-mute text-[14px] mt-[12px] shrink-0">{{ jdIdx + 1 }}.</span>
-                      <textarea v-model="workForm.jobDescriptions[jdIdx]" :placeholder="'Deskripsi pekerjaan #' + (jdIdx + 1)" rows="2" class="flex-1 bg-transparent border border-hairline-dark rounded-[12px] p-[12px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-y"></textarea>
+                      <textarea v-model="workForm.jobDescriptions[jdIdx]" :placeholder="'Deskripsi pekerjaan #' + (jdIdx + 1)" rows="2" class="flex-1 h-40 bg-transparent border border-hairline-dark rounded-[12px] p-[12px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
                       <button v-if="workForm.jobDescriptions.length > 1" @click="removeJobDescription(jdIdx)" class="shrink-0 mt-[8px] text-accent-danger text-[16px] w-[32px] h-[32px] rounded-full border border-accent-danger/30 flex items-center justify-center hover:bg-accent-danger/10 transition-colors">✕</button>
                     </div>
                   </div>
@@ -374,7 +374,7 @@
                 v-model="formData[field.key]" 
                 :placeholder="field.placeholder"
                 rows="4"
-                class="w-full bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-y"
+                class="w-full h-40 bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"
               ></textarea>
               
               <span class="text-[12px] text-stone mt-[6px]">{{ field.hint }}</span>
@@ -388,8 +388,8 @@
 
           <!-- Wizard Actions -->
           <div class="flex justify-between mt-[32px] pt-[24px] border-t border-hairline-dark">
-            <button class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed" :disabled="currentStep === 0" @click="prevStep">Sebelumnya</button>
-            <button class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90" @click="nextStep">Selanjutnya</button>
+            <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed" :disabled="currentStep === 0" @click="prevStep">Sebelumnya</button>
+            <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90" @click="nextStep">Selanjutnya</button>
           </div>
         </div>
 
@@ -437,15 +437,20 @@
                 <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENDIDIKAN</h4>
                 <div class="border-b border-black mb-[12px]"></div>
                 <div v-for="(edu, idx) in educations" :key="'prev-edu-'+idx" class="mb-[16px]">
-                    <div class="text-[14px] font-bold">{{ edu.degree }} {{ edu.major }} | IPK: {{ formatGPA(edu.gpa) }}/4.00</div>
-                    <div class="text-[14px]">{{ edu.institution }}</div>
-                    <div class="text-[14px]" style="color: #666;">{{ edu.startMonth }} {{ edu.startYear }} - {{ edu.endMonth }} {{ edu.endYear }}</div>
-                    <div v-if="edu.experiences.length > 0" class="mt-[8px]">
-                        <div class="text-[13px] font-semibold mb-[4px]">Pengalaman Selama Pendidikan</div>
-                        <ul class="pl-[24px] list-disc">
-                            <li v-for="(exp, eidx) in edu.experiences" :key="'prev-eduexp-'+eidx" class="text-[14px] mb-[4px]">{{ exp.role }} {{ exp.title }}</li>
-                        </ul>
+                  <div class="flex justify-between items-start flex-wrap gap-[4px]">
+                    <div>
+                      <div class="text-[14px] font-bold">{{ edu.degree }} {{ edu.major }} | IPK: {{ formatGPA(edu.gpa) }}/4.00</div>
+                      <div class="text-[14px]">{{ edu.institution }}</div>
                     </div>
+                    <div class="text-[14px]" style="color: #666;">{{ edu.startMonth }} {{ edu.startYear }} - {{ edu.endMonth }} {{ edu.endYear }}</div>
+                  </div>
+
+                  <div v-if="edu.experiences.length > 0" class="mt-[8px]">
+                    <div class="text-[13px] font-semibold mb-[4px]">Pengalaman Selama Pendidikan</div>
+                    <ul class="pl-[24px] list-disc">
+                        <li v-for="(exp, eidx) in edu.experiences" :key="'prev-eduexp-'+eidx" class="text-[14px] mb-[4px]">{{ exp.role }} {{ exp.title }}</li>
+                    </ul>
+                  </div>
                 </div>
             </div>
             
