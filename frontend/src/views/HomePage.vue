@@ -128,8 +128,16 @@
           </div>
           <div class="flex flex-col gap-sm">
             <span class="font-mono text-[12px] uppercase tracking-[1px] font-bold text-stone mb-xs">Hubungi</span>
-            <a href="mailto:hello@jobfinder.id" class="text-on-dark-mute hover:text-on-dark text-[14px] transition-colors no-underline">hello@jobfinder.id</a>
-            <span class="font-mono text-[11px] uppercase tracking-[0.5px] font-semibold text-stone mt-auto">v2.0.0</span>
+
+            <div class="flex flex-row gap-sm">
+              <a href="https://github.com/penghancurbumi" class="text-on-dark-mute hover:text-on-dark text-[14px] transition-colors no-underline">
+                <Icon icon="mdi:github" width="24" height="24" />
+              </a>
+
+              <a href="https://www.linkedin.com/in/muhammad-al-fakhreza-dwi-putra-b16962301/" class="text-on-dark-mute hover:text-on-dark text-[14px] transition-colors no-underline">
+                <Icon icon="mdi:linkedin" width="24" height="24" />
+              </a>
+            </div>
           </div>
         </div>
         <div class="flex justify-between items-center pt-lg border-t border-hairline-dark">
@@ -141,7 +149,10 @@
   </div>
 </template>
 
+
+
 <script setup>
+import { Icon } from '@iconify/vue'
 import { ref, onMounted } from "vue"
 
 const totalJobs = ref(0)

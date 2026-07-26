@@ -43,8 +43,6 @@ export const CV_SECTIONS = [
     id: "skills", title: "Keahlian", fields: [
       { key: "technical_skills", label: "Keahlian Teknis", placeholder: "Contoh: Python, Vue.js, SQL", hint: "Sebutkan keahlian yang relevan", required: true },
       { key: "soft_skills", label: "Soft Skills", placeholder: "Contoh: Kepemimpinan, Komunikasi", hint: "Buktikan dengan contoh di pengalaman", required: true },
-      { key: "ponytail", label: "Ponytail", placeholder: "Contoh: High Ponytail, Side Ponytail", hint: "Gaya rambut kuncir kuda", required: false },
-      { key: "superpowers", label: "Superpowers", placeholder: "Contoh: Terbang, Super Strength", hint: "Kekuatan super yang Anda miliki", required: false },
     ],
   },
   {

@@ -293,7 +293,7 @@ const FIELDS = [
   "full_name", "email", "phone", "address", "linkedin",
   "summary", "degree", "institution", "gpa",
   "company", "position", "description",
-  "technical_skills", "soft_skills", "ponytail", "superpowers",
+  "technical_skills", "soft_skills",
   "cert_name", "issuer",
 ]
 
