@@ -26,18 +26,10 @@ export const CV_SECTIONS = [
     ],
   },
   {
-    id: "education", title: "Pendidikan", fields: [
-      { key: "degree", label: "Gelar / Jurusan", placeholder: "Contoh: S1 Teknik Informatika", hint: "Sebutkan jurusan dengan jelas", required: true },
-      { key: "institution", label: "Institusi", placeholder: "Contoh: Universitas Indonesia", hint: "Gunakan nama resmi universitas", required: true },
-      { key: "gpa", label: "IPK (opsional)", placeholder: "Contoh: 3.8/4.0", hint: "Format desimal, misal 3.8", required: false },
-    ],
+    id: "education", title: "Pendidikan", customForm: true, fields: [],
   },
   {
-    id: "experience", title: "Pengalaman Kerja", fields: [
-      { key: "company", label: "Perusahaan", placeholder: "Contoh: Tech Corp", hint: "Gunakan nama resmi perusahaan", required: true },
-      { key: "position", label: "Posisi", placeholder: "Contoh: Software Engineer Intern", hint: "Gunakan nama jabatan resmi", required: true },
-      { key: "description", label: "Deskripsi", placeholder: "Jelaskan tanggung jawab...", hint: "Gunakan kata kerja aktif (Memimpin, Mengembangkan). Sertakan metrik.", required: true },
-    ],
+    id: "experience", title: "Pengalaman Kerja", customForm: true, fields: [],
   },
   {
     id: "skills", title: "Keahlian", fields: [
