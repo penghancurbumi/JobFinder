@@ -1,6 +1,7 @@
 # Core
 scrapy>=2.17.0
 scrapy-playwright>=0.0.45
+curl-cffi>=0.15.0
 
 # Database
 sqlalchemy>=2.0

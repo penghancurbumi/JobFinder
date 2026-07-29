@@ -194,3 +194,95 @@ class ScrapingStatsMiddleware:
             self._response_count,
             self._error_count,
         )
+
+
+class CloudflareBypassMiddleware:
+    # =====================================================
+    # CLOUDFLARE BYPASS MIDDLEWARE
+    # =====================================================
+    # Ini adalah "Downloader Middleware" — posisinya di antara
+    # Scrapy Engine dan Download Handler.
+    #
+    # Alur request normal:
+    #   Engine → middleware chain → Download Handler → Internet
+    #
+    # Alur dengan middleware ini:
+    #   Engine → middleware chain
+    #              ↓
+    #       CloudflareBypassMiddleware.process_request()
+    #              ↓ cek: request.meta["impersonate"] == True?
+    #              ├─ Ya:   fetch pake curl_cffi → bungkus jadi TextResponse → return
+    #              └─ Tidak: return None → lanjut ke Download Handler biasa
+    #
+    # Kenapa pake curl_cffi?
+    # Cloudflare punya sistem deteksi yang ngecek TLS fingerprint.
+    # Setiap browser punya sidik jari TLS unik (cipher suite, urutan, extensions).
+    # curl_cffi (library C berbasis libcurl) bisa MENIRU fingerprint Chrome 131 asli.
+    # Jadi Cloudflare kira kita browser beneran, kasih akses.
+    #
+    # Alternatif lain: Playwright (browser sungguhan) tapi lebih berat
+    # dan Cloudflare juga bisa detect headless browser.
+
+    def process_request(self, request: Request, spider: Spider):
+        # Cek apakah request ini perlu bypass Cloudflare
+        if not request.meta.get("impersonate"):
+            return None  # return None = biarin Scrapy proses normal
+
+        # Import di sini biar gak error kalau library belum keinstall
+        from curl_cffi import requests as curl_requests
+
+        spider.logger_custom.info(
+            "CloudflareBypass: Fetching %s via curl_cffi impersonation", request.url
+        )
+
+        # Ambil headers dari request Scrapy, tambah default biar makin mirip browser
+        headers = dict(request.headers.to_unicode_dict())
+        headers.setdefault("Accept-Language", "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7")
+        headers.setdefault("Referer", "https://www.google.com/")
+
+        body = request.body
+        method = request.method.upper()
+        url = request.url
+        cookies = request.cookies
+
+        try:
+            # Pakai curl_cffi (bukan requests biasa!) untuk fetch URL
+            # impersonate="chrome131" → suruh curl_cffi tiru Chrome 131
+            if method == "POST":
+                resp = curl_requests.post(
+                    url,
+                    impersonate="chrome131",
+                    headers=headers,
+                    json=request.meta.get("json_body"),
+                    data=body if not request.meta.get("json_body") else None,
+                    cookies=cookies,
+                    timeout=30,
+                )
+            else:
+                resp = curl_requests.get(
+                    url,
+                    impersonate="chrome131",
+                    headers=headers,
+                    cookies=cookies,
+                    timeout=30,
+                )
+        except Exception as e:
+            spider.logger_custom.error(
+                "CloudflareBypass: Request failed for %s: %s", url, e
+            )
+            return None  # Gagal → biarin Scrapy handle error
+
+        # Bungkus response curl_cffi jadi TextResponse Scrapy
+        # Biar Scrapy engine gak bingung, kita kasi format yang dia kenal
+        from scrapy.http import TextResponse
+
+        return TextResponse(
+            url=url,
+            status=resp.status_code,
+            headers=dict(resp.headers),
+            body=resp.content,
+            encoding="utf-8",
+            request=request,
+        )
+        # Return TextResponse = middleware ngasih response langsung
+        # Scrapy gak perlu panggil Download Handler, langsung ke parse()

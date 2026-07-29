@@ -15,6 +15,12 @@ if sys.platform == "win32":
     import asyncio
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
+    DOWNLOAD_HANDLERS ={
+        "http":"scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+        "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+    }
+    TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsycioSelectorReactor"
+
 # Load environment variables
 load_dotenv()
 
@@ -29,20 +35,20 @@ NEWSPIDER_MODULE = "job_scraper.spiders"
 COMMANDS_MODULE = "job_scraper.commands"
 
 # ============================================
-# Scrapy-Playwright Configuration (DISABLED on Windows)
+# Scrapy-Playwright Configuration
 # ============================================
-# DOWNLOAD_HANDLERS = {
-#     "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
-#     "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
-# }
-# 
-# TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
-# 
-# PLAYWRIGHT_BROWSER_TYPE = os.getenv("PLAYWRIGHT_BROWSER_TYPE", "chromium")
-# PLAYWRIGHT_LAUNCH_OPTIONS = {
-#     "headless": os.getenv("PLAYWRIGHT_HEADLESS", "true").lower() == "true",
-#     "timeout": int(os.getenv("PLAYWRIGHT_TIMEOUT", "30000")),
-# }
+DOWNLOAD_HANDLERS = {
+    "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+    "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+}
+
+TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+
+PLAYWRIGHT_BROWSER_TYPE = os.getenv("PLAYWRIGHT_BROWSER_TYPE", "chromium")
+PLAYWRIGHT_LAUNCH_OPTIONS = {
+    "headless": os.getenv("PLAYWRIGHT_HEADLESS", "true").lower() == "true",
+    "timeout": int(os.getenv("PLAYWRIGHT_TIMEOUT", "30000")),
+}
 
 # Playwright default navigation timeout (ms)
 PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = int(
@@ -88,14 +94,36 @@ AUTOTHROTTLE_DEBUG = False
 # ============================================
 # Middlewares
 # ============================================
+# =====================================================
+# DOWNLOADER MIDDLEWARES
+# =====================================================
+# Middleware adalah "plugin" yang nyelip di antara Engine dan Downloader.
+# Angka = urutan prioritas (makin kecil makin cepat dipanggil).
+#
+# Alur request:
+#   Engine → Request → Middleware 400 → 410 → 420 → 544 → Download Handler → Internet
+#
+# Alur response:
+#   Internet → Download Handler → Middleware 544 ← 420 ← 410 ← 400 → Engine
+#
+# CloudflareBypassMiddleware (544):
+#   Ditaruh di nomor 544 biar jalan SETELAH middleware lain (RandomUA, Proxy, dll).
+#   Cara kerja: cek request.meta["impersonate"].
+#   - True: fetch pake curl_cffi (bypass Cloudflare) → balikin response langsung.
+#   - False/None: return None → lanjut ke Download Handler biasa (Playwright/http).
+#   Kenapa 544? Biar headers, proxy, dan statistik udah siap sebelum bypass.
 DOWNLOADER_MIDDLEWARES = {
-    # Disable default User-Agent middleware
+    # Matiin default User-Agent middleware (kita pake custom RandomUserAgent)
     "scrapy.downloadermiddlewares.useragent.UserAgentMiddleware": None,
 
-    # Custom middlewares
+    # (400) Ganti User-Agent tiap request biar gak kedetect bot
     "job_scraper.middlewares.RandomUserAgentMiddleware": 400,
+    # (410) Proxy rotation — aktif kalau PROXY_ENABLED=true di .env
     "job_scraper.middlewares.ProxyMiddleware": 410,
+    # (420) Catat statistik request/response buat monitoring
     "job_scraper.middlewares.ScrapingStatsMiddleware": 420,
+    # (544) Bypass Cloudflare pake curl_cffi impersonate
+    "job_scraper.middlewares.CloudflareBypassMiddleware": 544,
 }
 
 # ============================================

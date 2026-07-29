@@ -189,12 +189,18 @@ class CleanerService:
         # Clean HTML from text fields
         text_fields = [
             "description", "requirements", "responsibilities",
-            "qualifications", "benefits",
+            "qualifications",
         ]
         for field in text_fields:
             if item.get(field):
                 item[field] = self.clean_html(item[field])
                 item[field] = self.remove_special_characters(item[field])
+
+        # Handle benefits — bisa string (comma-separated) atau list
+        if item.get("benefits"):
+            if isinstance(item["benefits"], list):
+                item["benefits"] = ", ".join(str(b) for b in item["benefits"] if b)
+            item["benefits"] = self.remove_special_characters(item["benefits"])
 
         # Clean simple text fields
         simple_fields = ["title", "location", "category"]
