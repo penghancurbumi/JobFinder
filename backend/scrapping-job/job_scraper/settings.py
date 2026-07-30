@@ -15,17 +15,20 @@ DOWNLOAD_HANDLERS = {
     "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
 }
 
-# Enable Playwright for all HTTPS by default
-# Spiders that don't need it can opt out via meta
-PLAYWRIGHT_ENABLED = True
+PLAYWRIGHT_BROWSER_TYPE = os.getenv("PLAYWRIGHT_BROWSER_TYPE", "chromium")
+PLAYWRIGHT_LAUNCH_OPTIONS = {
+    "headless": os.getenv("PLAYWRIGHT_HEADLESS", "true").lower() == "true",
+    "timeout": int(os.getenv("PLAYWRIGHT_TIMEOUT", "30000")),
+}
+
+PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = int(
+    os.getenv("PLAYWRIGHT_TIMEOUT", "30000")
+)
 
 # ============================================
-# SCRAPY-PLAYWRIGHT CONFIGURATION
+# SCRAPY-PLAYWRIGHT CONTEXT
 # ============================================
-DOWNLOAD_HANDLERS = {
-    "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
-    "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
-}
+PLAYWRIGHT_ENABLED = True
 
 PLAYWRIGHT_BROWSER_TYPE = os.getenv("PLAYWRIGHT_BROWSER_TYPE", "chromium")
 PLAYWRIGHT_LAUNCH_OPTIONS = {

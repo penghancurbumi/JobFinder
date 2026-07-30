@@ -1,3 +1,4 @@
+from collections.abc import AsyncIterator
 from typing import Any
 
 import scrapy
@@ -28,21 +29,11 @@ class BaseSpider(scrapy.Spider):
         self._item_count = 0
         self._error_count = 0
 
-    def start_requests(self):
+    async def start(self) -> AsyncIterator[Any]:
         url = self._build_start_url()
         self.logger_custom.info("Starting spider '%s' for platform '%s' | URL: %s", self.name, self.platform_name, url)
-
         if self.use_playwright:
-            yield Request(
-                url=url,
-                callback=self.parse,
-                meta=dict(
-                    playwright=True,
-                    playwright_include_page=True,
-                    playwright_page_methods=self._get_page_methods(),
-                ),
-                dont_filter=True,
-            )
+            yield Request(url=url, callback=self.parse, meta=self._playwright_meta(self._get_page_methods()), dont_filter=True)
         else:
             yield Request(url=url, callback=self.parse, dont_filter=True)
 
@@ -52,6 +43,14 @@ class BaseSpider(scrapy.Spider):
     def _get_page_methods(self) -> list:
         return [PageMethod("wait_for_load_state", "networkidle")]
 
+    def _playwright_meta(self, page_methods: list | None = None) -> dict:
+        return dict(
+            playwright=True,
+            playwright_include_page=True,
+            playwright_page_goto_kwargs={"wait_until": "domcontentloaded", "timeout": 30000},
+            playwright_page_methods=page_methods or self._get_page_methods(),
+        )
+
     def _should_continue_pagination(self, force: bool = False) -> bool:
         if force:
             return True
@@ -59,11 +58,7 @@ class BaseSpider(scrapy.Spider):
 
     def _make_request(self, url: str, callback, meta: dict | None = None) -> Request:
         if self.use_playwright:
-            req_meta = dict(
-                playwright=True,
-                playwright_include_page=True,
-                playwright_page_methods=self._get_page_methods(),
-            )
+            req_meta = self._playwright_meta()
             if meta:
                 req_meta.update(meta)
             return Request(url=url, callback=callback, meta=req_meta)

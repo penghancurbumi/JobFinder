@@ -3,10 +3,12 @@ import re
 from typing import Any
 
 import scrapy
+from scrapy import Request
 from scrapy.http import Response
 from scrapy_playwright.page import PageMethod
 
 from job_scraper.constants import Platform
+from job_scraper.logger import get_logger, get_stats_logger
 from job_scraper.spiders.base_spider import BaseSpider
 
 
@@ -15,6 +17,22 @@ class LinkedInSpider(BaseSpider):
     platform_name = Platform.LINKEDIN
     start_url = "https://www.linkedin.com/jobs/search"
     use_playwright = True
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self._page_count = 0
+        self._item_count = 0
+        self._error_count = 0
+
+    async def start(self):
+        url = self._build_start_url()
+        self.logger_custom.info("Starting LinkedIn spider | URL: %s", url)
+        yield Request(
+            url=url,
+            callback=self.parse,
+            meta=self._playwright_meta(self._get_page_methods()),
+            dont_filter=True,
+        )
 
     def _build_start_url(self) -> str:
         params = []
@@ -30,14 +48,31 @@ class LinkedInSpider(BaseSpider):
                        "ul.jobs-search__results-list, div.jobs-search-results-list, "
                        "ul.job-search-results, li[data-occludable-job-id]",
                        timeout=30000),
-            PageMethod("wait_for_timeout", 3000),
+            PageMethod("wait_for_timeout", 2000),
         ]
+
+    def _make_request(self, url: str, callback, meta: dict | None = None) -> Request:
+        if meta and meta.get("_detail_page"):
+            req_meta = dict(
+                playwright=True,
+                playwright_page_goto_kwargs={"wait_until": "domcontentloaded", "timeout": 15000},
+                playwright_page_methods=[PageMethod("wait_for_timeout", 1000)],
+            )
+        else:
+            req_meta = self._playwright_meta(self._get_page_methods())
+        if meta:
+            req_meta.update(meta)
+        return Request(url=url, callback=callback, meta=req_meta)
 
     def parse(self, response: Response) -> Any:
         self.logger_custom.info("Parsing LinkedIn listing page: %s", response.url)
+
+        page_text = response.css("title::text").get("")
+        self.logger_custom.info("Page title: %s", page_text)
+
         job_cards = self._extract_job_cards(response)
         if not job_cards:
-            self.logger_custom.warning("No job cards found on page %s", response.url)
+            self.logger_custom.warning("No job cards found. LinkedIn may be showing login/block page.")
             return
 
         for card in job_cards:
@@ -46,7 +81,7 @@ class LinkedInSpider(BaseSpider):
             if not detail_url:
                 yield self.build_job_item(item_data)
                 continue
-            yield self._make_request(url=detail_url, callback=self.parse_detail, meta={"item_data": item_data})
+            yield self._make_request(url=detail_url, callback=self.parse_detail, meta={"item_data": item_data, "_detail_page": True})
 
         if self._should_continue_pagination():
             next_url = self._next_page_url(response.url)

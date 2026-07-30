@@ -2,7 +2,6 @@ import json
 import re
 from typing import Any
 
-import scrapy
 from scrapy.http import Response
 
 from job_scraper.constants import Platform
@@ -33,7 +32,7 @@ class JobstreetSpider(BaseSpider):
         try:
             data = json.loads(script)
         except json.JSONDecodeError:
-            self.logger_custom.error("Failed to parse server-state JSON")
+            self.logger_custom.error("Failed to parse server-state JSON: %s", script[:300])
             return
 
         results = (data.get("results", {})
