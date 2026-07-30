@@ -17,22 +17,22 @@
       <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] items-start gap-lg">
         <!-- Filter Sidebar -->
         <aside class="bg-surface-elevated rounded-md p-xl static lg:sticky lg:top-[100px] mb-lg lg:mb-0">
-          <div class="flex justify-between items-center mb-xl">
+          <div class="flex justify-between items-center mb-lg">
             <h3 class="text-base font-medium leading-[1.4] text-on-dark">Filter</h3>
             <button @click="resetFilters" class="p-0 h-auto bg-transparent text-white hover:text-stone font-semibold cursor-pointer text-sm">Reset</button>
           </div>
 
-          <div class="mb-xl flex flex-col">
+          <div class="mb-lg flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Pencarian Kata Kunci</label>
             <input type="text" v-model="searchQuery" placeholder="Software, UI/UX, Sales..." class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[40px] px-[12px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone text-sm" />
           </div>
           
-          <div class="mb-xl flex flex-col">
+          <div class="mb-lg flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Lokasi</label>
             <input type="text" v-model="locationQuery" placeholder="Jakarta, Remote, Bali..." class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[40px] px-[12px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone text-sm" />
           </div>
 
-          <div class="mb-xl flex flex-col">
+          <div class="mb-lg flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Tipe Pekerjaan</label>
             <select v-model="activeTipe" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[40px] px-[12px] text-on-dark focus:border-white focus:outline-none appearance-none text-sm">
               <option class="bg-surface-elevated text-on-dark" value="all">Semua Tipe</option>
@@ -47,7 +47,7 @@
             </select>
           </div>
 
-          <div class="mb-xl flex flex-col">
+          <div class="mb-lg flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Tingkat Pengalaman</label>
             <select v-model="experienceLevel" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[40px] px-[12px] text-on-dark focus:border-white focus:outline-none appearance-none text-sm">
               <option class="bg-surface-elevated text-on-dark" value="all">Semua Pengalaman</option>
@@ -58,15 +58,7 @@
             </select>
           </div>
 
-          <div class="mb-xl flex flex-col">
-            <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Rentang Gaji</label>
-            <label class="flex items-center gap-[8px] font-normal text-[14px] normal-case cursor-pointer text-on-dark-mute">
-              <input type="checkbox" v-model="hasSalary" class="w-[16px] h-[16px] min-h-[16px] cursor-pointer" />
-              Hanya tampilkan yang mencantumkan gaji
-            </label>
-          </div>
-
-          <div class="mt-xl flex flex-col">
+          <div class="mb-lg flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Urutkan Berdasarkan</label>
             <select v-model="sortBy" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[40px] px-[12px] text-on-dark focus:border-white focus:outline-none appearance-none text-sm">
               <option class="bg-surface-elevated text-on-dark text-sm" value="newest">Terbaru</option>
@@ -75,6 +67,15 @@
               <option class="bg-surface-elevated text-on-dark text-sm" value="za">Abjad (Z - A)</option>
             </select>
           </div>
+
+          <div class="mt-lg flex flex-col">
+            <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Rentang Gaji</label>
+            <label class="flex items-center gap-[8px] font-normal text-[13px] normal-case cursor-pointer text-on-dark-mute">
+              <input type="checkbox" v-model="hasSalary" class="w-[12px] h-[12px] min-h-[12px] cursor-pointer" />
+              Hanya tampilkan yang mencantumkan gaji
+            </label>
+          </div>
+
         </aside>
 
         <!-- Main Content -->

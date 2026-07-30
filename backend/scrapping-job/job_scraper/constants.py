@@ -1,20 +1,10 @@
-"""
-Constants — Enums, mappings, and constant values.
-=================================================
-
-Centralized location for all enums and normalization mappings
-used throughout the scraping system.
-"""
-
 from enum import Enum
 
 
 class Platform(str, Enum):
-    """Supported job platforms."""
     JOBSTREET = "jobstreet"
     GLINTS = "glints"
     KALIBRR = "kalibrr"
-    INDEED = "indeed"
     LINKEDIN = "linkedin"
     JOBSDB = "jobsdb"
     TECHINASIA = "techinasia"
@@ -23,7 +13,6 @@ class Platform(str, Enum):
 
 
 class JobType(str, Enum):
-    """Job type classification."""
     FULL_TIME = "full-time"
     PART_TIME = "part-time"
     CONTRACT = "contract"
@@ -34,7 +23,6 @@ class JobType(str, Enum):
 
 
 class EmploymentType(str, Enum):
-    """Employment type classification."""
     PERMANENT = "permanent"
     TEMPORARY = "temporary"
     INTERNSHIP = "internship"
@@ -43,14 +31,12 @@ class EmploymentType(str, Enum):
 
 
 class WorkType(str, Enum):
-    """Work arrangement type."""
     ONSITE = "onsite"
     REMOTE = "remote"
     HYBRID = "hybrid"
 
 
 class ExperienceLevel(str, Enum):
-    """Experience level classification."""
     ENTRY = "entry"
     JUNIOR = "junior"
     MID = "mid"
@@ -60,12 +46,7 @@ class ExperienceLevel(str, Enum):
     EXECUTIVE = "executive"
 
 
-# ============================================
-# Normalization Mappings
-# ============================================
-
 JOB_TYPE_MAPPING: dict[str, str] = {
-    # English
     "full time": JobType.FULL_TIME,
     "full-time": JobType.FULL_TIME,
     "fulltime": JobType.FULL_TIME,
@@ -78,7 +59,6 @@ JOB_TYPE_MAPPING: dict[str, str] = {
     "freelancer": JobType.FREELANCE,
     "temporary": JobType.TEMPORARY,
     "volunteer": JobType.VOLUNTEER,
-    # Indonesian
     "penuh waktu": JobType.FULL_TIME,
     "paruh waktu": JobType.PART_TIME,
     "lepas": JobType.FREELANCE,
@@ -87,7 +67,6 @@ JOB_TYPE_MAPPING: dict[str, str] = {
 }
 
 WORK_TYPE_MAPPING: dict[str, str] = {
-    # English
     "onsite": WorkType.ONSITE,
     "on-site": WorkType.ONSITE,
     "on site": WorkType.ONSITE,
@@ -96,7 +75,6 @@ WORK_TYPE_MAPPING: dict[str, str] = {
     "work from home": WorkType.REMOTE,
     "wfh": WorkType.REMOTE,
     "hybrid": WorkType.HYBRID,
-    # Indonesian
     "di kantor": WorkType.ONSITE,
     "dari rumah": WorkType.REMOTE,
     "jarak jauh": WorkType.REMOTE,
@@ -134,7 +112,6 @@ EXPERIENCE_LEVEL_MAPPING: dict[str, str] = {
     "executive": ExperienceLevel.EXECUTIVE,
     "director": ExperienceLevel.EXECUTIVE,
     "c-level": ExperienceLevel.EXECUTIVE,
-    # Indonesian
     "pemula": ExperienceLevel.ENTRY,
     "menengah": ExperienceLevel.MID,
     "berpengalaman": ExperienceLevel.SENIOR,
@@ -152,19 +129,11 @@ CURRENCY_MAPPING: dict[str, str] = {
     "myr": "MYR",
     "rm": "MYR",
     "php": "PHP",
-    "₱": "PHP",
     "thb": "THB",
-    "฿": "THB",
     "vnd": "VND",
-    "₫": "VND",
 }
 
-# ============================================
-# Indonesian Province & City Mappings
-# ============================================
-
 PROVINCE_MAPPING: dict[str, str] = {
-    # DKI Jakarta
     "jakarta": "DKI Jakarta",
     "dki jakarta": "DKI Jakarta",
     "jakarta selatan": "DKI Jakarta",
@@ -172,7 +141,6 @@ PROVINCE_MAPPING: dict[str, str] = {
     "jakarta barat": "DKI Jakarta",
     "jakarta timur": "DKI Jakarta",
     "jakarta utara": "DKI Jakarta",
-    # Jawa Barat
     "bandung": "Jawa Barat",
     "bogor": "Jawa Barat",
     "depok": "Jawa Barat",
@@ -182,7 +150,6 @@ PROVINCE_MAPPING: dict[str, str] = {
     "tasikmalaya": "Jawa Barat",
     "sukabumi": "Jawa Barat",
     "garut": "Jawa Barat",
-    # Jawa Tengah
     "semarang": "Jawa Tengah",
     "solo": "Jawa Tengah",
     "surakarta": "Jawa Tengah",
@@ -191,7 +158,6 @@ PROVINCE_MAPPING: dict[str, str] = {
     "tegal": "Jawa Tengah",
     "purwokerto": "Jawa Tengah",
     "kudus": "Jawa Tengah",
-    # Jawa Timur
     "surabaya": "Jawa Timur",
     "malang": "Jawa Timur",
     "sidoarjo": "Jawa Timur",
@@ -200,47 +166,34 @@ PROVINCE_MAPPING: dict[str, str] = {
     "jember": "Jawa Timur",
     "mojokerto": "Jawa Timur",
     "pasuruan": "Jawa Timur",
-    # DI Yogyakarta
     "yogyakarta": "DI Yogyakarta",
     "jogja": "DI Yogyakarta",
     "jogjakarta": "DI Yogyakarta",
     "sleman": "DI Yogyakarta",
     "bantul": "DI Yogyakarta",
-    # Banten
     "tangerang": "Banten",
     "tangerang selatan": "Banten",
     "cilegon": "Banten",
     "serang": "Banten",
-    # Bali
     "denpasar": "Bali",
     "badung": "Bali",
     "gianyar": "Bali",
     "bali": "Bali",
-    # Sumatera Utara
     "medan": "Sumatera Utara",
     "binjai": "Sumatera Utara",
     "pematangsiantar": "Sumatera Utara",
-    # Sumatera Selatan
     "palembang": "Sumatera Selatan",
-    # Sumatera Barat
     "padang": "Sumatera Barat",
     "bukittinggi": "Sumatera Barat",
-    # Riau
     "pekanbaru": "Riau",
     "dumai": "Riau",
-    # Kepulauan Riau
     "batam": "Kepulauan Riau",
     "tanjungpinang": "Kepulauan Riau",
-    # Kalimantan Timur
     "balikpapan": "Kalimantan Timur",
     "samarinda": "Kalimantan Timur",
-    # Kalimantan Selatan
     "banjarmasin": "Kalimantan Selatan",
-    # Sulawesi Selatan
     "makassar": "Sulawesi Selatan",
-    # Lampung
     "bandar lampung": "Lampung",
-    # Aceh
     "banda aceh": "Aceh",
 }
 
@@ -257,10 +210,6 @@ CITY_NORMALIZATION: dict[str, str] = {
     "bandung barat": "Bandung",
 }
 
-# ============================================
-# Spider Configuration
-# ============================================
-
 DEFAULT_HEADERS: dict[str, str] = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
@@ -269,11 +218,6 @@ DEFAULT_HEADERS: dict[str, str] = {
     "Cache-Control": "max-age=0",
 }
 
-# Maximum number of pages to scrape per spider run (safety limit)
 MAX_PAGES_PER_RUN: int = 100
-
-# Maximum number of retries per request
 MAX_RETRIES: int = 3
-
-# Delay between requests in seconds
 DEFAULT_DELAY: float = 1.0

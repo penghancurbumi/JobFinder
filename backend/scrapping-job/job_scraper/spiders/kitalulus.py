@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any, Generator
+from typing import Any
 
 import scrapy
 from scrapy.http import Response
@@ -14,6 +14,7 @@ class KitalulusSpider(BaseSpider):
     name = "kitalulus"
     platform_name = Platform.KITALULUS
     start_url = "https://www.kitalulus.com/lowongan"
+    use_playwright = True
 
     def _build_start_url(self) -> str:
         url = self.start_url
@@ -27,28 +28,65 @@ class KitalulusSpider(BaseSpider):
         return url
 
     def _get_page_methods(self) -> list:
-        return [
-            PageMethod("wait_for_load_state", "networkidle"),
-        ]
+        return [PageMethod("wait_for_load_state", "networkidle")]
 
-    def parse(self, response: Response) -> Generator[Any, None, None]:
+    def _extract_rsf_payload(self, text: str) -> list:
+        chunks = []
+        for match in re.finditer(r'self\.__next_f\.push\(\[(\d+),("(?:[^"\\]|\\.)*")\]\)', text):
+            try:
+                raw = json.loads(match.group(2))
+                chunks.append(raw)
+            except json.JSONDecodeError:
+                continue
+        return chunks
+
+    def _extract_vacancy_list(self, chunks: list) -> dict | None:
+        combined = "".join(chunks)
+        idx = combined.find('"vacancyList":')
+        if idx == -1:
+            return None
+        start = idx + len('"vacancyList":')
+        depth = 0
+        in_str = False
+        escape = False
+        for i in range(start, len(combined)):
+            ch = combined[i]
+            if escape:
+                escape = False
+                continue
+            if ch == '\\' and in_str:
+                escape = True
+                continue
+            if ch == '"' and not escape:
+                in_str = not in_str
+                continue
+            if in_str:
+                continue
+            if ch == '{':
+                depth += 1
+            elif ch == '}':
+                depth -= 1
+                if depth == 0:
+                    try:
+                        return json.loads(combined[start:i + 1])
+                    except json.JSONDecodeError:
+                        return None
+        return None
+
+    def parse(self, response: Response) -> Any:
         self.logger_custom.info("Parsing listing page: %s", response.url)
 
-        match = re.search(r'<script id="__NEXT_DATA__"[^>]*type="application/json"[^>]*>({.*?})</script>', response.text, re.DOTALL)
-        if not match:
-            self.logger_custom.error("Failed to find __NEXT_DATA__ in %s", response.url)
+        chunks = self._extract_rsf_payload(response.text)
+        if not chunks:
+            self.logger_custom.error("Failed to find RSC payload in %s", response.url)
             return
 
-        try:
-            data = json.loads(match.group(1))
-        except json.JSONDecodeError:
-            self.logger_custom.error("Failed to parse __NEXT_DATA__ JSON")
+        vacancy_list = self._extract_vacancy_list(chunks)
+        if not vacancy_list:
+            self.logger_custom.error("Failed to extract vacancyList from RSC payload")
             return
 
-        props = data.get("props", {}).get("pageProps", {})
-        vacancy_list = props.get("vacancyList", {})
         jobs = vacancy_list.get("list", [])
-
         if not jobs:
             self.logger_custom.info("No jobs found on page %s", response.url)
             return
@@ -62,11 +100,11 @@ class KitalulusSpider(BaseSpider):
 
             company = job.get("company", {}) or {}
             province = job.get("province", {}) or {}
-            city = job.get("city", {}) or {}
+            city_obj = job.get("city", {}) or {}
 
             location_parts = []
-            if city.get("name"):
-                location_parts.append(city["name"])
+            if city_obj.get("name"):
+                location_parts.append(city_obj["name"])
             if province.get("name"):
                 location_parts.append(province["name"])
             location = ", ".join(location_parts) if location_parts else None

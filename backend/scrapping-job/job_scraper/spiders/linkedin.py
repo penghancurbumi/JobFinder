@@ -1,11 +1,6 @@
-"""
-LinkedIn Spider — Scrapes job listings from LinkedIn Jobs.
-Uses Playwright for JavaScript-rendered pages and JSON-LD for structured data.
-"""
-
 import json
 import re
-from typing import Any, Generator
+from typing import Any
 
 import scrapy
 from scrapy.http import Response
@@ -16,15 +11,12 @@ from job_scraper.spiders.base_spider import BaseSpider
 
 
 class LinkedInSpider(BaseSpider):
-    """Spider for LinkedIn Jobs platform."""
-
     name = "linkedin"
     platform_name = Platform.LINKEDIN
     start_url = "https://www.linkedin.com/jobs/search"
     use_playwright = True
 
     def _build_start_url(self) -> str:
-        """Build LinkedIn job search URL with filters."""
         params = []
         if self.keyword:
             params.append(f"keywords={self.keyword}")
@@ -33,42 +25,28 @@ class LinkedInSpider(BaseSpider):
         return f"{self.start_url}?{'&'.join(params)}"
 
     def _get_page_methods(self) -> list:
-        """Wait for job search results to render."""
         return [
-            PageMethod(
-                "wait_for_selector",
-                "ul.jobs-search__results-list, div.jobs-search-results-list, "
-                "ul.job-search-results, li[data-occludable-job-id]",
-                timeout=30000,
-            ),
+            PageMethod("wait_for_selector",
+                       "ul.jobs-search__results-list, div.jobs-search-results-list, "
+                       "ul.job-search-results, li[data-occludable-job-id]",
+                       timeout=30000),
             PageMethod("wait_for_timeout", 3000),
         ]
 
-    def parse(self, response: Response) -> Generator[Any, None, None]:
-        """Parse job cards from LinkedIn search results page."""
+    def parse(self, response: Response) -> Any:
         self.logger_custom.info("Parsing LinkedIn listing page: %s", response.url)
-
         job_cards = self._extract_job_cards(response)
         if not job_cards:
-            self.logger_custom.warning(
-                "No job cards found on page %s. Selectors might have changed.",
-                response.url,
-            )
+            self.logger_custom.warning("No job cards found on page %s", response.url)
             return
 
         for card in job_cards:
-            item_data = self._extract_card_data(card, response.url)
+            item_data = self._extract_card_data(card, response)
             detail_url = item_data.get("source_url", "")
-
             if not detail_url:
                 yield self.build_job_item(item_data)
                 continue
-
-            yield self._make_request(
-                url=detail_url,
-                callback=self.parse_detail,
-                meta={"item_data": item_data},
-            )
+            yield self._make_request(url=detail_url, callback=self.parse_detail, meta={"item_data": item_data})
 
         if self._should_continue_pagination():
             next_url = self._next_page_url(response.url)
@@ -77,7 +55,6 @@ class LinkedInSpider(BaseSpider):
                 yield self._make_request(next_url, callback=self.parse)
 
     def _extract_job_cards(self, response) -> list:
-        """Try multiple selectors to find job cards on the search page."""
         selectors = [
             "ul.jobs-search__results-list > li",
             "div.jobs-search-results-list li",
@@ -93,8 +70,7 @@ class LinkedInSpider(BaseSpider):
                 return cards
         return []
 
-    def _extract_card_data(self, card, page_url: str) -> dict:
-        """Extract basic job data from a search result card."""
+    def _extract_card_data(self, card, response: Response) -> dict:
         job_id = card.attrib.get("data-occludable-job-id", "")
 
         title = self._extract_text(card, [
@@ -136,11 +112,10 @@ class LinkedInSpider(BaseSpider):
             "title": title.strip() if title else "",
             "company_name": company.strip() if company else "",
             "location": location.strip() if location else "",
-            "source_url": response.urljoin(detail_url) if detail_url else page_url,
+            "source_url": response.urljoin(detail_url) if detail_url else response.url,
         }
 
     def _extract_text(self, element, selectors: list) -> str:
-        """Try multiple CSS selectors to extract text from an element."""
         for selector in selectors:
             text = element.css(selector).get()
             if text:
@@ -148,7 +123,6 @@ class LinkedInSpider(BaseSpider):
         return ""
 
     def _extract_attr(self, element, selectors: list) -> str:
-        """Try multiple CSS selectors to extract an attribute from an element."""
         for selector in selectors:
             val = element.css(selector).get()
             if val:
@@ -156,20 +130,16 @@ class LinkedInSpider(BaseSpider):
         return ""
 
     def _next_page_url(self, current_url: str) -> str | None:
-        """Calculate the next page URL using LinkedIn's start=N pagination."""
         start_match = re.search(r'[?&]start=(\d+)', current_url)
         current_start = int(start_match.group(1)) if start_match else 0
         next_start = current_start + 25
-
         if '?' not in current_url:
             return None
-
         base_url = re.sub(r'[?&]start=\d+', '', current_url)
         separator = '&' if '?' in base_url else '?'
         return f"{base_url}{separator}start={next_start}"
 
-    def parse_detail(self, response: Response) -> Generator[Any, None, None]:
-        """Parse LinkedIn job detail page."""
+    def parse_detail(self, response: Response) -> Any:
         self.logger_custom.info("Parsing detail page: %s", response.url)
         item_data = response.meta.get("item_data", {})
 
@@ -191,10 +161,7 @@ class LinkedInSpider(BaseSpider):
         yield self.build_job_item(item_data)
 
     def _extract_json_ld(self, response) -> dict | list | None:
-        """Extract JSON-LD structured data from the page."""
-        script = response.css(
-            'script[type="application/ld+json"]::text'
-        ).get()
+        script = response.css('script[type="application/ld+json"]::text').get()
         if not script:
             return None
         try:
@@ -203,12 +170,9 @@ class LinkedInSpider(BaseSpider):
             return None
 
     def _parse_json_ld(self, data) -> dict:
-        """Parse JSON-LD data into item fields."""
         if isinstance(data, list):
             data = data[0] if data else {}
-
         result = {}
-
         if data.get("title"):
             result["title"] = data["title"]
         if data.get("description"):
@@ -262,7 +226,6 @@ class LinkedInSpider(BaseSpider):
         return result
 
     def _extract_description(self, response) -> str:
-        """Extract job description from detail page HTML."""
         for selector in [
             "div.description__text",
             "div.show-more-less-html__markup",
@@ -277,29 +240,16 @@ class LinkedInSpider(BaseSpider):
         return ""
 
     def _extract_criteria(self, response) -> dict:
-        """Extract job type, work type, and experience level from detail page."""
         criteria = {}
-
         criteria_items = response.css("li.description__job-criteria-item")
         if not criteria_items:
             criteria_items = response.css(
-                "div[class*='job-criteria'] li, "
-                "ul[class*='criteria'] li, "
-                "div[class*='metadata'] li"
+                "div[class*='job-criteria'] li, ul[class*='criteria'] li, div[class*='metadata'] li"
             )
 
         for item in criteria_items:
-            label = (
-                item.css("h3::text").get()
-                or item.css("span:first-child::text").get()
-                or item.css("span.description__job-criteria-text::text").get()
-                or ""
-            ).lower().strip()
-            value = (
-                item.css("span[class*='criteria']::text").get()
-                or item.css("span:last-child::text").get()
-                or ""
-            ).strip()
+            label = (item.css("h3::text").get() or item.css("span:first-child::text").get() or "").lower().strip()
+            value = (item.css("span[class*='criteria']::text").get() or item.css("span:last-child::text").get() or "").strip()
 
             if "employment" in label or "job type" in label:
                 criteria["job_type"] = value
@@ -311,11 +261,8 @@ class LinkedInSpider(BaseSpider):
         return criteria
 
     def _extract_skills(self, response) -> list:
-        """Extract skills from detail page."""
         skills = response.css(
-            "a[class*='skill']::text, "
-            "span[class*='skill']::text, "
-            "li[class*='skill']::text, "
-            "div[class*='skill']::text"
+            "a[class*='skill']::text, span[class*='skill']::text, "
+            "li[class*='skill']::text, div[class*='skill']::text"
         ).getall()
         return list(set(s.strip() for s in skills if s.strip()))

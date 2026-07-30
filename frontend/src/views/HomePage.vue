@@ -1,7 +1,7 @@
 <template>
   <div class="home bg-transparent text-on-dark font-sans">
     <!-- Hero Section (Dark Canvas) -->
-    <section class="bg-transparent py-[100px]">
+    <section class="bg-transparent py-[120px]">
       <div class="w-full max-w-[1200px] mx-auto px-xl">
         <div class="max-w-[960px]">
           <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-lg block text-stone">Job Aggregator Indonesia</span>
@@ -14,17 +14,6 @@
             Platform agregasi lowongan kerja dan magang dari seluruh sumber terpercaya.
             Lengkap dengan analisis CV dan pembuatan dokumen ATS berstandar industri.
           </p>
-
-          <div class="flex items-center gap-md mb-xl">
-            <span class="font-mono text-[11px] uppercase tracking-[0.5px] font-semibold text-stone whitespace-nowrap">Dari platform:</span>
-            <div class="flex flex-wrap gap-x-lg gap-y-sm">
-              <span class="bg-transparent text-on-dark-mute border border-hairline-dark rounded-full px-[12px] py-[4px] text-[13px]">LinkedIn</span>
-              <span class="bg-transparent text-on-dark-mute border border-hairline-dark rounded-full px-[12px] py-[4px] text-[13px]">Glints</span>
-              <span class="bg-transparent text-on-dark-mute border border-hairline-dark rounded-full px-[12px] py-[4px] text-[13px]">Jobstreet</span>
-              <span class="bg-transparent text-on-dark-mute border border-hairline-dark rounded-full px-[12px] py-[4px] text-[13px]">Fastwork</span>
-              <span class="bg-transparent text-on-dark-mute border border-hairline-dark rounded-full px-[12px] py-[4px] text-[13px]">Pintarnya</span>
-            </div>
-          </div>
 
           <div class="flex gap-sm flex-wrap">
             <router-link to="/documentation" class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[18px] px-[24px] h-[48px] bg-on-dark text-ink hover:bg-white/90">Documentation</router-link>
