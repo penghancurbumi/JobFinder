@@ -13,6 +13,7 @@
             
             <div class="flex-1 min-w-[200px]">
               <select v-model="targetExpertise" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
+                <option class="bg-surface-elevated text-on-dark" value="Pilih Bidang Keahlian">Pilih Bidang Keahlian</option>
                 <option class="bg-surface-elevated text-on-dark" value="Software Engineer">Software Engineer</option>
                 <option class="bg-surface-elevated text-on-dark" value="Data Scientist">Data Scientist</option>
                 <option class="bg-surface-elevated text-on-dark" value="Product Manager">Product Manager</option>
@@ -144,7 +145,7 @@ import { Line, Doughnut } from 'vue-chartjs'
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale, LinearScale, ArcElement)
 
 const file = ref(null)
-const targetExpertise = ref("Software Engineer")
+const targetExpertise = ref("Pilih Bidang Keahlian")
 const analyzing = ref(false)
 const result = ref(null)
 

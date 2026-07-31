@@ -61,30 +61,13 @@ const quickQuestions = [
 ]
 
 onMounted(async () => {
-  sessionId.value = localStorage.getItem("chat_session_id")
-  if (!sessionId.value) {
-    sessionId.value = crypto.randomUUID()
-    localStorage.setItem("chat_session_id", sessionId.value)
-  } else {
-    await loadHistory()
-  }
+  sessionId.value = crypto.randomUUID()
   if (messages.value.length === 0) {
     messages.value.push({ role: "assistant", content: "Halo! Saya adalah arsitek karir Anda. Apa yang bisa saya bantu terkait dokumentasi profesional atau pencarian kerja Anda hari ini?" })
   }
   loadingHistory.value = false
   scrollDown()
 })
-
-async function loadHistory() {
-  try {
-    const { data } = await axios.get(`/api/chat/history/${sessionId.value}`)
-    if (data.messages && data.messages.length > 0) {
-      messages.value = data.messages
-    }
-  } catch {
-    // history not found, start fresh
-  }
-}
 
 async function send() {
   if (!input.value.trim() || loading.value) return
