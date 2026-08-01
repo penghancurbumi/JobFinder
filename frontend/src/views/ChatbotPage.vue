@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen pt-[50px] bg-canvas-dark text-on-dark font-sans">
-    <div class="w-full max-w-[1200px] mx-auto px-xl">
+    <div class="w-full mx-auto px-[32px] md:px-[72px]">
       <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark mb-xs">Asisten AI</h1>
     <p class="text-[18px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute mb-xl">Konsultasikan perjalanan karir Anda, struktur dokumen CV, hingga strategi wawancara.</p>
 

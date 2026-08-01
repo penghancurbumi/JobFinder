@@ -1,6 +1,6 @@
 <template>
-  <div class="pt-[88px] min-h-screen bg-canvas-dark text-on-dark font-sans">
-    <div class="w-full max-w-[1200px] mx-auto px-xl">
+  <div class="pt-[50px] md:pt-[88px] min-h-screen bg-canvas-dark text-on-dark font-sans">
+    <div class="w-full mx-auto px-[32px] md:px-[72px]">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-xl pb-lg border-b border-hairline-dark gap-md md:gap-0">
         <div>
           <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Eksplorasi</span>
@@ -34,38 +34,17 @@
 
           <div class="mb-lg flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Tipe Pekerjaan</label>
-            <select v-model="activeTipe" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[40px] px-[12px] text-on-dark focus:border-white focus:outline-none appearance-none text-sm">
-              <option class="bg-surface-elevated text-on-dark" value="all">Semua Tipe</option>
-              <option class="bg-surface-elevated text-on-dark" value="fulltime">Full-time</option>
-              <option class="bg-surface-elevated text-on-dark" value="parttime">Part-time</option>
-              <option class="bg-surface-elevated text-on-dark" value="contract">Contract</option>
-              <option class="bg-surface-elevated text-on-dark" value="freelance">Freelance</option>
-              <option class="bg-surface-elevated text-on-dark" value="intern">Internship</option>
-              <option class="bg-surface-elevated text-on-dark" value="remote">Remote</option>
-              <option class="bg-surface-elevated text-on-dark" value="hybrid">Hybrid</option>
-              <option class="bg-surface-elevated text-on-dark" value="onsite">On-site</option>
-            </select>
+            <CustomSelect v-model="activeTipe" :options="tipeOptions" placeholder="Semua Tipe" />
           </div>
 
           <div class="mb-lg flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Tingkat Pengalaman</label>
-            <select v-model="experienceLevel" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[40px] px-[12px] text-on-dark focus:border-white focus:outline-none appearance-none text-sm">
-              <option class="bg-surface-elevated text-on-dark" value="all">Semua Pengalaman</option>
-              <option class="bg-surface-elevated text-on-dark" value="entry">Entry Level / Junior</option>
-              <option class="bg-surface-elevated text-on-dark" value="mid">Mid Level</option>
-              <option class="bg-surface-elevated text-on-dark" value="senior">Senior Level</option>
-              <option class="bg-surface-elevated text-on-dark" value="manager">Manager / Director</option>
-            </select>
+            <CustomSelect v-model="experienceLevel" :options="experienceOptions" placeholder="Semua Pengalaman" />
           </div>
 
           <div class="mb-lg flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Urutkan Berdasarkan</label>
-            <select v-model="sortBy" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[40px] px-[12px] text-on-dark focus:border-white focus:outline-none appearance-none text-sm">
-              <option class="bg-surface-elevated text-on-dark text-sm" value="newest">Terbaru</option>
-              <option class="bg-surface-elevated text-on-dark text-sm" value="oldest">Terlama</option>
-              <option class="bg-surface-elevated text-on-dark text-sm" value="az">Abjad (A - Z)</option>
-              <option class="bg-surface-elevated text-on-dark text-sm" value="za">Abjad (Z - A)</option>
-            </select>
+            <CustomSelect v-model="sortBy" :options="sortOptions" placeholder="Terbaru" />
           </div>
 
           <div class="mt-lg flex flex-col">
@@ -137,6 +116,13 @@
               <a :href="job.url" target="_blank" class="self-start inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] py-[8px] h-[36px] text-[12px] no-underline">Lamar Sekarang</a>
             </div>
           </div>
+
+          <div v-if="!loading && jobs.length > 0 && page < totalPages" class="mt-xl flex flex-col items-center gap-sm">
+            <span class="text-[13px] font-mono text-on-dark-mute">Menampilkan {{ jobs.length }} dari {{ total }} lowongan</span>
+            <button @click="loadMore" :disabled="loadingMore" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[28px] h-[44px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed">
+              {{ loadingMore ? 'Memuat...' : 'Muat Lebih Banyak' }}
+            </button>
+          </div>
         </main>
       </div>
     </div>
@@ -146,16 +132,49 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from "vue"
 import { io } from "socket.io-client"
+import CustomSelect from "../components/CustomSelect.vue"
 
 const jobs = ref([])
 const loading = ref(true)
 const isScraping = ref(false)
+const page = ref(1)
+const limit = 24
+const total = ref(0)
+const totalPages = ref(0)
+const loadingMore = ref(false)
 
 // Filters
 const activeTipe = ref("all")
 const searchQuery = ref("")
 const locationQuery = ref("")
 const experienceLevel = ref("all")
+
+const tipeOptions = [
+  { value: 'all', label: 'Semua Tipe' },
+  { value: 'fulltime', label: 'Full-time' },
+  { value: 'parttime', label: 'Part-time' },
+  { value: 'contract', label: 'Contract' },
+  { value: 'freelance', label: 'Freelance' },
+  { value: 'intern', label: 'Internship' },
+  { value: 'remote', label: 'Remote' },
+  { value: 'hybrid', label: 'Hybrid' },
+  { value: 'onsite', label: 'On-site' }
+]
+
+const sortOptions = [
+  { value: 'newest', label: 'Terbaru' },
+  { value: 'oldest', label: 'Terlama' },
+  { value: 'az', label: 'Abjad (A - Z)' },
+  { value: 'za', label: 'Abjad (Z - A)' }
+]
+
+const experienceOptions = [
+  { value: 'all', label: 'Semua Pengalaman' },
+  { value: 'entry', label: 'Entry Level / Junior' },
+  { value: 'mid', label: 'Mid Level' },
+  { value: 'senior', label: 'Senior Level' },
+  { value: 'manager', label: 'Manager / Director' }
+]
 const hasSalary = ref(false)
 const sortBy = ref("newest")
 
@@ -177,20 +196,12 @@ function needsTruncation(desc) {
 }
 
 onMounted(async () => {
-  // Fetch existing jobs from REST API as primary data source (no scraping triggered)
-  try {
-    const res = await fetch("http://localhost:3000/api/jobs")
-    if (res.ok) {
-      jobs.value = await res.json()
-      loading.value = false
-    }
-  } catch { /* socket will be fallback */ }
+  await fetchPage(1, false)
 
   socket = io("http://localhost:3000")
   
   socket.on("jobs-updated", (data) => {
-    jobs.value = data
-    loading.value = false
+    applyJobsPayload(data)
   })
   
   socket.on("scrape-status", (data) => {
@@ -207,22 +218,55 @@ onUnmounted(() => {
   if (socket) socket.disconnect()
 })
 
+function applyJobsPayload(data) {
+  if (!data) return
+  jobs.value = data.jobs || []
+  total.value = data.total || 0
+  totalPages.value = data.totalPages || 0
+  page.value = data.page || 1
+  loading.value = false
+  loadingMore.value = false
+}
+
+async function fetchPage(p, append = false) {
+  if (append) loadingMore.value = true
+  else loading.value = true
+  const params = new URLSearchParams({
+    search: searchQuery.value,
+    tipe: activeTipe.value,
+    sortBy: sortBy.value,
+    location: locationQuery.value,
+    experience: experienceLevel.value,
+    hasSalary: hasSalary.value ? 'true' : 'false',
+    page: String(p),
+    limit: String(limit)
+  })
+  try {
+    const res = await fetch(`http://localhost:3000/api/jobs?${params}`)
+    if (res.ok) {
+      const data = await res.json()
+      if (append) jobs.value = [...jobs.value, ...(data.jobs || [])]
+      else jobs.value = data.jobs || []
+      total.value = data.total || 0
+      totalPages.value = data.totalPages || 0
+      page.value = p
+    }
+  } catch { /* socket will be fallback */ }
+  loading.value = false
+  loadingMore.value = false
+}
+
+function loadMore() {
+  if (page.value < totalPages.value && !loadingMore.value) {
+    fetchPage(page.value + 1, true)
+  }
+}
+
 let searchTimeout;
 watch([activeTipe, searchQuery, locationQuery, experienceLevel, hasSalary, sortBy], () => {
-  loading.value = true
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
-    if (socket) {
-      socket.emit("filter-jobs", { 
-        search: searchQuery.value, 
-        bidang: "all", 
-        tipe: activeTipe.value,
-        sortBy: sortBy.value,
-        location: locationQuery.value,
-        experience: experienceLevel.value,
-        hasSalary: hasSalary.value
-      })
-    }
+    fetchPage(1, false)
   }, 400) // debounce
 })
 

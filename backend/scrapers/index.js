@@ -10,7 +10,7 @@ const SCRAPY_PROJECT_DIR = path.join(process.cwd(), "scrapping-job")
 const EXPORTS_DIR = path.join(SCRAPY_PROJECT_DIR, "exports", "json")
 const ARCHIVE_DIR = path.join(EXPORTS_DIR, "archive")
 
-async function insertScrapedFiles(jobTypeFilter) {
+export async function insertScrapedFiles(jobTypeFilter) {
   let count = 0
   
   // Ensure archive directory exists
@@ -40,11 +40,17 @@ async function insertScrapedFiles(jobTypeFilter) {
           const expertise = item.skills && item.skills.length > 0 ? item.skills.slice(0, 3).join(", ") : "Others"
           const postedDate = item.updated_at ? item.updated_at.substring(0, 10) : new Date().toISOString().substring(0, 10)
           
-          // Insert into SQLite (ignoring duplicates on URL)
+          // Insert into SQLite, refreshing type/description/salary on duplicate URL
           const query = `
-            INSERT OR IGNORE INTO jobs 
+            INSERT INTO jobs 
             (title, company, location, jobType, workType, expertise, source, url, description, postedDate, deadlineDate, salary)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(url) DO UPDATE SET
+              jobType = CASE WHEN excluded.jobType != 'Full-time' THEN excluded.jobType ELSE jobType END,
+              workType = CASE WHEN excluded.workType != 'On-site' THEN excluded.workType ELSE workType END,
+              description = CASE WHEN excluded.description != '' THEN excluded.description ELSE description END,
+              salary = CASE WHEN excluded.salary != '' THEN excluded.salary ELSE salary END,
+              postedDate = excluded.postedDate
           `
           const params = [
             item.title || "Unknown Title",

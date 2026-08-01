@@ -11,6 +11,13 @@ const db = new sqlite3.Database(dbPath, (err) => {
     console.error('Error opening SQLite database:', err.message)
   } else {
     console.log('Connected to SQLite database.')
+
+    // Performance tuning: WAL allows concurrent reads/writes, NORMAL speeds up commits
+    db.run("PRAGMA journal_mode = WAL", () => {})
+    db.run("PRAGMA synchronous = NORMAL", () => {})
+    db.run("PRAGMA cache_size = -16000", () => {})
+    db.run("PRAGMA mmap_size = 268435456", () => {})
+
     // Create jobs table if it doesn't exist
     db.run(`
       CREATE TABLE IF NOT EXISTS jobs (
@@ -34,6 +41,15 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
     // Add workType column if missing (migration for existing DBs)
     db.run("ALTER TABLE jobs ADD COLUMN workType TEXT", () => {})
+
+    // Indexes for the most common filters/ordering
+    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_posted ON jobs(postedDate DESC, id DESC)", (err) => {
+      if (err) console.error('Error creating index:', err.message)
+    })
+    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_source ON jobs(source)", () => {})
+    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_jobtype ON jobs(jobType)", () => {})
+    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_worktype ON jobs(workType)", () => {})
+    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_company ON jobs(company)", () => {})
 
     db.run(`
       CREATE TABLE IF NOT EXISTS chat_sessions (
@@ -74,6 +90,28 @@ export function fetchOne(query, params = []) {
       else resolve(row)
     })
   })
+}
+
+// ---- In-memory cache ----
+// The jobs table is small (thousands of rows). Loading it into memory once and
+// serving reads from RAM removes almost all SQLite load from read requests.
+let jobsCache = null
+
+export function getJobsCache() {
+  return jobsCache
+}
+
+export async function loadJobsCache() {
+  jobsCache = await fetchAll("SELECT * FROM jobs")
+  return jobsCache
+}
+
+export async function refreshJobsCache() {
+  return loadJobsCache()
+}
+
+export function invalidateJobsCache() {
+  jobsCache = null
 }
 
 export default db

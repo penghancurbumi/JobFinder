@@ -8,11 +8,12 @@
 
     <nav 
       :class="[
-        'h-[72px] px-xl flex items-center sticky top-0 z-50 transition-all duration-300 border-b',
-        (isScrolled || !isHome) ? 'bg-canvas-dark border-hairline-dark' : 'bg-transparent border-transparent'
+        'h-[72px] px-[32px] md:px-[72px] flex items-center sticky top-0 z-50 transition-all duration-300 border-b',
+        (isScrolled || !isHome) ? 'bg-canvas-dark' : 'bg-transparent',
+        isScrolled ? 'border-hairline-dark' : 'border-transparent'
       ]"
     >
-      <div class="w-full max-w-[1200px] mx-auto px-xl flex items-center justify-between">
+      <div class="w-full mx-auto flex items-center justify-between">
         <router-link to="/" class="text-[20px] font-medium text-on-dark no-underline tracking-[-0.02em] flex items-center gap-[8px]">
           JobFinder
         </router-link>

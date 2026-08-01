@@ -75,6 +75,7 @@ class KitalulusSpider(BaseSpider):
 
     def parse(self, response: Response) -> Any:
         self.logger_custom.info("Parsing listing page: %s", response.url)
+        self._page_count += 1
 
         chunks = self._extract_rsf_payload(response.text)
         if not chunks:
@@ -91,12 +92,20 @@ class KitalulusSpider(BaseSpider):
             self.logger_custom.info("No jobs found on page %s", response.url)
             return
 
+        seen_urls: set = set()
+
         for job in jobs:
             if job.get("isClosed"):
                 continue
 
             slug = job.get("slug", "")
-            detail_url = f"https://www.kitalulus.com/job/{slug}" if slug else response.url
+            detail_url = f"https://www.kitalulus.com/lowongan/detail/{slug}" if slug else response.url
+            if detail_url in seen_urls or detail_url in getattr(self, "_seen_urls", set()):
+                continue
+            seen_urls.add(detail_url)
+            if not hasattr(self, "_seen_urls"):
+                self._seen_urls = set()
+            self._seen_urls.add(detail_url)
 
             company = job.get("company", {}) or {}
             province = job.get("province", {}) or {}
@@ -123,7 +132,15 @@ class KitalulusSpider(BaseSpider):
                 "updated_at": job.get("updatedAtStr"),
             }
 
-            yield self.build_job_item(item_data)
+            type_str = job.get("typeStr")
+            if type_str:
+                item_data["job_type"] = self._normalize_job_type(type_str)
+
+            if self._detail_count < self.max_detail_pages and item_data["source_url"] != response.url:
+                self._detail_count += 1
+                yield self._make_detail_request(item_data["source_url"], self.parse_detail, meta={"item_data": item_data})
+            else:
+                yield self.build_job_item(item_data)
 
         if self._should_continue_pagination():
             has_next = vacancy_list.get("hasNextPage", False)
@@ -143,3 +160,26 @@ class KitalulusSpider(BaseSpider):
                 next_url = f"{response.url}?page={next_page}"
 
             yield self._make_request(next_url, callback=self.parse)
+
+    def parse_detail(self, response: Response) -> Any:
+        self.logger_custom.info("Parsing KitaLulus detail: %s", response.url)
+        item_data = response.meta.get("item_data", {})
+
+        desc = response.xpath(
+            "//div[starts-with(normalize-space(.), 'Deskripsi Pekerjaan')]"
+        ).xpath("string(.)").get("").strip()
+        if desc:
+            desc = desc.replace("Deskripsi Pekerjaan", "", 1).strip()
+            item_data["description"] = desc
+
+        loc_site = self._extract_location_site(response.text)
+        if loc_site:
+            item_data["work_type"] = self._normalize_work_type(loc_site)
+
+        yield self.build_job_item(item_data)
+
+    def _extract_location_site(self, text: str) -> str:
+        m = re.search(r'locationSiteStr\\?":\\?"([^\\"]*)', text)
+        if not m:
+            return ""
+        return m.group(1)

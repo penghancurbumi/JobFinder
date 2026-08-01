@@ -23,6 +23,8 @@ class LinkedInSpider(BaseSpider):
         self._page_count = 0
         self._item_count = 0
         self._error_count = 0
+        self._detail_count = 0
+        self.max_detail_pages = int(kwargs.get("max_detail_pages", 15))
 
     async def start(self):
         url = self._build_start_url()
@@ -66,6 +68,7 @@ class LinkedInSpider(BaseSpider):
 
     def parse(self, response: Response) -> Any:
         self.logger_custom.info("Parsing LinkedIn listing page: %s", response.url)
+        self._page_count += 1
 
         page_text = response.css("title::text").get("")
         self.logger_custom.info("Page title: %s", page_text)
@@ -78,9 +81,12 @@ class LinkedInSpider(BaseSpider):
         for card in job_cards:
             item_data = self._extract_card_data(card, response)
             detail_url = item_data.get("source_url", "")
-            if not detail_url:
+            if not re.search(r"/jobs/view/\d+", detail_url):
+                continue
+            if self._detail_count >= self.max_detail_pages:
                 yield self.build_job_item(item_data)
                 continue
+            self._detail_count += 1
             yield self._make_request(url=detail_url, callback=self.parse_detail, meta={"item_data": item_data, "_detail_page": True})
 
         if self._should_continue_pagination():
@@ -91,11 +97,13 @@ class LinkedInSpider(BaseSpider):
 
     def _extract_job_cards(self, response) -> list:
         selectors = [
+            "div.base-card.base-search-card",
+            "div.base-card",
+            "li[data-occludable-job-id]",
             "ul.jobs-search__results-list > li",
             "div.jobs-search-results-list li",
             "ul.job-search-results > li",
             "div.scaffold-layout__list-container li",
-            "li[data-occludable-job-id]",
             "div.job-card-container",
             "div[data-job-id]",
         ]
@@ -110,6 +118,8 @@ class LinkedInSpider(BaseSpider):
 
         title = self._extract_text(card, [
             "h3.base-search-card__title::text",
+            "a.base-card__full-link::text",
+            "h3.job-card-list__title::text",
             "a.job-card-list__title::text",
             "span[class*='job-title']::text",
             "a[class*='job-title'] span::text",
@@ -119,6 +129,8 @@ class LinkedInSpider(BaseSpider):
         ])
 
         company = self._extract_text(card, [
+            "a.hidden-nested-link::text",
+            "h4.base-search-card__subtitle a::text",
             "h4.base-search-card__subtitle::text",
             "a.job-card-container__company-name::text",
             "span[class*='company-name']::text",
@@ -129,6 +141,11 @@ class LinkedInSpider(BaseSpider):
             "span.job-search-card__location::text",
             "span[class*='location']::text",
             "li.job-card-container__metadata-item::text",
+        ])
+
+        posting_date = self._extract_attr(card, [
+            "time.job-search-card__listdate::attr(datetime)",
+            "time[class*='listdate']::attr(datetime)",
         ])
 
         detail_url = self._extract_attr(card, [
@@ -147,14 +164,22 @@ class LinkedInSpider(BaseSpider):
             "title": title.strip() if title else "",
             "company_name": company.strip() if company else "",
             "location": location.strip() if location else "",
-            "source_url": response.urljoin(detail_url) if detail_url else response.url,
+            "source_url": self._normalize_url(detail_url) if detail_url else response.url,
+            "posting_date": posting_date.strip() if posting_date else "",
         }
+
+    def _normalize_url(self, url: str) -> str:
+        match = re.search(r"/jobs/view/(?:[^/?]+?-)?(\d+)", url)
+        if match:
+            return f"https://www.linkedin.com/jobs/view/{match.group(1)}/"
+        return url
 
     def _extract_text(self, element, selectors: list) -> str:
         for selector in selectors:
-            text = element.css(selector).get()
+            texts = element.css(selector).getall()
+            text = " ".join(t.strip() for t in texts if t.strip())
             if text:
-                return text.strip()
+                return text
         return ""
 
     def _extract_attr(self, element, selectors: list) -> str:

@@ -1,31 +1,88 @@
 <template>
   <div class="home bg-transparent text-on-dark font-sans">
     <!-- Hero Section (Dark Canvas) -->
-    <section class="bg-transparent py-[120px]">
-      <div class="w-full max-w-[1200px] mx-auto px-xl">
-        <div class="max-w-[960px]">
-          <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-lg block text-stone">Job Aggregator Indonesia</span>
-          <h1 class="font-medium leading-[1.0] tracking-[-0.8px] mb-xl">
-            <span class="text-[48px] md:text-[64px] lg:text-[80px] block">Temukan Karier</span>
-            <span class="text-[48px] md:text-[64px] lg:text-[90px] block font-instrument-serif italic tracking-normal">Masa Depanmu</span>
+    <section class="bg-transparent py-[80px]">
+      <div class="w-full mx-auto px-[32px] md:px-[72px]">
+        <div class="flex flex-col gap-[40px]">
+          <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] block text-stone">Job Aggregator Indonesia</span>
+          <h1 class="font-medium leading-[1.0] tracking-[-0.8px]">
+            <span class="text-[48px] md:text-[64px] lg:text-[72px] block">Temukan Karier</span>
+            <span class="text-[48px] md:text-[64px] lg:text-[72px] block">Masa Depanmu</span>
           </h1>
-          
-          <p class="text-[18px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute max-w-[640px] mb-xl">
+
+          <p class="text-sm md:text-[18px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute max-w-[640px]">
             Platform agregasi lowongan kerja dan magang dari seluruh sumber terpercaya.
             Lengkap dengan analisis CV dan pembuatan dokumen ATS berstandar industri.
           </p>
 
-          <div class="flex gap-sm flex-wrap">
-            <router-link to="/documentation" class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[18px] px-[24px] h-[48px] bg-on-dark text-ink hover:bg-white/90">Documentation</router-link>
-            <router-link to="/jobs" class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[18px] px-[24px] h-[48px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Get Started</router-link>
+          <div class="flex gap-[20px] flex-wrap items-center">
+            <router-link to="/jobs" class="inline-flex items-center gap-[8px] justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-sm md:text-[18px] px-[24px] h-[48px] bg-on-dark text-ink hover:bg-white/90">
+              Get Started
+              <Icon icon="mdi-light:arrow-right" width="20"/>
+            </router-link>            
+
+            <a href="https://github.com/penghancurbumi" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-[8px] justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-sm md:text-[18px] px-[24px] h-[48px] bg-surface-elevated border border-hairline-dark text-on-dark">
+              <Icon icon="mdi:github" width="20"/>
+              GitHub</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logo Slider — full width, label kiri -->
+      <div class="flex items-center gap-[24px] mt-[80px]">
+        <div class="flex flex-row items-center gap-2 px-[32px] md:px-[72px]">
+          <div class="h-1 w-1 rounded-full bg-white"></div>
+          <p class="font-mono uppercase text-[14px] font-bold tracking-[1.5px] text-white shrink-0">Powered by Trusted Sources</p>
+        </div>
+
+        <div class="logo-track-wrapper flex-1 min-w-0">
+          <div class="logo-track">
+            <div v-for="n in 2" :key="n" class="logo-group">
+
+              <!-- LinkedIn -->
+              <div class="logo-chip">
+                <img src="../assets/images/linkedin logo.png" alt="LinkedIn Logo">
+              </div>
+
+              <!-- Glints -->
+              <div class="logo-chip">
+                <img src="../assets/images/glints logo.png" alt="Glints Logo">
+              </div>
+              
+              <!-- Jobstreet -->
+              <div class="logo-chip">
+                <img src="../assets/images/jobstreet logo.png" alt="Jobstreet Logo">
+              </div>
+
+              <!-- pintarnya -->
+              <div class="logo-chip">
+                <img src="../assets/images/pintarnya logo.png" alt="Pintarnya Logo">
+              </div>
+
+              <!-- Techinasia -->
+              <div class="logo-chip">
+                <img src="../assets/images/techinasia logo.png" alt="Techinasia Logo">
+              </div>
+
+              <!-- KitaLulus -->
+              <div class="logo-chip">
+                <img src="../assets/images/kitalulus logo.png" alt="Kitalulus Logo">
+              </div>
+
+              <!-- Kalibrr -->
+              <div class="logo-chip">
+                <img src="../assets/images/kalibrr logo.png" alt="Kalibrr Logo">
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
+
     <!-- Features Section (Dark Canvas) -->
-    <section class="bg-transparent py-[80px]">
-      <div class="w-full max-w-[1200px] mx-auto px-xl">
+    <section class="bg-transparent pt-[140px] pb-[80px]">
+      <div class="w-full mx-auto px-[32px] md:px-[72px]">
         <div class="mb-xxl">
           <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-lg block">Fitur Unggulan</span>
           <h2 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark">Satu Platform, Semua Kebutuhan Kariermu</h2>
@@ -34,21 +91,21 @@
           <div class="bg-surface-elevated rounded-[20px] p-xxl flex flex-col">
             <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-xs text-stone">Multi-Source</span>
             <h3 class="text-[20px] font-medium leading-[1.4] mb-sm text-on-dark">Agregasi Lowongan</h3>
-            <p class="text-[16px] font-normal leading-[1.6] text-on-dark-mute mb-lg flex-1">Kumpulan lowongan kerja dan magang dari LinkedIn, Glints, Jobstreet, Fastwork, dan Pintarnya dalam satu tampilan.</p>
+            <p class="md:text-[16px] text-sm font-normal leading-[1.6] text-on-dark-mute mb-lg flex-1">Kumpulan lowongan kerja dan magang dari LinkedIn, Glints, Jobstreet, Fastwork, dan Pintarnya dalam satu tampilan.</p>
             <router-link to="/jobs" class="inline-flex items-center font-semibold transition-all duration-200 cursor-pointer text-[16px] bg-transparent text-on-dark hover:text-white pl-0">Lihat Lowongan →</router-link>
           </div>
 
           <div class="bg-surface-elevated rounded-[20px] p-xxl flex flex-col">
             <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-xs text-stone">ATS Check</span>
             <h3 class="text-[20px] font-medium leading-[1.4] mb-sm text-on-dark">Analisis CV</h3>
-            <p class="text-[16px] font-normal leading-[1.6] text-on-dark-mute mb-lg flex-1">Evaluasi kompatibilitas CV-mu terhadap sistem ATS dan dapatkan skor kecocokan dengan bidang keahlian spesifik.</p>
+            <p class="md:text-[16px] text-sm font-normal leading-[1.6] text-on-dark-mute mb-lg flex-1">Evaluasi kompatibilitas CV-mu terhadap sistem ATS dan dapatkan skor kecocokan dengan bidang keahlian spesifik.</p>
             <router-link to="/cv-analyzer" class="inline-flex items-center font-semibold transition-all duration-200 cursor-pointer text-[16px] bg-transparent text-on-dark hover:text-white pl-0">Analisis Sekarang →</router-link>
           </div>
 
           <div class="bg-surface-elevated rounded-[20px] p-xxl flex flex-col">
             <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-xs text-stone">Builder</span>
             <h3 class="text-[20px] font-medium leading-[1.4] mb-sm text-on-dark">Pembuat CV</h3>
-            <p class="text-[16px] font-normal leading-[1.6] text-on-dark-mute mb-lg flex-1">Buat dokumen CV ATS-minimalis dengan panduan pengisian dari asisten AI. Format rapi dan siap pakai.</p>
+            <p class="md:text-[16px] text-sm font-normal leading-[1.6] text-on-dark-mute mb-lg flex-1">Buat dokumen CV ATS-minimalis dengan panduan pengisian dari asisten AI. Format rapi dan siap pakai.</p>
             <router-link to="/cv-builder" class="inline-flex items-center font-semibold transition-all duration-200 cursor-pointer text-[16px] bg-transparent text-on-dark hover:text-white pl-0">Buat CV →</router-link>
           </div>
 
@@ -56,7 +113,7 @@
           <div class="bg-surface-elevated rounded-[20px] p-xxl flex flex-col">
             <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-xs text-stone">AI-Powered</span>
             <h3 class="text-[20px] font-medium leading-[1.4] mb-sm text-on-dark">Diskusi Karier</h3>
-            <p class="text-[16px] font-normal leading-[1.6] text-on-dark-mute mb-lg flex-1">Tanya apapun seputar karier, lowongan, atau penyusunan CV. Dapatkan saran personal dari asisten AI.</p>
+            <p class="md:text-[16px] text-sm font-normal leading-[1.6] text-on-dark-mute mb-lg flex-1">Tanya apapun seputar karier, lowongan, atau penyusunan CV. Dapatkan saran personal dari asisten AI.</p>
             <router-link to="/chatbot" class="inline-flex items-center font-semibold transition-all duration-200 cursor-pointer text-[16px] bg-transparent text-on-dark hover:text-white pl-0">Mulai Chat →</router-link>
           </div>
         </div>
@@ -65,7 +122,7 @@
 
     <!-- Documentation Section -->
     <section class="bg-transparent py-[80px]">
-      <div class="w-full max-w-[1200px] mx-auto px-xl">
+      <div class="w-full mx-auto px-[32px] md:px-[72px]">
         <div class="mb-xxl">
           <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-lg block">Panduan</span>
           <h2 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark">Mulai dengan JobFinder</h2>
@@ -91,8 +148,8 @@
     </section>
 
     <!-- Footer (Dark Canvas) -->
-    <footer class="bg-canvas-dark pt-block pb-lg border-t border-hairline-dark">
-      <div class="w-full max-w-[1200px] mx-auto px-xl">
+    <footer class="bg-canvas-dark pt-xxl pb-lg border-t border-hairline-dark">
+      <div class="w-full mx-auto px-[32px] md:px-[72px]">
         <div class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr_1fr] gap-xxl md:gap-xl mb-block">
           <div class="flex flex-col gap-sm">
             <div class="flex items-center gap-xs mb-sm">
@@ -102,6 +159,7 @@
           </div>
           <div class="flex flex-col gap-sm">
             <span class="font-mono text-[12px] uppercase tracking-[1px] font-bold text-stone mb-xs">Fitur</span>
+            <router-link to="/" class="text-on-dark-mute hover:text-on-dark text-[14px] transition-colors no-underline">Home</router-link>
             <router-link to="/jobs" class="text-on-dark-mute hover:text-on-dark text-[14px] transition-colors no-underline">Cari Lowongan</router-link>
             <router-link to="/cv-analyzer" class="text-on-dark-mute hover:text-on-dark text-[14px] transition-colors no-underline">Analisis CV</router-link>
             <router-link to="/cv-builder" class="text-on-dark-mute hover:text-on-dark text-[14px] transition-colors no-underline">Buat CV</router-link>
@@ -114,6 +172,8 @@
             <span class="text-on-dark-mute text-[14px]">Jobstreet</span>
             <span class="text-on-dark-mute text-[14px]">Fastwork</span>
             <span class="text-on-dark-mute text-[14px]">Pintarnya</span>
+            <span class="text-on-dark-mute text-[14px]">LinkedIn</span>
+            <span class="text-on-dark-mute text-[14px]">KitaLulus</span>
           </div>
           <div class="flex flex-col gap-sm">
             <span class="font-mono text-[12px] uppercase tracking-[1px] font-bold text-stone mb-xs">Hubungi</span>
@@ -186,3 +246,62 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+/* Track wrapper — overflow + fade mask */
+.logo-track-wrapper {
+  position: relative;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+}
+
+/* Scrolling track */
+.logo-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-hero 25s linear infinite;
+}
+
+.logo-track:hover {
+  animation-play-state: paused;
+}
+
+/* Logo group (one full set) */
+.logo-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 8px;
+}
+
+/* Individual pill chip */
+.logo-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
+  cursor: default;
+}
+
+.logo-chip:hover {
+  opacity: 1;
+}
+
+.logo-chip img {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+}
+
+@keyframes marquee-hero {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+</style>

@@ -69,4 +69,26 @@ class PintarnyaSpider(BaseSpider):
                     item_data["salary_currency"] = "IDR"
 
             if item_data["title"] and item_data["company_name"]:
-                yield self.build_job_item(item_data)
+                if self._detail_count < self.max_detail_pages and item_data["source_url"] != response.url:
+                    self._detail_count += 1
+                    yield self._make_detail_request(item_data["source_url"], self.parse_detail, meta={"item_data": item_data})
+                else:
+                    yield self.build_job_item(item_data)
+
+    def parse_detail(self, response: Response) -> Any:
+        self.logger_custom.info("Parsing Pintarnya detail: %s", response.url)
+        item_data = response.meta.get("item_data", {})
+
+        desc = self._desc_text(response, "[data-testid*='description']")
+        if desc:
+            item_data["description"] = desc
+
+        job_type = self._desc_text(response, "[data-testid='detailjob-text-time']")
+        if job_type:
+            item_data["job_type"] = self._normalize_job_type(job_type)
+
+        work_type = self._desc_text(response, "[data-testid='detailjob-text-typework']")
+        if work_type:
+            item_data["work_type"] = self._normalize_work_type(work_type.lstrip(", "))
+
+        yield self.build_job_item(item_data)

@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen pt-[88px] bg-canvas-dark text-on-dark font-sans">
-    <div class="w-full max-w-[1200px] mx-auto px-xl">
+  <div class="min-h-screen pt-[50px] md:pt-[88px] bg-canvas-dark text-on-dark font-sans">
+    <div class="w-full mx-auto px-[32px] md:px-[72px]">
       <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-xs block">ATS Simulator</span>
       <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] mb-sm text-on-dark">CV Analyzer</h1>
       <p class="text-[18px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute mb-xl">Unggah CV Anda untuk mendapatkan analisis mendalam berbasis AI dan simulasi sistem ATS.</p>
@@ -23,7 +23,7 @@
               </select>
             </div>
 
-            <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[24px] h-[48px] text-[16px] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed" @click="analyze" :disabled="analyzing || !file">
+            <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[24px] h-[48px] text-[14px] md:text-[16px] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed" @click="analyze" :disabled="analyzing || !file">
               {{ analyzing ? 'Menganalisis...' : 'Analisis Dokumen' }}
             </button>
           </div>
