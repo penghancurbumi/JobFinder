@@ -2,7 +2,7 @@
   <div class="min-h-screen pt-[50px] bg-canvas-dark text-on-dark font-sans">
     <div class="w-full mx-auto px-[32px] md:px-[72px]">
       <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark mb-xs">Asisten AI</h1>
-    <p class="text-[18px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute mb-xl">Konsultasikan perjalanan karir Anda, struktur dokumen CV, hingga strategi wawancara.</p>
+      <p class="text-[16px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute mb-xl">Konsultasikan perjalanan karir Anda, struktur dokumen CV, hingga strategi wawancara.</p>
 
     <div class="bg-surface-elevated rounded-[20px] overflow-hidden flex flex-col h-[500px]">
       <div class="flex-1 overflow-y-auto p-xl flex flex-col gap-lg bg-surface-deep" ref="chatRef">
@@ -35,7 +35,7 @@
 
       <div class="flex gap-sm px-lg py-sm bg-surface-elevated border-t border-hairline-dark items-center">
         <input class="border-none bg-transparent text-on-dark h-[44px] flex-1 focus:outline-none focus:ring-0 placeholder:text-stone" v-model="input" placeholder="Tanyakan seputar persiapan karir..." @keyup.enter="send" :disabled="loading" />
-        <button class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] h-[40px] text-[14px] shrink-0 disabled:opacity-50 disabled:cursor-not-allowed" @click="send" :disabled="loading || !input.trim()">Kirim</button>
+        <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] h-[40px] text-[14px] shrink-0 disabled:opacity-50 disabled:cursor-not-allowed" @click="send" :disabled="loading || !input.trim()">Kirim</button>
       </div>
     </div>
     </div>
@@ -45,6 +45,17 @@
 <script setup>
 import { ref, nextTick, onMounted } from "vue"
 import axios from "axios"
+import { useHead } from "@vueuse/head"
+
+useHead({
+  title: 'Asisten AI Karier — JobFinder',
+  meta: [
+    { name: 'description', content: 'Konsultasikan perjalanan karier Anda dengan asisten AI. Tanya soal lowongan kerja, strategi membuat CV ATS, tips wawancara, hingga saran pengembangan karier secara personal.' },
+    { property: 'og:title', content: 'Asisten AI Karier — JobFinder' },
+    { property: 'og:description', content: 'Dapatkan saran karier personal dari asisten AI untuk persiapan kerja dan pembuatan CV.' },
+  ]
+})
+
 
 const messages = ref([])
 const input = ref("")

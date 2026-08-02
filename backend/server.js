@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url)
 const { PDFParse } = require("pdf-parse")
 import { createServer } from "http"
 import { Server } from "socket.io"
-import { scrapeAll } from "./scrapers/index.js"
+import { scrapeAll, runCleanup } from "./scrapers/index.js"
 import { analyzeCV } from "./cvAnalyzer.js"
 import { getBuilderSections, getSuggestion } from "./cvBuilder.js"
 import { chat } from "./chatbot.js"
@@ -28,13 +28,16 @@ app.use(cors())
 app.use(express.json())
 
 let isScraping = false
+let lastScrapeEnd = 0
+// Minimum wait between manual "Perbarui Data" scrapes (prevents spam/time waste)
+const MIN_SCRAPE_INTERVAL_MS = 5 * 60 * 1000
 
 async function performScrape() {
   if (isScraping) return
   isScraping = true
   io.emit("scrape-status", { status: "scraping" })
   try {
-    await scrapeAll() // This now inserts into DB
+    await scrapeAll((evt) => io.emit("scrape-progress", evt))
     await refreshJobsCache()
     const result = await getFilteredJobs("", "all", "all", "newest", "", "", false, 1, 200)
     io.emit("jobs-updated", result)
@@ -44,6 +47,7 @@ async function performScrape() {
     io.emit("scrape-status", { status: "error", message: e.message })
   } finally {
     isScraping = false
+    lastScrapeEnd = Date.now()
   }
 }
 
@@ -131,10 +135,21 @@ async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy
 
 io.on("connection", async (socket) => {
   console.log("Client connected via WebSocket")
+  socket.emit("scrape-status", { status: isScraping ? "scraping" : "idle" })
   const result = await getFilteredJobs()
   socket.emit("jobs-updated", result)
   
   socket.on("request-scrape", () => {
+    const sinceEnd = Date.now() - lastScrapeEnd
+    const waitMs = lastScrapeEnd > 0 ? MIN_SCRAPE_INTERVAL_MS - sinceEnd : 0
+    if (waitMs > 0) {
+      socket.emit("scrape-status", {
+        status: "cooldown",
+        waitSeconds: Math.ceil(waitMs / 1000),
+        message: `Tunggu ${Math.ceil(waitMs / 1000)} detik sebelum memperbarui lagi`
+      })
+      return
+    }
     performScrape()
   })
 
@@ -144,10 +159,21 @@ io.on("connection", async (socket) => {
   })
 })
 
-// Initial scrape and periodic refresh
-// We don't necessarily want to scrape immediately on server start anymore since it takes long,
-// but we'll fetch existing jobs on mount and only auto-scrape every 30 mins
-setInterval(performScrape, 30 * 60 * 1000)
+// No auto-scraping: data is refreshed only when the user presses "Perbarui Data",
+// which emits the "request-scrape" socket event handled above.
+
+// Remove expired jobs daily (and once at startup) so data doesn't pile up.
+async function runScheduledCleanup() {
+  try {
+    const cleanup = await runCleanup()
+    await refreshJobsCache()
+    if (cleanup.total > 0) console.log("Scheduled cleanup removed:", cleanup.total, "job(s)")
+  } catch (e) {
+    console.error("Scheduled cleanup failed:", e.message)
+  }
+}
+setInterval(runScheduledCleanup, 24 * 60 * 60 * 1000)
+setTimeout(runScheduledCleanup, 5000)
 
 app.get("/api/expertise-areas", (req, res) => res.json(EXPERTISE_AREAS))
 

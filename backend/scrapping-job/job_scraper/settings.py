@@ -56,6 +56,7 @@ DOWNLOADER_MIDDLEWARES = {
     "job_scraper.middlewares.ProxyMiddleware": 600,
     "job_scraper.middlewares.ScrapingStatsMiddleware": 700,
     "job_scraper.middlewares.CloudflareBypassMiddleware": 150,
+    "job_scraper.middlewares.NotFoundCollectorMiddleware": 800,
 }
 
 # ============================================

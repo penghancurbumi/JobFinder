@@ -6,7 +6,6 @@ const TOKEN = process.env.TELEGRAM_BOT_TOKEN
 
 export function runBot() {
   if (!TOKEN || TOKEN === "your_telegram_bot_token_here") {
-    console.log("Telegram bot not configured — skipping")
     return
   }
 

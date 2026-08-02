@@ -1,0 +1,20 @@
+const { spawn } = require('child_process');
+const cmd = "python -m scrapy crawl_all -a job_type=fulltime -a max_pages=1";
+const parts = cmd.split(/\s+/);
+const exe = parts[0];
+const args = parts.slice(1);
+console.log('exe:', exe, 'args:', JSON.stringify(args), 'cwd:', process.cwd());
+const child = spawn(exe, args, { cwd: process.cwd(), shell: false });
+let out = '';
+child.stdout.on('data', (c) => { out += c.toString(); });
+child.stderr.on('data', (c) => { out += c.toString(); });
+child.on('error', (e) => { console.log('SPAWN ERROR:', e.message); process.exit(1); });
+child.on('close', (code, sig) => {
+  console.log('CLOSE code=', code, 'signal=', sig);
+  console.log('----- OUTPUT (first 3000) -----');
+  console.log(out.slice(0, 3000));
+  console.log('----- OUTPUT (last 2000) -----');
+  console.log(out.slice(-2000));
+  process.exit(0);
+});
+setTimeout(() => { console.log('TIMEOUT 60s, output so far:\n', out.slice(0, 2000)); process.exit(2); }, 60000);

@@ -4,7 +4,7 @@
       <div class="print:hidden mb-xl">
       <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-sm block">Sistem Pembangun Dokumen ATS</span>
       <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark">Pembuat CV</h1>
-      <p class="mt-sm text-on-dark-mute text-[14px] font-normal leading-[1.5]">Rakit bagian-bagian CV Anda langkah demi langkah. Tanda <span class="text-accent-danger">*</span> wajib diisi.</p>
+      <p class="mt-sm text-on-dark-mute text-[16px] font-normal leading-[1.5]">Rakit bagian-bagian CV Anda langkah demi langkah. Tanda <span class="text-accent-danger">*</span> wajib diisi.</p>
     </div>
 
     <!-- Wizard Layout -->
@@ -398,10 +398,10 @@
           <div class="flex justify-between items-center mb-[24px] flex-wrap gap-[12px]">
             <h3 class="text-[24px] font-medium leading-[1.33] text-on-dark">Pratinjau Dokumen</h3>
             <div class="flex gap-[12px]">
-              <button class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[13px] px-[16px] h-[32px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed" @click="analyzeBuiltCV" :disabled="analyzing">
+              <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[13px] px-[16px] h-[32px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed" @click="analyzeBuiltCV" :disabled="analyzing">
                 {{ analyzing ? 'Memindai...' : 'Scan ATS Score' }}
               </button>
-              <button class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[13px] px-[16px] h-[32px] bg-on-dark text-ink hover:bg-white/90" @click="downloadPDF">
+              <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[13px] px-[16px] h-[32px] bg-on-dark text-ink hover:bg-white/90" @click="downloadPDF">
                 Unduh PDF
               </button>
             </div>
@@ -497,7 +497,7 @@
           </div>
 
           <div class="flex justify-between mt-[32px] pt-[16px] border-t border-hairline-dark">
-            <button class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated" @click="prevStep">Sebelumnya</button>
+            <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated" @click="prevStep">Sebelumnya</button>
           </div>
         </div>
       </main>
@@ -585,6 +585,17 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from "vue"
 import axios from "axios"
+import { useHead } from "@vueuse/head"
+
+useHead({
+  title: 'Pembuat CV ATS-Friendly — JobFinder',
+  meta: [
+    { name: 'description', content: 'Buat CV profesional berstandar ATS langkah demi langkah dengan panduan asisten AI. Template minimalis yang dioptimalkan untuk sistem perekrutan otomatis di Indonesia.' },
+    { property: 'og:title', content: 'Pembuat CV ATS-Friendly — JobFinder' },
+    { property: 'og:description', content: 'Buat CV ATS-friendly dengan panduan AI. Template profesional dan siap lamar.' },
+  ]
+})
+
 
 // ===================== STATE =====================
 const steps = ref([])

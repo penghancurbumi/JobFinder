@@ -6,12 +6,47 @@
           <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Eksplorasi</span>
           <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark mb-0">Daftar Pekerjaan Yang Tersedia</h1>
         </div>
-        <button @click="requestScrape" class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] py-[8px] h-[40px] text-[14px] gap-[8px]" :disabled="isScraping">
+        <button @click="requestScrape" class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] py-[8px] h-[40px] text-[14px] gap-[8px]" :disabled="isScraping || !!cooldownMsg">
           <svg v-if="isScraping" class="animate-[spin_1s_linear_infinite]" viewBox="0 0 24 24" width="16" height="16">
             <circle class="animate-[dash_1.5s_ease-in-out_infinite] [stroke-dasharray:60] [stroke-dashoffset:60]" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
           </svg>
-          {{ isScraping ? 'Mencari Data Baru...' : 'Perbarui Data' }}
+          {{ isScraping ? 'Memperbarui Data...' : 'Perbarui Data' }}
         </button>
+      </div>
+
+      <div v-if="cooldownMsg" class="mb-xl bg-surface-elevated rounded-md p-lg border border-hairline-dark">
+        <span class="text-sm font-medium">{{ cooldownMsg }}</span>
+      </div>
+
+      <!-- Live scrape progress -->
+      <div v-if="isScraping" class="mb-xl bg-surface-elevated rounded-md p-lg border border-hairline-dark">
+        <div class="flex items-center gap-sm mb-sm">
+          <svg class="animate-[spin_1s_linear_infinite]" viewBox="0 0 24 24" width="16" height="16">
+            <circle class="animate-[dash_1.5s_ease-in-out_infinite] [stroke-dasharray:60] [stroke-dashoffset:60]" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
+          </svg>
+          <span class="text-sm font-medium">Memperbarui data dari semua sumber...</span>
+          <span class="ml-auto font-mono text-[12px] text-stone">{{ scrapeElapsed }}s</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-sm">
+          <div v-for="c in scrapeCategories" :key="c" class="bg-surface-deep rounded-sm p-sm border border-hairline-dark">
+            <div class="flex items-center justify-between mb-xs">
+              <span class="text-[12px] font-medium capitalize">{{ c }}</span>
+              <span class="text-[11px] font-mono text-stone">{{ spiderCount(c) }}/7</span>
+            </div>
+            <div class="flex flex-wrap gap-[4px]">
+              <span v-for="(s, name) in (scrapeStatus[c] || {}).spiders || {}" :key="name"
+                :class="['text-[10px] px-[6px] py-[2px] rounded-full border', s.status === 'done' ? 'text-accent-teal border-white/20' : 'text-stone border-white/10']">
+                {{ name }}{{ s.status === 'done' ? ' ✓' : '' }}
+              </span>
+              <span v-if="!Object.keys((scrapeStatus[c] || {}).spiders || {}).length" class="text-[10px] text-stone italic">menunggu...</span>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="scrapeLog.length" class="mt-sm max-h-[110px] overflow-y-auto font-mono text-[11px] text-stone space-y-[2px]">
+          <div v-for="(l, i) in scrapeLog" :key="i">{{ l }}</div>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] items-start gap-lg">
@@ -59,7 +94,7 @@
 
         <!-- Main Content -->
         <main>
-          <div v-if="loading || isScraping" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
+          <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
             <div v-for="n in 6" :key="'skeleton-' + n" class="bg-surface-elevated rounded-sm p-lg flex flex-col gap-0 min-h-[200px]">
               <div class="h-[24px] w-[70%] mb-[12px] bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite] rounded-[4px]"></div>
               <div class="flex gap-[6px] mb-[12px]">
@@ -78,11 +113,10 @@
 
           <div v-else-if="jobs.length === 0" class="text-center p-[64px] border border-dashed border-hairline-dark rounded-[20px]">
             <p class="text-[18px] font-normal leading-[1.56] tracking-[-0.09px] text-stone italic">Tidak ada peluang yang sesuai dengan filter.</p>
-            <button @click="resetFilters" class="mt-lg inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[16px] px-[24px] h-[48px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Reset Filter</button>
           </div>
 
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
-            <div v-for="job in jobs" :key="job.title + job.company + job.id" class="bg-surface-elevated rounded-sm p-lg flex flex-col gap-[8px]">
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl">
+            <div v-for="job in jobs" :key="job.title + job.company + job.id" class="bg-surface-elevated rounded-sm p-[15px] flex flex-col gap-[8px]">
               <div>
                 <h3 class="text-[18px] font-medium leading-[1.4] text-on-dark">{{ job.title }}</h3>
                 <div class="flex gap-[6px] shrink-0 flex-wrap mt-[8px]">
@@ -103,8 +137,8 @@
                 Sumber: <a :href="job.url" target="_blank" class="text-white no-underline hover:underline">{{ job.source }}</a>
               </div>
 
-              <div class="flex flex-wrap gap-sm bg-surface-deep p-sm rounded-[12px] mt-xs" v-if="job.postedDate || job.deadlineDate || job.salary">
-                 <span v-if="job.postedDate" class="text-[12px] font-normal leading-[1.5] text-on-dark-mute">Diposting: {{ job.postedDate }}</span>
+              <div class="flex flex-wrap gap-sm bg-surface-deep p-sm rounded-[12px] mt-xs" v-if="formatPostedDate(job.postedDate) || job.deadlineDate || job.salary">
+                 <span v-if="formatPostedDate(job.postedDate)" class="text-[12px] font-normal leading-[1.5] text-on-dark-mute">Diposting: {{ formatPostedDate(job.postedDate) }}</span>
                  <span v-if="job.deadlineDate" class="text-[12px] leading-[1.5] text-accent-danger font-medium">Batas Waktu: {{ job.deadlineDate }}</span>
                  <span v-if="job.salary" class="text-[12px] leading-[1.5] text-accent-teal font-medium w-full">Gaji: {{ job.salary }}</span>
               </div>
@@ -117,11 +151,44 @@
             </div>
           </div>
 
-          <div v-if="!loading && jobs.length > 0 && page < totalPages" class="mt-xl flex flex-col items-center gap-sm">
-            <span class="text-[13px] font-mono text-on-dark-mute">Menampilkan {{ jobs.length }} dari {{ total }} lowongan</span>
-            <button @click="loadMore" :disabled="loadingMore" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[28px] h-[44px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed">
-              {{ loadingMore ? 'Memuat...' : 'Muat Lebih Banyak' }}
-            </button>
+          <!-- Pagination Numbering -->
+          <div v-if="!loading && totalPages > 1" class="mt-xl flex flex-col items-center gap-md">
+            <div class="flex items-center gap-sm flex-wrap justify-center">
+              <button 
+                @click="goToPage(page - 1)" 
+                :disabled="page === 1 || loading"
+                aria-label="Halaman Sebelumnya"
+                class="inline-flex items-center justify-center font-medium rounded-sm transition-all duration-200 w-[40px] h-[40px] text-[14px] bg-surface-elevated border border-hairline-dark text-on-dark hover:bg-body disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                <Icon icon="solar:arrow-left-outline" width="16" height="16" aria-hidden="true" />
+              </button>
+
+              <button 
+                v-for="(p, idx) in visiblePages" 
+                :key="'page-' + idx"
+                @click="goToPage(p)"
+                :disabled="p === '...'"
+                :class="[
+                  'inline-flex items-center justify-center font-medium rounded-sm transition-all duration-200 min-w-[40px] h-[40px] px-[12px] text-[14px]',
+                  p === page 
+                    ? 'bg-on-dark text-ink font-semibold' 
+                    : p === '...' 
+                      ? 'bg-transparent text-stone cursor-default border-none' 
+                      : 'bg-surface-elevated border border-hairline-dark text-on-dark hover:bg-body cursor-pointer'
+                ]"
+              >
+                {{ p }}
+              </button>
+
+              <button 
+                @click="goToPage(page + 1)" 
+                :disabled="page === totalPages || loading"
+                aria-label="Halaman Selanjutnya"
+                class="inline-flex items-center justify-center font-medium rounded-sm transition-all duration-200 w-[40px] h-[40px] text-[14px] bg-surface-elevated border border-hairline-dark text-on-dark hover:bg-body disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                <Icon icon="solar:arrow-right-outline" width="16" height="16" aria-hidden="true" />
+              </button>
+            </div>
           </div>
         </main>
       </div>
@@ -130,9 +197,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from "vue"
+import { ref, computed, onMounted, onUnmounted, watch } from "vue"
+import { Icon } from '@iconify/vue'
 import { io } from "socket.io-client"
 import CustomSelect from "../components/CustomSelect.vue"
+import { useHead } from "@vueuse/head"
+
+useHead({
+  title: 'Cari Lowongan Kerja & Magang — JobFinder',
+  meta: [
+    { name: 'description', content: 'Temukan ribuan lowongan kerja dan magang dari LinkedIn, Glints, Jobstreet, Pintarnya, KitaLulus, dan sumber terpercaya lainnya. Filter berdasarkan tipe, lokasi, pengalaman, dan gaji.' },
+    { property: 'og:title', content: 'Cari Lowongan Kerja & Magang — JobFinder' },
+    { property: 'og:description', content: 'Ribuan lowongan kerja dan magang dari seluruh sumber terpercaya di Indonesia dalam satu platform.' },
+  ]
+})
+
 
 const jobs = ref([])
 const loading = ref(true)
@@ -142,6 +221,14 @@ const limit = 24
 const total = ref(0)
 const totalPages = ref(0)
 const loadingMore = ref(false)
+
+const scrapeCategories = ['fulltime', 'parttime', 'internship', 'hybrid', 'contract']
+const scrapeStatus = ref({})
+const scrapeLog = ref([])
+const scrapeElapsed = ref(0)
+const cooldownMsg = ref("")
+let scrapeTimer = null
+let cooldownTimer = null
 
 // Filters
 const activeTipe = ref("all")
@@ -192,7 +279,21 @@ function toggleExpand(job) {
 
 function needsTruncation(desc) {
   if (!desc) return false
-  return desc.length > 200 // Truncate longer descriptions
+  return desc.length > 200
+}
+
+function formatPostedDate(raw) {
+  if (!raw) return null
+  // Cek apakah format ISO/YYYY-MM-DD
+  const isoMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (isoMatch) {
+    const date = new Date(raw)
+    if (!isNaN(date)) {
+      return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+    }
+  }
+  // Jika teks tidak valid / relatif ("Terakhir d...") — sembunyikan
+  return null
 }
 
 onMounted(async () => {
@@ -205,7 +306,41 @@ onMounted(async () => {
   })
   
   socket.on("scrape-status", (data) => {
+    if (data.status === "cooldown") {
+      isScraping.value = false
+      startCooldown(data.waitSeconds || 300)
+      return
+    }
+    clearTimeout(cooldownTimer)
+    cooldownMsg.value = ""
     isScraping.value = data.status === "scraping"
+    if (isScraping.value) {
+      scrapeElapsed.value = 0
+      scrapeLog.value = []
+      scrapeStatus.value = {}
+      if (!scrapeTimer) scrapeTimer = setInterval(() => scrapeElapsed.value++, 1000)
+    } else {
+      clearInterval(scrapeTimer)
+      scrapeTimer = null
+    }
+  })
+
+  socket.on("scrape-progress", (evt) => {
+    if (evt.status === "done") {
+      clearInterval(scrapeTimer)
+      scrapeTimer = null
+    }
+    if (evt.status === "category-start") {
+      scrapeStatus.value[evt.category] = { running: true, spiders: {} }
+    } else if (evt.category && evt.spider) {
+      const cat = scrapeStatus.value[evt.category] || (scrapeStatus.value[evt.category] = { running: true, spiders: {} })
+      cat.spiders = cat.spiders || {}
+      cat.spiders[evt.spider] = { status: evt.status, items: evt.items || 0 }
+    }
+    if (evt.message) {
+      scrapeLog.value.push(`${new Date().toLocaleTimeString('id-ID', { hour12: false })} ${evt.message}`)
+      if (scrapeLog.value.length > 12) scrapeLog.value.shift()
+    }
   })
 
   socket.on("connect", () => {
@@ -215,8 +350,18 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  clearInterval(scrapeTimer)
+  scrapeTimer = null
+  clearInterval(cooldownTimer)
+  cooldownTimer = null
   if (socket) socket.disconnect()
 })
+
+function spiderCount(c) {
+  const cat = scrapeStatus.value[c]
+  if (!cat || !cat.spiders) return 0
+  return Object.values(cat.spiders).filter((s) => s.status === 'done').length
+}
 
 function applyJobsPayload(data) {
   if (!data) return
@@ -256,11 +401,36 @@ async function fetchPage(p, append = false) {
   loadingMore.value = false
 }
 
-function loadMore() {
-  if (page.value < totalPages.value && !loadingMore.value) {
-    fetchPage(page.value + 1, true)
-  }
+function goToPage(p) {
+  if (typeof p !== 'number' || p < 1 || p > totalPages.value || p === page.value || loading.value) return
+  fetchPage(p, false)
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
+
+const visiblePages = computed(() => {
+  const current = page.value
+  const totalP = totalPages.value
+  if (totalP <= 7) {
+    return Array.from({ length: totalP }, (_, i) => i + 1)
+  }
+  const pages = []
+  if (current <= 4) {
+    for (let i = 1; i <= 5; i++) pages.push(i)
+    pages.push('...')
+    pages.push(totalP)
+  } else if (current >= totalP - 3) {
+    pages.push(1)
+    pages.push('...')
+    for (let i = totalP - 4; i <= totalP; i++) pages.push(i)
+  } else {
+    pages.push(1)
+    pages.push('...')
+    for (let i = current - 1; i <= current + 1; i++) pages.push(i)
+    pages.push('...')
+    pages.push(totalP)
+  }
+  return pages
+})
 
 let searchTimeout;
 watch([activeTipe, searchQuery, locationQuery, experienceLevel, hasSalary, sortBy], () => {
@@ -279,9 +449,23 @@ function resetFilters() {
   hasSalary.value = false
 }
 
+function startCooldown(seconds) {
+  cooldownMsg.value = `Tunggu ${seconds} detik sebelum memperbarui lagi`
+  clearInterval(cooldownTimer)
+  cooldownTimer = setInterval(() => {
+    seconds--
+    if (seconds <= 0) {
+      clearInterval(cooldownTimer)
+      cooldownTimer = null
+      cooldownMsg.value = ""
+    } else {
+      cooldownMsg.value = `Tunggu ${seconds} detik sebelum memperbarui lagi`
+    }
+  }, 1000)
+}
+
 function requestScrape() {
-  if (socket && !isScraping.value) {
-    isScraping.value = true
+  if (socket && !isScraping.value && !cooldownMsg.value) {
     socket.emit("request-scrape")
   }
 }

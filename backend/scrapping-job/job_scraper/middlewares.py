@@ -161,3 +161,40 @@ class CloudflareBypassMiddleware:
             headers=dict(resp.headers), body=resp.content,
             encoding="utf-8", request=request,
         )
+
+
+class NotFoundCollectorMiddleware:
+    """Records job-detail URLs that return 404/410 so the backend can delete
+    expired listings. URLs are appended to exports/json/not_found.txt, which the
+    Node backend consumes after each scrape cycle."""
+
+    def __init__(self) -> None:
+        export_dir = os.getenv("EXPORT_DIR", "exports")
+        self._file = os.path.join(export_dir, "json", "not_found.txt")
+        self._urls: set[str] = set()
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        middleware = cls()
+        crawler.signals.connect(middleware.spider_closed, signal=signals.spider_closed)
+        return middleware
+
+    def process_response(self, request: Request, response: Response, spider: Spider) -> Response:
+        if response.status in (404, 410):
+            self._urls.add(request.url)
+        return response
+
+    def spider_closed(self, spider: Spider) -> None:
+        if not self._urls:
+            return
+        try:
+            os.makedirs(os.path.dirname(self._file), exist_ok=True)
+            with open(self._file, "a", encoding="utf-8") as f:
+                for url in sorted(self._urls):
+                    f.write(url + "\n")
+            logger.info(
+                "NotFoundCollectorMiddleware: wrote %d not-found URL(s) for %s",
+                len(self._urls), spider.name,
+            )
+        except Exception as e:
+            logger.error("NotFoundCollectorMiddleware: failed to write not-found file: %s", e)

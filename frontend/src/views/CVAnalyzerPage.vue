@@ -3,13 +3,13 @@
     <div class="w-full mx-auto px-[32px] md:px-[72px]">
       <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-xs block">ATS Simulator</span>
       <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] mb-sm text-on-dark">CV Analyzer</h1>
-      <p class="text-[18px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute mb-xl">Unggah CV Anda untuk mendapatkan analisis mendalam berbasis AI dan simulasi sistem ATS.</p>
+      <p class="text-[16px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute mb-xl">Unggah CV Anda untuk mendapatkan analisis mendalam berbasis AI dan simulasi sistem ATS.</p>
 
       <div class="bg-surface-elevated rounded-[20px] p-xxl mb-xl">
-        <div class="mb-md">
-          <label class="mb-sm block text-on-dark font-semibold">Unggah Dokumen CV (PDF)</label>
+        <div class="mb-md gap-sm">
+          <label class="mb-sm block text-on-dark font-medium text-lg">Unggah Dokumen CV (PDF)</label>
           <div class="flex gap-md items-center flex-wrap">
-            <input type="file" accept=".pdf" @change="onFileChange" class="flex-1 min-w-[200px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-surface-deep file:text-on-dark hover:file:bg-surface-elevated cursor-pointer" />
+            <input type="file" accept=".pdf" @change="onFileChange" class="flex-1 min-w-[200px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-surface-deep file:text-on-dark hover:file:bg-surface-elevated cursor-pointer" />
             
             <div class="flex-1 min-w-[200px]">
               <select v-model="targetExpertise" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
@@ -141,8 +141,19 @@ import { ref, computed } from "vue"
 import axios from "axios"
 import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js'
 import { Line, Doughnut } from 'vue-chartjs'
+import { useHead } from "@vueuse/head"
+
+useHead({
+  title: 'Analisis CV & ATS Score — JobFinder',
+  meta: [
+    { name: 'description', content: 'Unggah CV Anda dan dapatkan analisis mendalam berbasis AI. Simulasikan skor ATS, temukan kelemahan CV, dan dapatkan rekomendasi perbaikan yang spesifik untuk bidang keahlianmu.' },
+    { property: 'og:title', content: 'Analisis CV & ATS Score — JobFinder' },
+    { property: 'og:description', content: 'Simulasi ATS dan analisis CV berbasis AI untuk pencari kerja Indonesia.' },
+  ]
+})
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale, LinearScale, ArcElement)
+
 
 const file = ref(null)
 const targetExpertise = ref("Pilih Bidang Keahlian")

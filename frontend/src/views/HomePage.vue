@@ -1,7 +1,7 @@
 <template>
   <div class="home bg-transparent text-on-dark font-sans">
     <!-- Hero Section (Dark Canvas) -->
-    <section class="bg-transparent py-[80px]">
+    <section class="bg-transparent py-[110px]">
       <div class="w-full mx-auto px-[32px] md:px-[72px]">
         <div class="flex flex-col gap-[40px]">
           <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] block text-stone">Job Aggregator Indonesia</span>
@@ -21,7 +21,7 @@
               <Icon icon="mdi-light:arrow-right" width="20"/>
             </router-link>            
 
-            <a href="https://github.com/penghancurbumi" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-[8px] justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-sm md:text-[18px] px-[24px] h-[48px] bg-surface-elevated border border-hairline-dark text-on-dark">
+            <a href="https://github.com/penghancurbumi/JobFinder" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-[8px] justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-sm md:text-[18px] px-[24px] h-[48px] bg-surface-elevated hover:bg-body border border-hairline-dark text-on-dark">
               <Icon icon="mdi:github" width="20"/>
               GitHub</a>
           </div>
@@ -29,7 +29,7 @@
       </div>
 
       <!-- Logo Slider — full width, label kiri -->
-      <div class="flex items-center gap-[24px] mt-[80px]">
+      <div class="flex items-center gap-[24px] mt-[90px]">
         <div class="flex flex-row items-center gap-2 px-[32px] md:px-[72px]">
           <div class="h-1 w-1 rounded-full bg-white"></div>
           <p class="font-mono uppercase text-[14px] font-bold tracking-[1.5px] text-white shrink-0">Powered by Trusted Sources</p>
@@ -81,7 +81,7 @@
 
 
     <!-- Features Section (Dark Canvas) -->
-    <section class="bg-transparent pt-[140px] pb-[80px]">
+    <section class="bg-transparent pt-[80px] pb-[80px]">
       <div class="w-full mx-auto px-[32px] md:px-[72px]">
         <div class="mb-xxl">
           <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-lg block">Fitur Unggulan</span>
@@ -146,55 +146,6 @@
         </div>
       </div>
     </section>
-
-    <!-- Footer (Dark Canvas) -->
-    <footer class="bg-canvas-dark pt-xxl pb-lg border-t border-hairline-dark">
-      <div class="w-full mx-auto px-[32px] md:px-[72px]">
-        <div class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr_1fr] gap-xxl md:gap-xl mb-block">
-          <div class="flex flex-col gap-sm">
-            <div class="flex items-center gap-xs mb-sm">
-              <span class="text-[20px] font-medium leading-[1.4] text-on-dark">JobFinder</span>
-            </div>
-            <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute max-w-[280px]">Platform agregasi lowongan kerja dan alat karier untuk pencari kerja di Indonesia.</p>
-          </div>
-          <div class="flex flex-col gap-sm">
-            <span class="font-mono text-[12px] uppercase tracking-[1px] font-bold text-stone mb-xs">Fitur</span>
-            <router-link to="/" class="text-on-dark-mute hover:text-on-dark text-[14px] transition-colors no-underline">Home</router-link>
-            <router-link to="/jobs" class="text-on-dark-mute hover:text-on-dark text-[14px] transition-colors no-underline">Cari Lowongan</router-link>
-            <router-link to="/cv-analyzer" class="text-on-dark-mute hover:text-on-dark text-[14px] transition-colors no-underline">Analisis CV</router-link>
-            <router-link to="/cv-builder" class="text-on-dark-mute hover:text-on-dark text-[14px] transition-colors no-underline">Buat CV</router-link>
-            <router-link to="/chatbot" class="text-on-dark-mute hover:text-on-dark text-[14px] transition-colors no-underline">AI Chatbot</router-link>
-          </div>
-          <div class="flex flex-col gap-sm">
-            <span class="font-mono text-[12px] uppercase tracking-[1px] font-bold text-stone mb-xs">Sumber</span>
-            <span class="text-on-dark-mute text-[14px]">LinkedIn</span>
-            <span class="text-on-dark-mute text-[14px]">Glints</span>
-            <span class="text-on-dark-mute text-[14px]">Jobstreet</span>
-            <span class="text-on-dark-mute text-[14px]">Fastwork</span>
-            <span class="text-on-dark-mute text-[14px]">Pintarnya</span>
-            <span class="text-on-dark-mute text-[14px]">LinkedIn</span>
-            <span class="text-on-dark-mute text-[14px]">KitaLulus</span>
-          </div>
-          <div class="flex flex-col gap-sm">
-            <span class="font-mono text-[12px] uppercase tracking-[1px] font-bold text-stone mb-xs">Hubungi</span>
-
-            <div class="flex flex-row gap-sm">
-              <a href="https://github.com/penghancurbumi" class="text-on-dark-mute hover:text-on-dark text-[14px] transition-colors no-underline">
-                <Icon icon="mdi:github" width="24" height="24" />
-              </a>
-
-              <a href="https://www.linkedin.com/in/muhammad-al-fakhreza-dwi-putra-b16962301/" class="text-on-dark-mute hover:text-on-dark text-[14px] transition-colors no-underline">
-                <Icon icon="mdi:linkedin" width="24" height="24" />
-              </a>
-            </div>
-          </div>
-        </div>
-        <div class="flex justify-between items-center pt-lg border-t border-hairline-dark">
-          <span class="text-[13px] font-normal leading-[1.5] text-on-dark-mute">&copy; {{ new Date().getFullYear() }} JobFinder. All rights reserved.</span>
-          <span class="text-[13px] font-normal leading-[1.5] text-stone">Built with editorial precision</span>
-        </div>
-      </div>
-    </footer>
   </div>
 </template>
 
@@ -203,6 +154,20 @@
 <script setup>
 import { Icon } from '@iconify/vue'
 import { ref, onMounted } from "vue"
+import { useHead } from "@vueuse/head"
+
+useHead({
+  title: 'JobFinder — Temukan Karier Masa Depanmu',
+  meta: [
+    {
+      name: 'description',
+      content: 'Platform agregasi lowongan kerja dan magang terlengkap di Indonesia. Temukan ribuan peluang dari LinkedIn, Glints, Jobstreet, dan sumber terpercaya lainnya — dilengkapi analisis CV berbasis AI dan pembuat CV ATS-friendly.'
+    },
+    { property: 'og:title', content: 'JobFinder — Temukan Karier Masa Depanmu' },
+    { property: 'og:description', content: 'Agregasi lowongan kerja dan magang dari seluruh sumber terpercaya Indonesia, lengkap dengan analisis CV AI dan pembuat dokumen ATS.' },
+  ]
+})
+
 
 const totalJobs = ref(0)
 const sourceCount = ref(0)
@@ -281,9 +246,6 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   padding: 8px 16px;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
   opacity: 0.6;
   transition: opacity 0.2s ease;
   flex-shrink: 0;
@@ -295,7 +257,7 @@ onMounted(async () => {
 }
 
 .logo-chip img {
-  height: 32px;
+  height: 36px;
   width: auto;
   object-fit: contain;
 }

@@ -42,6 +42,12 @@ const db = new sqlite3.Database(dbPath, (err) => {
     // Add workType column if missing (migration for existing DBs)
     db.run("ALTER TABLE jobs ADD COLUMN workType TEXT", () => {})
 
+    // Add lastSeenAt for expired-job pruning (migration for existing DBs).
+    // Backfill so existing rows are treated as "seen just now" (prevents an
+    // immediate mass-delete on the first cleanup after upgrade).
+    db.run("ALTER TABLE jobs ADD COLUMN lastSeenAt TEXT", () => {})
+    db.run("UPDATE jobs SET lastSeenAt = ? WHERE lastSeenAt IS NULL", [new Date().toISOString()], () => {})
+
     // Indexes for the most common filters/ordering
     db.run("CREATE INDEX IF NOT EXISTS idx_jobs_posted ON jobs(postedDate DESC, id DESC)", (err) => {
       if (err) console.error('Error creating index:', err.message)
@@ -50,6 +56,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
     db.run("CREATE INDEX IF NOT EXISTS idx_jobs_jobtype ON jobs(jobType)", () => {})
     db.run("CREATE INDEX IF NOT EXISTS idx_jobs_worktype ON jobs(workType)", () => {})
     db.run("CREATE INDEX IF NOT EXISTS idx_jobs_company ON jobs(company)", () => {})
+    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_lastseen ON jobs(lastSeenAt)", () => {})
 
     db.run(`
       CREATE TABLE IF NOT EXISTS chat_sessions (
@@ -112,6 +119,59 @@ export async function refreshJobsCache() {
 
 export function invalidateJobsCache() {
   jobsCache = null
+}
+
+// ---- Expired-job cleanup ----
+// Delete jobs that no longer exist on the source platforms so the dataset
+// stays bounded instead of accumulating forever.
+//  - 404/410 detected during scraping (see NotFoundCollector middleware)
+//  - hard age cap: posted too long ago
+//  - not seen recently: absent from the top listing pages across scrape cycles
+
+export async function deleteByUrls(urls) {
+  if (!urls || !urls.length) return 0
+  const placeholders = urls.map(() => "?").join(",")
+  const res = await runQuery(`DELETE FROM jobs WHERE url IN (${placeholders})`, urls)
+  return res.changes
+}
+
+// Same listing can reappear under a new URL (sites re-post jobs / rotate URLs).
+// Match on normalized title+company+location so re-listings don't bloat the DB.
+export async function findDuplicate(title, company, location) {
+  return fetchOne(
+    `SELECT id, url FROM jobs
+      WHERE lower(trim(title)) = ? AND lower(trim(company)) = ?
+        AND lower(trim(location)) = ?
+      ORDER BY id DESC LIMIT 1`,
+    [
+      String(title || "").trim().toLowerCase(),
+      String(company || "").trim().toLowerCase(),
+      String(location || "").trim().toLowerCase(),
+    ]
+  )
+}
+
+export async function deleteExpiredJobs({
+  maxAgeDays = 90,
+  notSeenDays = 30,
+  notSeenMinAgeDays = 7,
+} = {}) {
+  const iso = (offsetDays) => {
+    const d = new Date()
+    d.setDate(d.getDate() - offsetDays)
+    return d.toISOString().substring(0, 10)
+  }
+  const ageRes = await runQuery(
+    "DELETE FROM jobs WHERE postedDate IS NOT NULL AND postedDate != '' AND postedDate < ?",
+    [iso(maxAgeDays)]
+  )
+  const notSeenRes = await runQuery(
+    `DELETE FROM jobs
+       WHERE lastSeenAt IS NOT NULL AND lastSeenAt != '' AND lastSeenAt < ?
+         AND postedDate IS NOT NULL AND postedDate != '' AND postedDate < ?`,
+    [iso(notSeenDays), iso(notSeenMinAgeDays)]
+  )
+  return { age: ageRes.changes, notSeen: notSeenRes.changes }
 }
 
 export default db
