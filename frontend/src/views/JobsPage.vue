@@ -1,17 +1,30 @@
 <template>
   <div class="pt-[50px] md:pt-[88px] min-h-screen bg-canvas-dark text-on-dark font-sans">
     <div class="w-full mx-auto px-[32px] md:px-[72px]">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-xl pb-lg border-b border-hairline-dark gap-md md:gap-0">
-        <div>
+      <div class="mb-xl pb-lg border-b border-hairline-dark">
+        <div class="flex flex-col mb-lg">
           <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Eksplorasi</span>
           <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark mb-0">Daftar Pekerjaan Yang Tersedia</h1>
         </div>
-        <button @click="requestScrape" class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] py-[8px] h-[40px] text-[14px] gap-[8px]" :disabled="isScraping || !!cooldownMsg">
-          <svg v-if="isScraping" class="animate-[spin_1s_linear_infinite]" viewBox="0 0 24 24" width="16" height="16">
-            <circle class="animate-[dash_1.5s_ease-in-out_infinite] [stroke-dasharray:60] [stroke-dashoffset:60]" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
-          </svg>
-          {{ isScraping ? 'Memperbarui Data...' : 'Perbarui Data' }}
-        </button>
+
+        <div class="flex flex-col md:flex-row items-center gap-md">          
+          <div class="relative w-full md:flex-1">
+            <Icon icon="material-symbols-light:search" class="absolute left-[16px] top-1/2 -translate-y-1/2 text-stone pointer-events-none" width="18" height="18" />
+            <input type="text" v-model="searchQuery" placeholder="Cari posisi, kata kunci, teknologi..." class="w-full bg-surface-elevated border border-hairline-dark rounded-sm h-[44px] pl-[44px] pr-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone text-sm transition-all" />
+          </div>
+
+          <div class="relative w-full md:w-[280px]">
+            <Icon icon="ion:location-outline" class="absolute left-[16px] top-1/2 -translate-y-1/2 text-stone pointer-events-none" width="18" height="18" />
+            <input type="text" v-model="locationQuery" placeholder="Kota, lokasi, atau Remote..." class="w-full bg-surface-elevated border border-hairline-dark rounded-sm h-[44px] pl-[44px] pr-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone text-sm transition-all" />
+          </div>
+
+          <button @click="requestScrape" class="w-full md:w-auto shrink-0 inline-flex items-center justify-center font-medium rounded-sm transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[24px] h-[44px] text-[14px] gap-[8px]" :disabled="isScraping || !!cooldownMsg">
+            <svg v-if="isScraping" class="animate-[spin_1s_linear_infinite]" viewBox="0 0 24 24" width="16" height="16">
+              <circle class="animate-[dash_1.5s_ease-in-out_infinite] [stroke-dasharray:60] [stroke-dashoffset:60]" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
+            </svg>
+            {{ isScraping ? 'Memperbarui Data...' : 'Perbarui Data' }}
+          </button>
+        </div>
       </div>
 
       <div v-if="cooldownMsg" class="mb-xl bg-surface-elevated rounded-md p-lg border border-hairline-dark">
@@ -50,40 +63,36 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] items-start gap-lg">
+
         <!-- Filter Sidebar -->
         <aside class="bg-surface-elevated rounded-md p-xl static lg:sticky lg:top-[100px] mb-lg lg:mb-0">
-          <div class="flex justify-between items-center mb-lg">
+          <div class="flex justify-between items-center mb-xl">
             <h3 class="text-base font-medium leading-[1.4] text-on-dark">Filter</h3>
             <button @click="resetFilters" class="p-0 h-auto bg-transparent text-white hover:text-stone font-semibold cursor-pointer text-sm">Reset</button>
           </div>
 
-          <div class="mb-lg flex flex-col">
-            <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Pencarian Kata Kunci</label>
-            <input type="text" v-model="searchQuery" placeholder="Software, UI/UX, Sales..." class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[40px] px-[12px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone text-sm" />
-          </div>
-          
-          <div class="mb-lg flex flex-col">
-            <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Lokasi</label>
-            <input type="text" v-model="locationQuery" placeholder="Jakarta, Remote, Bali..." class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[40px] px-[12px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone text-sm" />
-          </div>
-
-          <div class="mb-lg flex flex-col">
-            <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Tipe Pekerjaan</label>
+          <div class="mb-xl flex flex-col">
+            <label class="block text-on-dark-mute mb-sm font-medium text-sm">Tipe Pekerjaan</label>
             <CustomSelect v-model="activeTipe" :options="tipeOptions" placeholder="Semua Tipe" />
           </div>
 
-          <div class="mb-lg flex flex-col">
-            <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Tingkat Pengalaman</label>
+          <div class="mb-xl flex flex-col">
+            <label class="block text-on-dark-mute mb-sm font-medium text-sm">Pengalaman</label>
             <CustomSelect v-model="experienceLevel" :options="experienceOptions" placeholder="Semua Pengalaman" />
           </div>
 
-          <div class="mb-lg flex flex-col">
-            <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Urutkan Berdasarkan</label>
+          <div class="mb-xl flex flex-col">
+            <label class="block text-on-dark-mute mb-sm font-medium text-sm">Pendidikan</label>
+            <CustomSelect v-model="educationlevel" :options="educationOptions" placeholder="Semua Pendidikan" />
+          </div>
+
+          <div class="mb-xl flex flex-col">
+            <label class="block text-on-dark-mute mb-sm font-medium text-sm">Urutkan Berdasarkan</label>
             <CustomSelect v-model="sortBy" :options="sortOptions" placeholder="Terbaru" />
           </div>
 
-          <div class="mt-lg flex flex-col">
-            <label class="block text-on-dark-mute mb-sm font-semibold text-sm">Rentang Gaji</label>
+          <div class="mt-xl flex flex-col">
+            <label class="block text-on-dark-mute mb-sm font-medium text-sm">Rentang Gaji</label>
             <label class="flex items-center gap-[8px] font-normal text-[13px] normal-case cursor-pointer text-on-dark-mute">
               <input type="checkbox" v-model="hasSalary" class="w-[12px] h-[12px] min-h-[12px] cursor-pointer" />
               Hanya tampilkan yang mencantumkan gaji
@@ -116,7 +125,7 @@
             <p class="text-[18px] font-normal leading-[1.56] tracking-[-0.09px] text-stone italic">Tidak ada peluang yang sesuai dengan filter.</p>
           </div>
 
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl items-stretch">
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg items-stretch">
             <div 
               v-for="job in jobs" 
               :key="job.title + job.company + job.id" 
@@ -190,7 +199,7 @@
                   :href="job.url" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  class="w-full inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] py-[8px] h-[38px] text-[13px] no-underline gap-xs"
+                  class="w-full inline-flex items-center justify-center font-medium rounded-sm transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] py-[8px] h-[38px] text-[13px] no-underline gap-xs"
                 >
                   Lamar Sekarang
                 </a>
@@ -283,6 +292,7 @@ const activeTipe = ref("all")
 const searchQuery = ref("")
 const locationQuery = ref("")
 const experienceLevel = ref("all")
+const educationlevel = ref("all")
 
 const tipeOptions = [
   { value: 'all', label: 'Semua Tipe' },
@@ -310,6 +320,18 @@ const experienceOptions = [
   { value: 'senior', label: 'Senior Level' },
   { value: 'manager', label: 'Manager / Director' }
 ]
+
+const educationOptions = [
+  { value: 'all', label: 'Semua Pendidikan' },
+  { value: 's3', label: 'S3 / Doktor' },
+  { value: 's2', label: 'S2 / Magister' },
+  { value: 's1', label: 'S1 / Sarjana' },
+  { value: 'd4', label: 'D4 / Sarjana Terapan' },
+  { value: 'd3', label: 'D3 / Diploma 3' },
+  { value: 'sma', label: 'SMA / SMK Sederajat' }
+]
+
+
 const hasSalary = ref(false)
 const sortBy = ref("newest")
 
@@ -430,6 +452,7 @@ async function fetchPage(p, append = false) {
     sortBy: sortBy.value,
     location: locationQuery.value,
     experience: experienceLevel.value,
+    education: educationlevel.value,
     hasSalary: hasSalary.value ? 'true' : 'false',
     page: String(p),
     limit: String(limit)
@@ -481,7 +504,7 @@ const visiblePages = computed(() => {
 })
 
 let searchTimeout;
-watch([activeTipe, searchQuery, locationQuery, experienceLevel, hasSalary, sortBy], () => {
+watch([activeTipe, searchQuery, locationQuery, experienceLevel, educationlevel, hasSalary, sortBy], () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
     fetchPage(1, false)
@@ -494,6 +517,7 @@ function resetFilters() {
   searchQuery.value = ""
   locationQuery.value = ""
   experienceLevel.value = "all"
+  educationlevel.value = "all"
   hasSalary.value = false
 }
 

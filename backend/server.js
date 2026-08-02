@@ -51,7 +51,7 @@ async function performScrape() {
   }
 }
 
-async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy = "newest", location = "", experience = "", hasSalary = false, page = 1, limit = 200) {
+async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy = "newest", location = "", experience = "", hasSalary = false, education = "all", page = 1, limit = 200) {
   page = Math.max(parseInt(page, 10) || 1, 1)
   limit = Math.min(Math.max(parseInt(limit, 10) || 200, 1), 500)
   const offset = (page - 1) * limit
@@ -114,6 +114,21 @@ async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy
       }
     }
 
+    if (education && education !== 'all') {
+      const text = lower(j.title) + " " + lower(j.description)
+      if (education === 's3') {
+        if (!text.includes("s3") && !text.includes("doktor")) return false
+      } else if (education === 's2') {
+        if (!text.includes("s2") && !text.includes("magister") && !text.includes("master")) return false
+      } else if (education === 's1') {
+        if (!text.includes("s1") && !text.includes("sarjana") && !text.includes("bachelor")) return false
+      } else if (education === 'diploma' || education === 'd3' || education === 'd4') {
+        if (!text.includes("d3") && !text.includes("d4") && !text.includes("diploma") && !text.includes("d1") && !text.includes("d2")) return false
+      } else if (education === 'sma' || education === 'smk') {
+        if (!text.includes("sma") && !text.includes("smk") && !text.includes("sederajat") && !text.includes("slta")) return false
+      }
+    }
+
     return true
   })
 
@@ -153,8 +168,8 @@ io.on("connection", async (socket) => {
     performScrape()
   })
 
-  socket.on("filter-jobs", async ({ search, bidang, tipe, sortBy, location, experience, hasSalary, page, limit }) => {
-    const result = await getFilteredJobs(search, bidang, tipe, sortBy, location, experience, hasSalary, page, limit)
+  socket.on("filter-jobs", async ({ search, bidang, tipe, sortBy, location, experience, hasSalary, education, page, limit }) => {
+    const result = await getFilteredJobs(search, bidang, tipe, sortBy, location, experience, hasSalary, education, page, limit)
     socket.emit("jobs-updated", result)
   })
 })
@@ -178,7 +193,7 @@ setTimeout(runScheduledCleanup, 5000)
 app.get("/api/expertise-areas", (req, res) => res.json(EXPERTISE_AREAS))
 
 app.get("/api/jobs", async (req, res) => {
-  const { search, bidang, tipe, sortBy, location, experience, hasSalary, page, limit } = req.query
+  const { search, bidang, tipe, sortBy, location, experience, hasSalary, education, page, limit } = req.query
   const result = await getFilteredJobs(
     search, 
     bidang, 
@@ -187,6 +202,7 @@ app.get("/api/jobs", async (req, res) => {
     location, 
     experience, 
     hasSalary === 'true' || hasSalary === true,
+    education,
     page,
     limit
   )

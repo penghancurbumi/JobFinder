@@ -4,7 +4,7 @@
     <button 
       type="button"
       @click="toggleDropdown"
-      class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[40px] px-[12px] text-on-dark focus:border-white focus:outline-none flex items-center justify-between text-xs md:text-sm cursor-pointer transition-colors"
+      class="w-full bg-transparent border border-hairline-dark rounded-sm h-[40px] px-[12px] text-on-dark focus:border-white focus:outline-none flex items-center justify-between text-xs md:text-sm cursor-pointer transition-colors"
       :class="{ 'border-white': isOpen }"
     >
       <span class="truncate">{{ selectedLabel }}</span>
