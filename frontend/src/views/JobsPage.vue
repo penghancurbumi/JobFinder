@@ -94,20 +94,21 @@
 
         <!-- Main Content -->
         <main>
-          <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
-            <div v-for="n in 6" :key="'skeleton-' + n" class="bg-surface-elevated rounded-sm p-lg flex flex-col gap-0 min-h-[200px]">
-              <div class="h-[24px] w-[70%] mb-[12px] bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite] rounded-[4px]"></div>
-              <div class="flex gap-[6px] mb-[12px]">
-                <div class="h-[20px] w-[60px] rounded-[12px] bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite]"></div>
-                <div class="h-[20px] w-[60px] rounded-[12px] bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite]"></div>
+          <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl items-stretch">
+            <div v-for="n in 6" :key="'skeleton-' + n" class="bg-surface-elevated rounded-md p-lg flex flex-col justify-between h-full border border-hairline-dark">
+              <div class="flex flex-col gap-sm">
+                <div class="h-[50px] w-[85%] bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite] rounded-[4px] mb-xs"></div>
+                <div class="flex gap-[6px]">
+                  <div class="h-[24px] w-[70px] rounded-full bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite]"></div>
+                  <div class="h-[24px] w-[80px] rounded-full bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite]"></div>
+                </div>
+                <div class="h-[16px] w-[60%] bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite] rounded-[4px]"></div>
+                <div class="h-[14px] w-[40%] bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite] rounded-[4px]"></div>
+                <div class="h-[76px] w-full rounded-[12px] mt-xs bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite]"></div>
               </div>
-              <div class="h-[16px] w-[50%] mb-[12px] bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite] rounded-[4px]"></div>
-              <div class="h-[12px] w-[80%] mb-[12px] bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite] rounded-[4px]"></div>
-              <div class="h-[32px] w-full rounded-[4px] mb-[16px] bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite]"></div>
-              <div class="h-[14px] w-full mb-[8px] bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite] rounded-[4px]"></div>
-              <div class="h-[14px] w-full mb-[8px] bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite] rounded-[4px]"></div>
-              <div class="h-[14px] w-[80%] mb-[8px] bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite] rounded-[4px]"></div>
-              <div class="h-[32px] w-[120px] rounded-full mt-auto bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite]"></div>
+              <div class="mt-md pt-sm border-t border-hairline-dark/40">
+                <div class="h-[38px] w-full rounded-full bg-gradient-to-r from-surface-deep via-surface-elevated to-surface-deep bg-[length:200%_100%] animate-[loading-skeleton_1.5s_infinite]"></div>
+              </div>
             </div>
           </div>
 
@@ -115,39 +116,85 @@
             <p class="text-[18px] font-normal leading-[1.56] tracking-[-0.09px] text-stone italic">Tidak ada peluang yang sesuai dengan filter.</p>
           </div>
 
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl">
-            <div v-for="job in jobs" :key="job.title + job.company + job.id" class="bg-surface-elevated rounded-sm p-[15px] flex flex-col gap-[8px]">
-              <div>
-                <h3 class="text-[18px] font-medium leading-[1.4] text-on-dark">{{ job.title }}</h3>
-                <div class="flex gap-[6px] shrink-0 flex-wrap mt-[8px]">
-                  <span class="bg-surface-deep text-on-dark-mute border border-hairline-dark rounded-full px-[12px] py-[4px] text-[12px]">
-                    {{ job.jobType.charAt(0).toUpperCase() + job.jobType.slice(1) }}
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl items-stretch">
+            <div 
+              v-for="job in jobs" 
+              :key="job.title + job.company + job.id" 
+              class="bg-surface-elevated rounded-md p-lg flex flex-col justify-between h-full border border-hairline-dark hover:border-white/20 transition-all duration-200 shadow-sm"
+            >
+              <!-- Top & Middle Info -->
+              <div class="flex flex-col gap-sm">
+                <!-- Title & Badges -->
+                <div>
+                  <h3 
+                    class="text-[18px] font-medium leading-[1.4] text-on-dark line-clamp-2 min-h-[50px] mb-xs"
+                    :title="job.title"
+                  >
+                    {{ job.title }}
+                  </h3>
+                  <div class="flex gap-[6px] shrink-0 flex-wrap items-center">
+                    <span class="bg-surface-deep text-on-dark-mute border border-hairline-dark rounded-full px-[12px] py-[4px] text-[12px] font-medium">
+                      {{ job.jobType ? (job.jobType.charAt(0).toUpperCase() + job.jobType.slice(1)) : 'Full-time' }}
+                    </span>
+                    <span v-if="job.expertise" class="bg-white/10 text-white border border-white/25 rounded-full px-[12px] py-[4px] text-[12px] font-medium truncate max-w-[150px]">
+                      {{ job.expertise }}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Company & Location -->
+                <div class="flex items-center gap-xs text-[12px] text-on-dark-mute truncate">
+                  <strong class="text-on-dark truncate max-w-[140px]" :title="job.company">{{ job.company }}</strong>
+                  <span class="text-stone">•</span>
+                  <span class="truncate" :title="job.location || 'Lokasi tidak disebutkan'">
+                    {{ job.location || 'Lokasi tidak disebutkan' }}
                   </span>
-                  <span class="bg-white/10 text-white border border-white/25 rounded-full px-[12px] py-[4px] text-[12px]">{{ job.expertise }}</span>
+                </div>
+                
+                <!-- Source -->
+                <div class="text-stone text-[12px] font-normal leading-[1.5]">
+                  Sumber: 
+                  <a :href="job.url" target="_blank" rel="noopener noreferrer" class="text-white font-medium no-underline hover:underline">
+                    {{ job.source }}
+                  </a>
+                </div>
+
+                <!-- Info Meta Box (Uniform structure for all cards) -->
+                <div class="bg-surface-deep p-sm rounded-[12px] flex flex-col gap-[4px] min-h-[76px] justify-center mt-xs">
+                  <div class="flex justify-between items-center text-[12px]">
+                    <span class="text-stone">Diposting</span>
+                    <span class="text-on-dark-mute font-medium">
+                      {{ formatPostedDate(job.postedDate) || 'Terbaru' }}
+                    </span>
+                  </div>
+                  
+                  <div class="flex justify-between items-center text-[12px]">
+                    <span class="text-stone">Batas Waktu</span>
+                    <span :class="job.deadlineDate ? 'text-accent-danger font-medium' : 'text-stone'">
+                      {{ job.deadlineDate || '-' }}
+                    </span>
+                  </div>
+
+                  <div class="flex justify-between items-center text-[12px]">
+                    <span class="text-stone">Gaji</span>
+                    <span :class="job.salary ? 'text-accent-teal font-medium' : 'text-stone'">
+                      {{ job.salary || 'Tidak dicantumkan' }}
+                    </span>
+                  </div>
                 </div>
               </div>
               
-              <div class="flex gap-sm text-[12px] flex-wrap">
-                <strong class="text-on-dark">{{ job.company }}</strong>
-                <span class="text-stone">•</span>
-                <span class="text-on-dark-mute">{{ job.location || 'Lokasi tidak disebutkan' }}</span>
+              <!-- Bottom Action Button -->
+              <div class="mt-md pt-sm">
+                <a 
+                  :href="job.url" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  class="w-full inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] py-[8px] h-[38px] text-[13px] no-underline gap-xs"
+                >
+                  Lamar Sekarang
+                </a>
               </div>
-              
-              <div class="text-stone text-[12px] font-normal leading-[1.5]">
-                Sumber: <a :href="job.url" target="_blank" class="text-white no-underline hover:underline">{{ job.source }}</a>
-              </div>
-
-              <div class="flex flex-wrap gap-sm bg-surface-deep p-sm rounded-[12px] mt-xs" v-if="formatPostedDate(job.postedDate) || job.deadlineDate || job.salary">
-                 <span v-if="formatPostedDate(job.postedDate)" class="text-[12px] font-normal leading-[1.5] text-on-dark-mute">Diposting: {{ formatPostedDate(job.postedDate) }}</span>
-                 <span v-if="job.deadlineDate" class="text-[12px] leading-[1.5] text-accent-danger font-medium">Batas Waktu: {{ job.deadlineDate }}</span>
-                 <span v-if="job.salary" class="text-[12px] leading-[1.5] text-accent-teal font-medium w-full">Gaji: {{ job.salary }}</span>
-              </div>
-              
-              <div class="flex flex-col">
-                <p :class="['text-[12px] font-normal leading-[1.5] text-on-dark-mute whitespace-pre-wrap mb-xs', { 'line-clamp-3 overflow-hidden text-ellipsis': !isExpanded(job) }]">{{ job.description }}</p>
-              </div>
-              
-              <a :href="job.url" target="_blank" class="self-start inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] py-[8px] h-[36px] text-[12px] no-underline">Lamar Sekarang</a>
             </div>
           </div>
 
@@ -191,6 +238,7 @@
             </div>
           </div>
         </main>
+        
       </div>
     </div>
   </div>
