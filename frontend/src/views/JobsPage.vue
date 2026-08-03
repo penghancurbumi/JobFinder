@@ -65,7 +65,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] items-start gap-lg">
 
         <!-- Filter Sidebar -->
-        <aside class="bg-surface-elevated rounded-md p-xl static lg:sticky lg:top-[100px] mb-lg lg:mb-0">
+        <aside class="bg-surface-elevated rounded-md p-xl static lg:sticky lg:top-[100px] mb-lg lg:mb-0 border border-hairline-dark">
           <div class="flex justify-between items-center mb-xl">
             <h3 class="text-base font-medium leading-[1.4] text-on-dark">Filter</h3>
             <button @click="resetFilters" class="p-0 h-auto bg-transparent text-white hover:text-stone font-semibold cursor-pointer text-sm">Reset</button>
@@ -152,7 +152,7 @@
                 </div>
                 
                 <!-- Company & Location -->
-                <div class="flex items-center gap-xs text-[12px] text-on-dark-mute truncate">
+                <div class="flex items-center gap-xs text-[12px] text-on-dark-mute truncate mt-xs">
                   <strong class="text-on-dark truncate max-w-[140px]" :title="job.company">{{ job.company }}</strong>
                   <span class="text-stone">•</span>
                   <span class="truncate" :title="job.location || 'Lokasi tidak disebutkan'">
@@ -169,7 +169,7 @@
                 </div>
 
                 <!-- Info Meta Box (Uniform structure for all cards) -->
-                <div class="bg-surface-deep p-sm rounded-[12px] flex flex-col gap-[4px] min-h-[76px] justify-center mt-xs">
+                <div class="flex flex-col gap-[4px] min-h-[76px] justify-center mt-xs">
                   <div class="flex justify-between items-center text-[12px]">
                     <span class="text-stone">Diposting</span>
                     <span class="text-on-dark-mute font-medium">

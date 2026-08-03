@@ -1,7 +1,7 @@
 import "dotenv/config"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 
-const MODEL = "gemma-4-26b-a4b-it"
+const MODEL = "gemini-3.5-flash"
 
 function getClient(systemInstruction) {
   const apiKey = process.env.GEMINI_API_KEY

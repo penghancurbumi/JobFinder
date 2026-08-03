@@ -10,7 +10,7 @@
     <!-- Wizard Layout -->
     <div class="flex flex-col md:flex-row gap-xl print:hidden items-start">
       <!-- Sidebar Navigation -->
-      <aside class="w-full md:w-[280px] shrink-0 md:sticky top-[100px] bg-surface-elevated rounded-[20px] py-xl">
+      <aside class="w-full md:w-[280px] shrink-0 md:sticky top-[100px] bg-surface-elevated rounded-[20px] py-xl border border-hairline-dark">
         <div class="mb-[24px] px-[16px]">
           <label class="text-[12px] mb-[4px] text-on-dark-mute block font-semibold">Target Keahlian / Bidang</label>
           <select v-model="targetExpertise" class="w-full text-[14px] bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
@@ -20,23 +20,31 @@
         
         <ul class="list-none m-0 p-0 flex md:block overflow-x-auto md:overflow-visible pb-[12px] md:pb-0">
           <li v-for="(section, index) in steps" :key="section.id" 
-              class="flex shrink-0 items-center px-[16px] py-[12px] cursor-pointer rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent"
-              :class="{ 'bg-surface-deep !text-on-dark font-medium !border-white': currentStep === index, 'completed': currentStep > index }"
+              class="flex shrink-0 items-center px-[16px] py-[12px] rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent"
+              :class="{ 
+                'bg-surface-deep !text-on-dark font-medium !border-white': currentStep === index, 
+                'cursor-pointer': index <= maxStepReached || index === currentStep + 1,
+                'opacity-50 cursor-not-allowed': index > maxStepReached && index !== currentStep + 1
+              }"
               @click="goToStep(index)">
-            <div class="w-[28px] h-[28px] rounded-full border border-hairline-dark flex items-center justify-center text-[12px] mr-[12px] shrink-0 transition-colors" :class="{ 'bg-white text-ink border-white': currentStep > index }">{{ index + 1 }}</div>
+            <div class="w-[28px] h-[28px] rounded-full border border-hairline-dark flex items-center justify-center text-[12px] mr-[12px] shrink-0 transition-colors" :class="{ 'bg-white text-ink border-white': index < maxStepReached || (index < currentStep) }">{{ index + 1 }}</div>
             <div class="text-[14px]">{{ section.title }}</div>
           </li>
-          <li class="flex shrink-0 items-center px-[16px] py-[12px] cursor-pointer rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent"
-              :class="{ 'bg-surface-deep !text-on-dark font-medium !border-white': currentStep === steps.length }" 
+          <li class="flex shrink-0 items-center px-[16px] py-[12px] rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent"
+              :class="{ 
+                'bg-surface-deep !text-on-dark font-medium !border-white': currentStep === steps.length,
+                'cursor-pointer': steps.length <= maxStepReached,
+                'opacity-50 cursor-not-allowed': steps.length > maxStepReached
+              }" 
               @click="goToStep(steps.length)">
-            <div class="w-[28px] h-[28px] rounded-full border border-hairline-dark flex items-center justify-center text-[12px] mr-[12px] shrink-0 transition-colors">✓</div>
+            <div class="w-[28px] h-[28px] rounded-full border border-hairline-dark flex items-center justify-center text-[12px] mr-[12px] shrink-0 transition-colors" :class="{ 'bg-white text-ink border-white': maxStepReached >= steps.length }">✓</div>
             <div class="text-[14px]">Preview &amp; Export</div>
           </li>
         </ul>
       </aside>
 
       <!-- Main Content Panel -->
-      <main class="flex-grow min-w-0 bg-surface-elevated rounded-[20px] p-xl md:p-xxl w-full">
+      <main class="flex-grow min-w-0 bg-surface-elevated rounded-[20px] p-xl md:p-xxl w-full border border-hairline-dark">
         <!-- Active Form Section -->
         <div v-if="currentStep < steps.length">
           <h3 class="text-[24px] font-medium leading-[1.33] mb-[24px] text-on-dark">
@@ -415,9 +423,9 @@
           <!-- CV Visual Preview -->
           <div class="bg-white text-black p-[40px] rounded-[20px] leading-[1.5] max-w-[800px] mx-auto" v-if="hasPreviewData">
             <!-- Personal Info -->
-            <div class="text-center mb-[24px]">
-                <h2 class="text-[24px] mb-[4px] uppercase tracking-[1px] font-bold">{{ formData.full_name || '[Nama Anda]' }}</h2>
-                <p class="text-[14px]">
+            <div class="text-center mb-[20px]">
+                <h2 class="text-[30px] mb-[4px] uppercase tracking-[1px] font-bold">{{ formData.full_name || '[Nama Anda]' }}</h2>
+                <p class="text-[12px]">
                     {{ (!errors.email && formData.email) ? formData.email + ' | ' : '' }}
                     {{ formData.phone ? formData.phone + ' | ' : '' }}
                     {{ formData.address ? formData.address + ' | ' : '' }}
@@ -426,64 +434,64 @@
             </div>
             
             <!-- Summary -->
-            <div class="mb-[20px]" v-if="formData.summary">
+            <div class="mb-[15px]" v-if="formData.summary">
                 <h4 class="text-[14px] uppercase mb-[4px] font-bold">RINGKASAN PROFESIONAL</h4>
-                <div class="border-b border-black mb-[12px]"></div>
-                <p class="text-[14px]">{{ formData.summary }}</p>
+                <div class="border-b-2 border-black mb-[12px]"></div>
+                <p class="text-[12px] text-justify">{{ formData.summary }}</p>
             </div>
             
             <!-- Education -->
-            <div class="mb-[20px]" v-if="educations.length > 0">
+            <div class="mb-[15px]" v-if="educations.length > 0">
                 <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENDIDIKAN</h4>
-                <div class="border-b border-black mb-[12px]"></div>
+                <div class="border-b-2 border-black mb-[12px]"></div>
                 <div v-for="(edu, idx) in educations" :key="'prev-edu-'+idx" class="mb-[16px]">
                   <div class="flex justify-between items-start flex-wrap gap-[4px]">
                     <div>
-                      <div class="text-[14px] font-bold">{{ edu.degree }} {{ edu.major }} | IPK: {{ formatGPA(edu.gpa) }}/4.00</div>
-                      <div class="text-[14px]">{{ edu.institution }}</div>
+                      <div class="text-[12px] font-bold">{{ edu.degree }} {{ edu.major }} | IPK: {{ formatGPA(edu.gpa) }}/4.00</div>
+                      <div class="text-[12px]">{{ edu.institution }}</div>
                     </div>
-                    <div class="text-[14px]" style="color: #666;">{{ edu.startMonth }} {{ edu.startYear }} - {{ edu.endMonth }} {{ edu.endYear }}</div>
+                    <div class="text-[12px] text-black font-bold">{{ edu.startMonth }} {{ edu.startYear }} - {{ edu.endMonth }} {{ edu.endYear }}</div>
                   </div>
 
                   <div v-if="edu.experiences.length > 0" class="mt-[8px]">
-                    <div class="text-[13px] font-semibold mb-[4px]">Pengalaman Selama Pendidikan</div>
+                    <div class="text-[14px] font-semibold mb-[4px]">Pengalaman Selama Pendidikan</div>
                     <ul class="pl-[24px] list-disc">
-                        <li v-for="(exp, eidx) in edu.experiences" :key="'prev-eduexp-'+eidx" class="text-[14px] mb-[4px]">{{ exp.role }} {{ exp.title }}</li>
+                        <li v-for="(exp, eidx) in edu.experiences" :key="'prev-eduexp-'+eidx" class="text-[12px] mb-[4px]">{{ exp.role }} {{ exp.title }}</li>
                     </ul>
                   </div>
                 </div>
             </div>
             
             <!-- Work Experience -->
-            <div class="mb-[20px]" v-if="workExperiences.length > 0">
+            <div class="mb-[15px]" v-if="workExperiences.length > 0">
                 <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENGALAMAN KERJA</h4>
-                <div class="border-b border-black mb-[12px]"></div>
+                <div class="border-b-2 border-black mb-[12px]"></div>
                 <div v-for="(work, idx) in workExperiences" :key="'prev-work-'+idx" class="mb-[16px]">
                     <div class="flex justify-between items-start flex-wrap gap-[4px]">
                         <div>
-                            <div class="text-[14px] font-bold">{{ work.position }}</div>
-                            <div class="text-[14px]">{{ work.company }}</div>
+                            <div class="text-[12px] font-bold">{{ work.company }}</div>
+                            <div class="text-[11px] italic">{{ work.position }}</div> 
                         </div>
-                        <div class="text-[14px] shrink-0" style="color: #666;">{{ work.startMonth }} {{ work.startYear }} - {{ work.current ? 'Sekarang' : work.endMonth + ' ' + work.endYear }}</div>
+                        <div class="text-[12px] shrink-0 text-black font-bold">{{ work.startMonth }} {{ work.startYear }} - {{ work.current ? 'Sekarang' : work.endMonth + ' ' + work.endYear }}</div>
                     </div>
-                    <ul class="mt-[6px] pl-[24px] list-disc">
-                        <li v-for="(jd, jdIdx) in work.jobDescriptions.filter(j => j.trim())" :key="'prev-jd-'+jdIdx" class="text-[14px] mb-[4px]">{{ jd }}</li>
+                    <ul class="mt-[2px] pl-[24px] list-disc">
+                        <li v-for="(jd, jdIdx) in work.jobDescriptions.filter(j => j.trim())" :key="'prev-jd-'+jdIdx" class="text-[12px] mb-[2px]">{{ jd }}</li>
                     </ul>
                 </div>
             </div>
             
             <!-- Skills -->
-            <div class="mb-[20px]" v-if="formData.technical_skills || formData.soft_skills">
+            <div class="mb-[15px]" v-if="formData.technical_skills || formData.soft_skills">
                 <h4 class="text-[14px] uppercase mb-[4px] font-bold">KEAHLIAN</h4>
-                <div class="border-b border-black mb-[12px]"></div>
-                <p v-if="formData.technical_skills" class="text-[14px]"><strong>Keahlian Teknis:</strong> {{ formData.technical_skills }}</p>
-                <p v-if="formData.soft_skills" class="text-[14px]"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
+                <div class="border-b-2 border-black mb-[12px]"></div>
+                <p v-if="formData.technical_skills" class="text-[12px]"><strong>Keahlian Teknis:</strong> {{ formData.technical_skills }}</p>
+                <p v-if="formData.soft_skills" class="text-[12px]"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
             </div>
             
             <!-- Certifications -->
-            <div class="mb-[20px]" v-if="formData.cert_name">
+            <div class="mb-[15px]" v-if="formData.cert_name">
                 <h4 class="text-[14px] uppercase mb-[4px] font-bold">SERTIFIKASI</h4>
-                <div class="border-b border-black mb-[12px]"></div>
+                <div class="border-b-2 border-black mb-[12px]"></div>
                 <div class="mb-[12px]">
                     <div class="flex justify-between text-[14px]">
                         <strong>{{ formData.cert_name }}</strong>
@@ -607,6 +615,7 @@ const errors = reactive({ gpa: "", email: "", linkedin: "" })
 const analysisResult = ref("")
 const analyzing = ref(false)
 const currentStep = ref(0)
+const maxStepReached = ref(0)
 
 // Simple form fields (personal info, summary, skills, certifications)
 const FIELDS = [
@@ -683,6 +692,12 @@ onMounted(async () => {
     try { workExperiences.value = JSON.parse(savedWork) } catch(e) {}
   }
 
+  // Load saved navigation progress
+  const savedMaxStep = localStorage.getItem('jobfinder_cv_maxStep')
+  if (savedMaxStep) {
+    try { maxStepReached.value = parseInt(savedMaxStep) || 0 } catch(e) {}
+  }
+
   // Load steps and expertise areas from API
   try {
     const [secRes, areaRes] = await Promise.all([
@@ -710,6 +725,10 @@ watch(workExperiences, (val) => {
   localStorage.setItem('jobfinder_cv_work', JSON.stringify(val))
 }, { deep: true })
 
+watch(maxStepReached, (val) => {
+  localStorage.setItem('jobfinder_cv_maxStep', val.toString())
+})
+
 // ===================== NAVIGATION =====================
 function isStepValid(stepIndex) {
   if (stepIndex >= steps.value.length) return true
@@ -728,7 +747,12 @@ function isStepValid(stepIndex) {
 
 function nextStep() {
   if (isStepValid(currentStep.value)) {
-    if (currentStep.value < steps.value.length) currentStep.value++
+    if (currentStep.value < steps.value.length) {
+      currentStep.value++
+      if (currentStep.value > maxStepReached.value) {
+        maxStepReached.value = currentStep.value
+      }
+    }
   } else {
     const section = steps.value[currentStep.value]
     if (section?.id === 'education') alert("Harap tambahkan minimal satu data pendidikan.")
@@ -742,8 +766,19 @@ function prevStep() {
 }
 
 function goToStep(index) {
-  if (index < currentStep.value) { currentStep.value = index; return }
-  if (index === currentStep.value + 1 && isStepValid(currentStep.value)) { currentStep.value = index; return }
+  // Allow free navigation to any previously visited step
+  if (index <= maxStepReached.value) {
+    currentStep.value = index
+    return
+  }
+  // Allow going one step forward if current step is valid
+  if (index === currentStep.value + 1 && isStepValid(currentStep.value)) {
+    currentStep.value = index
+    if (index > maxStepReached.value) {
+      maxStepReached.value = index
+    }
+    return
+  }
 }
 
 // ===================== VALIDATION HELPERS =====================
@@ -1025,7 +1060,14 @@ async function analyzeBuiltCV() {
     
     const { data } = await axios.post("/api/cv/analyze", form)
     
-    if (data.analysis) {
+    if (data.analysis && typeof data.analysis === "object" && data.analysis.error) {
+        analysisResult.value = `<p>Salah: ${data.analysis.message}</p>`
+        return
+    }
+
+    if (data.analysis && data.analysis.overallScore !== undefined) {
+        analysisResult.value = formatAnalysisHtml(data, data.analysis)
+    } else if (data.analysis && typeof data.analysis === "string") {
         analysisResult.value = data.analysis
             .replace(/```html\n?/g, "")
             .replace(/```\n?/g, "")
@@ -1039,6 +1081,52 @@ async function analyzeBuiltCV() {
   } finally {
     analyzing.value = false
   }
+}
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]))
+}
+
+function listItems(arr) {
+  if (!Array.isArray(arr)) return ""
+  return arr.length ? `<ul>${arr.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""
+}
+
+function formatAnalysisHtml(data, a) {
+  let html = ""
+  const ats = data.ats || {}
+
+  html += `<p class="mb-[16px]"><strong>Skor Keseluruhan: ${esc(a.overallScore)}/100</strong></p>`
+
+  if (ats.score !== undefined) {
+    html += `<p class="mb-[16px]"><strong>Skor ATS: ${esc(ats.score)}%</strong>${ats.isATS ? " (Format ATS terdeteksi)" : " (Gaya CV non-ATS)"}</p>`
+  }
+
+  if (a.summary) html += `<p class="mb-[16px]">${esc(a.summary)}</p>`
+
+  if (Array.isArray(a.strengths) && a.strengths.length) {
+    html += `<p class="mb-[8px]"><strong>Keunggulan:</strong></p>${listItems(a.strengths)}`
+  }
+  if (Array.isArray(a.weaknesses) && a.weaknesses.length) {
+    html += `<p class="mb-[8px]"><strong>Kelemahan:</strong></p>${listItems(a.weaknesses)}`
+  }
+  if (Array.isArray(a.missingSkills) && a.missingSkills.length) {
+    html += `<p class="mb-[8px]"><strong>Skill yang Perlu Dilengkapi:</strong></p>${listItems(a.missingSkills)}`
+  }
+  if (Array.isArray(a.keywordMatch) && a.keywordMatch.length) {
+    html += `<p class="mb-[8px]"><strong>Keyword Cocok:</strong></p>${listItems(a.keywordMatch)}`
+  }
+  if (Array.isArray(a.recommendations) && a.recommendations.length) {
+    html += `<p class="mb-[8px]"><strong>Rekomendasi:</strong></p>${listItems(a.recommendations)}`
+  }
+  if (a.categories && typeof a.categories === "object") {
+    html += `<p class="mb-[8px]"><strong>Skor per Kategori:</strong></p><ul>`
+    for (const [k, v] of Object.entries(a.categories)) {
+      html += `<li>${esc(k)}: ${esc(v)}</li>`
+    }
+    html += `</ul>`
+  }
+  return html
 }
 
 function downloadPDF() { window.print() }

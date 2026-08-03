@@ -5,7 +5,7 @@
       <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] mb-sm text-on-dark">CV Analyzer</h1>
       <p class="text-[16px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute mb-xl">Unggah CV Anda untuk mendapatkan analisis mendalam berbasis AI dan simulasi sistem ATS.</p>
 
-      <div class="bg-surface-elevated rounded-[20px] p-xxl mb-xl">
+      <div class="bg-surface-elevated border border-hairline-dark rounded-[20px] p-xxl mb-xl">
         <div class="mb-md gap-sm">
           <label class="mb-sm block text-on-dark font-medium text-lg">Unggah Dokumen CV (PDF)</label>
           <div class="flex gap-md items-center flex-wrap">
