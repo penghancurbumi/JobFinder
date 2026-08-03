@@ -54,170 +54,77 @@
           <!-- =================== EDUCATION CUSTOM FORM =================== -->
           <div v-if="steps[currentStep]?.id === 'education'">
 
-            <!-- Saved Educations List -->
-            <div v-if="educations.length > 0" class="mb-[24px]">
-              <span class="text-[13px] font-semibold text-stone uppercase tracking-[1px] mb-[12px] block">Pendidikan Tersimpan ({{ educations.length }})</span>
-              <div v-for="(edu, idx) in educations" :key="'edu-'+idx" class="bg-surface-deep rounded-[12px] p-[16px] mb-[12px]">
-                <div class="flex justify-between items-start gap-[12px]">
-                  <div class="flex-1 min-w-0">
-                    <div class="font-semibold text-on-dark text-[14px]">{{ edu.degree }} {{ edu.major }} <span class="text-on-dark-mute font-normal">| IPK: {{ formatGPA(edu.gpa) }}/4.00</span></div>
-                    <div class="text-[14px] text-on-dark-mute">{{ edu.institution }}</div>
-                    <div class="text-[13px] text-stone">{{ edu.startMonth }} {{ edu.startYear }} - {{ edu.endMonth }} {{ edu.endYear }}</div>
-                    <div v-if="edu.experiences.length" class="text-[12px] text-stone mt-[4px]">{{ edu.experiences.length }} pengalaman selama pendidikan</div>
-                  </div>
-                  <div class="flex gap-[8px] shrink-0">
-                    <button @click="editEducation(idx)" class="text-[13px] px-[12px] py-[4px] rounded-full border border-hairline-dark text-on-dark-mute hover:bg-surface-elevated transition-colors">Edit</button>
-                    <button @click="deleteEducation(idx)" class="text-[13px] px-[12px] py-[4px] rounded-full border border-accent-danger/30 text-accent-danger hover:bg-accent-danger/10 transition-colors">Hapus</button>
-                  </div>
-                </div>
+            <!-- Education Form (single entry) -->
+            <div class="flex flex-col gap-[16px]">
+              <!-- Gelar -->
+              <div class="flex flex-col">
+                <label class="mb-[8px] font-semibold text-on-dark-mute">Gelar <span class="text-accent-danger font-bold">*</span></label>
+                <input v-model="eduForm.degree" placeholder="Contoh: S1" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
+                <span class="text-[12px] text-stone mt-[6px]">Jenjang pendidikan (D3, S1, S2, dll.)</span>
+                <div v-if="eduErrors.degree" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.degree }}</div>
               </div>
-            </div>
 
-            <!-- Education Form -->
-            <div class="border border-hairline-dark rounded-[16px] p-[20px]">
-              <h4 class="text-[16px] font-semibold text-on-dark mb-[20px]">{{ eduEditIndex >= 0 ? 'Edit Pendidikan' : 'Tambah Pendidikan Baru' }}</h4>
+              <!-- Jurusan -->
+              <div class="flex flex-col">
+                <label class="mb-[8px] font-semibold text-on-dark-mute">Jurusan <span class="text-accent-danger font-bold">*</span></label>
+                <input v-model="eduForm.major" placeholder="Contoh: Teknik Informatika" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
+                <div v-if="eduErrors.major" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.major }}</div>
+              </div>
 
-              <div class="flex flex-col gap-[16px]">
-                <!-- Gelar -->
+              <!-- Institusi -->
+              <div class="flex flex-col">
+                <label class="mb-[8px] font-semibold text-on-dark-mute">Institusi / Universitas <span class="text-accent-danger font-bold">*</span></label>
+                <input v-model="eduForm.institution" placeholder="Contoh: Universitas Indonesia" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
+                <div v-if="eduErrors.institution" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.institution }}</div>
+              </div>
+
+              <!-- Period Start -->
+              <div class="grid grid-cols-2 gap-[12px]">
                 <div class="flex flex-col">
-                  <label class="mb-[8px] font-semibold text-on-dark-mute">Gelar <span class="text-accent-danger font-bold">*</span></label>
-                  <input v-model="eduForm.degree" placeholder="Contoh: S1" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
-                  <span class="text-[12px] text-stone mt-[6px]">Jenjang pendidikan (D3, S1, S2, dll.)</span>
-                  <div v-if="eduErrors.degree" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.degree }}</div>
+                  <label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Mulai <span class="text-accent-danger font-bold">*</span></label>
+                  <select v-model="eduForm.startMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
+                    <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Bulan --</option>
+                    <option v-for="m in MONTHS" :key="'esm-'+m" :value="m" class="bg-surface-elevated text-on-dark">{{ m }}</option>
+                  </select>
+                  <div v-if="eduErrors.startMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.startMonth }}</div>
                 </div>
-
-                <!-- Jurusan -->
                 <div class="flex flex-col">
-                  <label class="mb-[8px] font-semibold text-on-dark-mute">Jurusan <span class="text-accent-danger font-bold">*</span></label>
-                  <input v-model="eduForm.major" placeholder="Contoh: Teknik Informatika" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
-                  <div v-if="eduErrors.major" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.major }}</div>
-                </div>
-
-                <!-- Institusi -->
-                <div class="flex flex-col">
-                  <label class="mb-[8px] font-semibold text-on-dark-mute">Institusi / Universitas <span class="text-accent-danger font-bold">*</span></label>
-                  <input v-model="eduForm.institution" placeholder="Contoh: Universitas Indonesia" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
-                  <div v-if="eduErrors.institution" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.institution }}</div>
-                </div>
-
-                <!-- Period Start -->
-                <div class="grid grid-cols-2 gap-[12px]">
-                  <div class="flex flex-col">
-                    <label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Mulai <span class="text-accent-danger font-bold">*</span></label>
-                    <select v-model="eduForm.startMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
-                      <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Bulan --</option>
-                      <option v-for="m in MONTHS" :key="'esm-'+m" :value="m" class="bg-surface-elevated text-on-dark">{{ m }}</option>
-                    </select>
-                    <div v-if="eduErrors.startMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.startMonth }}</div>
-                  </div>
-                  <div class="flex flex-col">
-                    <label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Mulai <span class="text-accent-danger font-bold">*</span></label>
-                    <select v-model="eduForm.startYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
-                      <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Tahun --</option>
-                      <option v-for="y in YEARS" :key="'esy-'+y" :value="y" class="bg-surface-elevated text-on-dark">{{ y }}</option>
-                    </select>
-                    <div v-if="eduErrors.startYear" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.startYear }}</div>
-                  </div>
-                </div>
-
-                <!-- Period End -->
-                <div class="grid grid-cols-2 gap-[12px]">
-                  <div class="flex flex-col">
-                    <label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Selesai <span class="text-accent-danger font-bold">*</span></label>
-                    <select v-model="eduForm.endMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
-                      <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Bulan --</option>
-                      <option v-for="m in MONTHS" :key="'eem-'+m" :value="m" class="bg-surface-elevated text-on-dark">{{ m }}</option>
-                    </select>
-                    <div v-if="eduErrors.endMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.endMonth }}</div>
-                  </div>
-                  <div class="flex flex-col">
-                    <label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Selesai <span class="text-accent-danger font-bold">*</span></label>
-                    <select v-model="eduForm.endYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
-                      <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Tahun --</option>
-                      <option v-for="y in YEARS" :key="'eey-'+y" :value="y" class="bg-surface-elevated text-on-dark">{{ y }}</option>
-                    </select>
-                    <div v-if="eduErrors.endYear" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.endYear }}</div>
-                  </div>
-                </div>
-                <div v-if="eduErrors.period" class="text-accent-danger text-[12px]">{{ eduErrors.period }}</div>
-
-                <!-- IPK -->
-                <div class="flex flex-col">
-                  <label class="mb-[8px] font-semibold text-on-dark-mute">IPK <span class="text-accent-danger font-bold">*</span></label>
-                  <input v-model="eduForm.gpa" placeholder="Contoh: 3.50" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
-                  <span class="text-[12px] text-stone mt-[6px]">Format desimal, skala 0.00 - 4.00</span>
-                  <div v-if="eduErrors.gpa" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.gpa }}</div>
-                </div>
-
-                <!-- Pengalaman Selama Pendidikan -->
-                <div class="border-t border-hairline-dark pt-[16px] mt-[8px]">
-                  <h5 class="text-[14px] font-semibold text-on-dark mb-[8px]">Pengalaman Selama Pendidikan</h5>
-                  <p class="text-[12px] text-stone mb-[12px]">Organisasi, kepanitiaan, seminar, workshop, proyek, kompetisi, dll.</p>
-
-                  <!-- List of added sub-experiences -->
-                  <div v-for="(exp, eidx) in eduForm.experiences" :key="'eduexp-'+eidx" class="bg-surface-deep rounded-[8px] p-[12px] mb-[8px]">
-                    <div class="flex justify-between items-start gap-[8px]">
-                      <div class="flex-1 min-w-0">
-                        <div class="text-[13px] font-semibold text-on-dark">{{ exp.title }}</div>
-                        <div class="text-[12px] text-on-dark-mute">{{ exp.role }} — {{ exp.month }} {{ exp.year }}</div>
-                        <div class="text-[12px] text-stone mt-[2px]">{{ exp.description }}</div>
-                      </div>
-                      <div class="flex gap-[6px] shrink-0">
-                        <button @click="editEduExperience(eidx)" class="text-[12px] px-[8px] py-[2px] rounded-full border border-hairline-dark text-on-dark-mute hover:bg-surface-elevated transition-colors">Edit</button>
-                        <button @click="deleteEduExperience(eidx)" class="text-[12px] px-[8px] py-[2px] rounded-full border border-accent-danger/30 text-accent-danger hover:bg-accent-danger/10 transition-colors">Hapus</button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Sub-experience form -->
-                  <div class="bg-surface-deep/50 rounded-[12px] p-[16px] mt-[12px]">
-                    <div class="flex flex-col gap-[12px]">
-                      <div class="flex flex-col">
-                        <label class="mb-[6px] text-[13px] font-semibold text-on-dark-mute">Nama Kegiatan <span class="text-accent-danger font-bold">*</span></label>
-                        <input v-model="eduExpForm.title" placeholder="Contoh: Seminar Nasional Teknologi" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[44px] px-[16px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
-                      </div>
-                      <div class="flex flex-col">
-                        <label class="mb-[6px] text-[13px] font-semibold text-on-dark-mute">Posisi/Peran <span class="text-accent-danger font-bold">*</span></label>
-                        <input v-model="eduExpForm.role" placeholder="Contoh: Panitia, Anggota, Peserta" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[44px] px-[16px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
-                      </div>
-                      <div class="grid grid-cols-2 gap-[12px]">
-                        <div class="flex flex-col">
-                          <label class="mb-[6px] text-[13px] font-semibold text-on-dark-mute">Bulan <span class="text-accent-danger font-bold">*</span></label>
-                          <select v-model="eduExpForm.month" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[44px] px-[16px] text-[14px] text-on-dark focus:border-white focus:outline-none appearance-none">
-                            <option value="" disabled class="bg-surface-elevated text-on-dark">-- Bulan --</option>
-                            <option v-for="m in MONTHS" :key="'expm-'+m" :value="m" class="bg-surface-elevated text-on-dark">{{ m }}</option>
-                          </select>
-                        </div>
-                        <div class="flex flex-col">
-                          <label class="mb-[6px] text-[13px] font-semibold text-on-dark-mute">Tahun <span class="text-accent-danger font-bold">*</span></label>
-                          <select v-model="eduExpForm.year" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[44px] px-[16px] text-[14px] text-on-dark focus:border-white focus:outline-none appearance-none">
-                            <option value="" disabled class="bg-surface-elevated text-on-dark">-- Tahun --</option>
-                            <option v-for="y in YEARS" :key="'expy-'+y" :value="y" class="bg-surface-elevated text-on-dark">{{ y }}</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div class="flex flex-col">
-                        <label class="mb-[6px] text-[13px] font-semibold text-on-dark-mute">Deskripsi <span class="text-accent-danger font-bold">*</span></label>
-                        <textarea v-model="eduExpForm.description" placeholder="Deskripsi kegiatan..." rows="2" class="w-full h-40 bg-transparent border border-hairline-dark rounded-[12px] p-[12px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
-                      </div>
-                    </div>
-                    <div v-if="eduExpErrors.general" class="text-accent-danger text-[12px] mt-[8px]">{{ eduExpErrors.general }}</div>
-                    <div class="flex gap-[8px] mt-[12px]">
-                      <button @click="addEduExperience" class="text-[13px] px-[16px] py-[6px] rounded-full border border-hairline-dark text-on-dark hover:bg-surface-elevated transition-colors">
-                        {{ eduExpEditIndex >= 0 ? 'Simpan Perubahan' : '+ Tambah Pengalaman' }}
-                      </button>
-                      <button v-if="eduExpEditIndex >= 0" @click="cancelEduExpEdit" class="text-[13px] px-[16px] py-[6px] rounded-full text-on-dark-mute hover:text-on-dark transition-colors">Batal</button>
-                    </div>
-                  </div>
+                  <label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Mulai <span class="text-accent-danger font-bold">*</span></label>
+                  <select v-model="eduForm.startYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
+                    <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Tahun --</option>
+                    <option v-for="y in YEARS" :key="'esy-'+y" :value="y" class="bg-surface-elevated text-on-dark">{{ y }}</option>
+                  </select>
+                  <div v-if="eduErrors.startYear" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.startYear }}</div>
                 </div>
               </div>
 
-              <!-- Save / Cancel for education entry -->
-              <div class="flex gap-[12px] mt-[24px] pt-[16px] border-t border-hairline-dark">
-                <button @click="saveEducation" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90">
-                  {{ eduEditIndex >= 0 ? 'Simpan Perubahan' : 'Simpan Pendidikan' }}
-                </button>
-                <button v-if="eduEditIndex >= 0" @click="cancelEduEdit" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Batal</button>
+              <!-- Period End -->
+              <div class="grid grid-cols-2 gap-[12px]">
+                <div class="flex flex-col">
+                  <label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Selesai <span class="text-accent-danger font-bold">*</span></label>
+                  <select v-model="eduForm.endMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
+                    <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Bulan --</option>
+                    <option v-for="m in MONTHS" :key="'eem-'+m" :value="m" class="bg-surface-elevated text-on-dark">{{ m }}</option>
+                  </select>
+                  <div v-if="eduErrors.endMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.endMonth }}</div>
+                </div>
+                <div class="flex flex-col">
+                  <label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Selesai <span class="text-accent-danger font-bold">*</span></label>
+                  <select v-model="eduForm.endYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
+                    <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Tahun --</option>
+                    <option v-for="y in YEARS" :key="'eey-'+y" :value="y" class="bg-surface-elevated text-on-dark">{{ y }}</option>
+                  </select>
+                  <div v-if="eduErrors.endYear" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.endYear }}</div>
+                </div>
+              </div>
+              <div v-if="eduErrors.period" class="text-accent-danger text-[12px]">{{ eduErrors.period }}</div>
+
+              <!-- IPK -->
+              <div class="flex flex-col">
+                <label class="mb-[8px] font-semibold text-on-dark-mute">IPK <span class="text-accent-danger font-bold">*</span></label>
+                <input v-model="eduForm.gpa" placeholder="Contoh: 3.50" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
+                <span class="text-[12px] text-stone mt-[6px]">Format desimal, skala 0.00 - 4.00</span>
+                <div v-if="eduErrors.gpa" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.gpa }}</div>
               </div>
             </div>
           </div>
@@ -228,7 +135,7 @@
             <!-- Saved Work Experiences List -->
             <div v-if="workExperiences.length > 0" class="mb-[24px]">
               <span class="text-[13px] font-semibold text-stone uppercase tracking-[1px] mb-[12px] block">Pengalaman Kerja Tersimpan ({{ workExperiences.length }})</span>
-              <div v-for="(work, idx) in workExperiences" :key="'work-'+idx" class="bg-surface-deep rounded-[12px] p-[16px] mb-[12px]">
+              <div v-for="(work, idx) in workExperiences" :key="'work-'+idx" class="border border-hairline-dark rounded-[12px] p-[16px] mb-[12px]">
                 <div class="flex justify-between items-start gap-[12px]">
                   <div class="flex-1 min-w-0">
                     <div class="font-semibold text-on-dark text-[14px]">{{ work.position }}</div>
@@ -388,7 +295,7 @@
               <span class="text-[12px] text-stone mt-[6px]">{{ field.hint }}</span>
               <div v-if="errors[field.key]" class="text-accent-danger text-[12px] mt-[6px]">{{ errors[field.key] }}</div>
               
-              <div v-if="suggestions[field.key]" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px] border-l-[3px] border-white">
+              <div v-if="suggestions[field.key]" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px] border-white">
                 <span class="font-semibold text-white">Saran AI:</span> {{ suggestions[field.key] }}
               </div>
             </div>
@@ -452,19 +359,12 @@
                     </div>
                     <div class="text-[12px] text-black font-bold">{{ edu.startMonth }} {{ edu.startYear }} - {{ edu.endMonth }} {{ edu.endYear }}</div>
                   </div>
-
-                  <div v-if="edu.experiences.length > 0" class="mt-[8px]">
-                    <div class="text-[14px] font-semibold mb-[4px]">Pengalaman Selama Pendidikan</div>
-                    <ul class="pl-[24px] list-disc">
-                        <li v-for="(exp, eidx) in edu.experiences" :key="'prev-eduexp-'+eidx" class="text-[12px] mb-[4px]">{{ exp.role }} {{ exp.title }}</li>
-                    </ul>
-                  </div>
                 </div>
             </div>
             
             <!-- Work Experience -->
             <div class="mb-[15px]" v-if="workExperiences.length > 0">
-                <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENGALAMAN KERJA</h4>
+                <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENGALAMAN & PROJEK</h4>
                 <div class="border-b-2 border-black mb-[12px]"></div>
                 <div v-for="(work, idx) in workExperiences" :key="'prev-work-'+idx" class="mb-[16px]">
                     <div class="flex justify-between items-start flex-wrap gap-[4px]">
@@ -514,9 +414,9 @@
     <!-- Hidden Print Container -->
     <div class="hidden print:block absolute left-0 top-0 w-full m-0 p-[40px] border-none shadow-none rounded-none bg-white text-black leading-[1.5]">
         <!-- Personal -->
-        <div class="text-center mb-[24px]">
-            <h2 class="text-[24px] mb-[4px] uppercase tracking-[1px] font-bold">{{ formData.full_name || '[Nama Anda]' }}</h2>
-            <p class="text-[14px]">
+        <div class="text-center mb-[20px]">
+            <h2 class="text-[30px] mb-[4px] uppercase tracking-[1px] font-bold">{{ formData.full_name || '[Nama Anda]' }}</h2>
+            <p class="text-[12px]">
                 {{ (!errors.email && formData.email) ? formData.email + ' | ' : '' }}
                 {{ formData.phone ? formData.phone + ' | ' : '' }}
                 {{ formData.address ? formData.address + ' | ' : '' }}
@@ -525,59 +425,57 @@
         </div>
         
         <!-- Summary -->
-        <div class="mb-[20px]" v-if="formData.summary">
+        <div class="mb-[15px]" v-if="formData.summary">
             <h4 class="text-[14px] uppercase mb-[4px] font-bold">RINGKASAN PROFESIONAL</h4>
-            <div class="border-b border-black mb-[12px]"></div>
-            <p class="text-[14px]">{{ formData.summary }}</p>
+            <div class="border-b-2 border-black mb-[12px]"></div>
+            <p class="text-[12px] text-justify">{{ formData.summary }}</p>
         </div>
         
         <!-- Education (print) -->
-        <div class="mb-[20px]" v-if="educations.length > 0">
+        <div class="mb-[15px]" v-if="educations.length > 0">
             <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENDIDIKAN</h4>
-            <div class="border-b border-black mb-[12px]"></div>
+            <div class="border-b-2 border-black mb-[12px]"></div>
             <div v-for="(edu, idx) in educations" :key="'print-edu-'+idx" class="mb-[16px]">
-                <div class="text-[14px] font-bold">{{ edu.degree }} {{ edu.major }} | IPK: {{ formatGPA(edu.gpa) }}/4.00</div>
-                <div class="text-[14px]">{{ edu.institution }}</div>
-                <div class="text-[14px]" style="color: #666;">{{ edu.startMonth }} {{ edu.startYear }} - {{ edu.endMonth }} {{ edu.endYear }}</div>
-                <div v-if="edu.experiences.length > 0" class="mt-[8px]">
-                    <div class="text-[13px] font-semibold mb-[4px]">Pengalaman Selama Pendidikan</div>
-                    <ul class="pl-[24px] list-disc">
-                        <li v-for="(exp, eidx) in edu.experiences" :key="'print-eduexp-'+eidx" class="text-[14px] mb-[4px]">{{ exp.role }} {{ exp.title }}</li>
-                    </ul>
+                <div class="flex justify-between items-start flex-wrap gap-[4px]">
+                    <div>
+                        <div class="text-[12px] font-bold">{{ edu.degree }} {{ edu.major }} | IPK: {{ formatGPA(edu.gpa) }}/4.00</div>
+                        <div class="text-[12px]">{{ edu.institution }}</div>
+                    </div>
+                    <div class="text-[12px] text-black font-bold">{{ edu.startMonth }} {{ edu.startYear }} - {{ edu.endMonth }} {{ edu.endYear }}</div>
                 </div>
             </div>
         </div>
         
         <!-- Work Experience (print) -->
-        <div class="mb-[20px]" v-if="workExperiences.length > 0">
-            <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENGALAMAN KERJA</h4>
-            <div class="border-b border-black mb-[12px]"></div>
+        <div class="mb-[15px]" v-if="workExperiences.length > 0">
+            <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENGALAMAN & PROJEK</h4>
+            <div class="border-b-2 border-black mb-[12px]"></div>
             <div v-for="(work, idx) in workExperiences" :key="'print-work-'+idx" class="mb-[16px]">
-                <div class="flex justify-between items-start">
+                <div class="flex justify-between items-start flex-wrap gap-[4px]">
                     <div>
-                        <div class="text-[14px] font-bold">{{ work.position }}</div>
-                        <div class="text-[14px]">{{ work.company }}</div>
+                        <div class="text-[12px] font-bold">{{ work.company }}</div>
+                        <div class="text-[11px] italic">{{ work.position }}</div>
                     </div>
-                    <div class="text-[14px]" style="color: #666;">{{ work.startMonth }} {{ work.startYear }} - {{ work.current ? 'Sekarang' : work.endMonth + ' ' + work.endYear }}</div>
+                    <div class="text-[12px] shrink-0 text-black font-bold">{{ work.startMonth }} {{ work.startYear }} - {{ work.current ? 'Sekarang' : work.endMonth + ' ' + work.endYear }}</div>
                 </div>
-                <ul class="mt-[6px] pl-[24px] list-disc">
-                    <li v-for="(jd, jdIdx) in work.jobDescriptions.filter(j => j.trim())" :key="'print-jd-'+jdIdx" class="text-[14px] mb-[4px]">{{ jd }}</li>
+                <ul class="mt-[2px] pl-[24px] list-disc">
+                    <li v-for="(jd, jdIdx) in work.jobDescriptions.filter(j => j.trim())" :key="'print-jd-'+jdIdx" class="text-[12px] mb-[2px]">{{ jd }}</li>
                 </ul>
             </div>
         </div>
         
         <!-- Skills (print) -->
-        <div class="mb-[20px]" v-if="formData.technical_skills || formData.soft_skills">
+        <div class="mb-[15px]" v-if="formData.technical_skills || formData.soft_skills">
             <h4 class="text-[14px] uppercase mb-[4px] font-bold">KEAHLIAN</h4>
-            <div class="border-b border-black mb-[12px]"></div>
-            <p v-if="formData.technical_skills" class="text-[14px]"><strong>Keahlian Teknis:</strong> {{ formData.technical_skills }}</p>
-            <p v-if="formData.soft_skills" class="text-[14px]"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
+            <div class="border-b-2 border-black mb-[12px]"></div>
+            <p v-if="formData.technical_skills" class="text-[12px]"><strong>Keahlian Teknis:</strong> {{ formData.technical_skills }}</p>
+            <p v-if="formData.soft_skills" class="text-[12px]"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
         </div>
         
         <!-- Certifications (print) -->
-        <div class="mb-[20px]" v-if="formData.cert_name">
+        <div class="mb-[15px]" v-if="formData.cert_name">
             <h4 class="text-[14px] uppercase mb-[4px] font-bold">SERTIFIKASI</h4>
-            <div class="border-b border-black mb-[12px]"></div>
+            <div class="border-b-2 border-black mb-[12px]"></div>
             <div class="mb-[12px]">
                 <div class="flex justify-between text-[14px]">
                     <strong>{{ formData.cert_name }}</strong>
@@ -692,6 +590,9 @@ onMounted(async () => {
     try { workExperiences.value = JSON.parse(savedWork) } catch(e) {}
   }
 
+  // Load edu form from saved education data
+  loadEduFormFromSaved()
+
   // Load saved navigation progress
   const savedMaxStep = localStorage.getItem('jobfinder_cv_maxStep')
   if (savedMaxStep) {
@@ -729,12 +630,25 @@ watch(maxStepReached, (val) => {
   localStorage.setItem('jobfinder_cv_maxStep', val.toString())
 })
 
+// Auto-load education form when navigating to the education step
+watch(currentStep, (newStep) => {
+  if (steps.value.length > 0 && steps.value[newStep]?.id === 'education') {
+    loadEduFormFromSaved()
+  }
+})
+
 // ===================== NAVIGATION =====================
 function isStepValid(stepIndex) {
   if (stepIndex >= steps.value.length) return true
   const section = steps.value[stepIndex]
 
-  if (section.id === 'education') return educations.value.length > 0
+  if (section.id === 'education') {
+    // Auto-save education from form if form has data
+    if (eduForm.degree.trim() && eduForm.major.trim() && eduForm.institution.trim()) {
+      saveEducation()
+    }
+    return educations.value.length > 0
+  }
   if (section.id === 'experience') return workExperiences.value.length > 0
 
   let valid = true
@@ -860,31 +774,22 @@ function saveEducation() {
     startMonth: eduForm.startMonth, startYear: eduForm.startYear,
     endMonth: eduForm.endMonth, endYear: eduForm.endYear,
     gpa: eduForm.gpa.toString().trim(),
-    experiences: eduForm.experiences.map(e => ({...e}))
+    experiences: []
   }
-  if (eduEditIndex.value >= 0) { educations.value[eduEditIndex.value] = entry }
-  else { educations.value.push(entry) }
-  resetEduForm()
+  // Always save as single entry (index 0)
+  educations.value = [entry]
 }
 
-function editEducation(idx) {
-  const edu = educations.value[idx]
-  eduForm.degree = edu.degree; eduForm.major = edu.major; eduForm.institution = edu.institution
-  eduForm.startMonth = edu.startMonth; eduForm.startYear = edu.startYear
-  eduForm.endMonth = edu.endMonth; eduForm.endYear = edu.endYear
-  eduForm.gpa = edu.gpa; eduForm.experiences = edu.experiences.map(e => ({...e}))
-  eduEditIndex.value = idx; clearEduErrors()
-}
-
-function deleteEducation(idx) {
-  if (confirm('Apakah Anda yakin ingin menghapus data pendidikan ini?')) {
-    educations.value.splice(idx, 1)
-    if (eduEditIndex.value === idx) resetEduForm()
-    else if (eduEditIndex.value > idx) eduEditIndex.value--
+function loadEduFormFromSaved() {
+  if (educations.value.length > 0) {
+    const edu = educations.value[0]
+    eduForm.degree = edu.degree; eduForm.major = edu.major; eduForm.institution = edu.institution
+    eduForm.startMonth = edu.startMonth; eduForm.startYear = edu.startYear
+    eduForm.endMonth = edu.endMonth; eduForm.endYear = edu.endYear
+    eduForm.gpa = edu.gpa; eduForm.experiences = []
+    clearEduErrors()
   }
 }
-
-function cancelEduEdit() { resetEduForm() }
 
 // ===================== EDUCATION SUB-EXPERIENCE CRUD =====================
 function clearEduExpErrors() { Object.keys(eduExpErrors).forEach(k => delete eduExpErrors[k]) }
