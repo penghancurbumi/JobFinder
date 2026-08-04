@@ -52,8 +52,39 @@
             {{ steps[currentStep].title }}
           </h3>
 
+          <!-- =================== TEMPLATE SELECT CUSTOM FORM =================== -->
+          <div v-if="steps[currentStep]?.id === 'template_select'">
+            <p class="text-[14px] text-on-dark-mute mb-[24px]">Pilih template CV ATS yang ingin Anda gunakan. Template akan menentukan tata letak dan gaya CV Anda.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-[16px]">
+              <label 
+                v-for="tpl in CV_TEMPLATES" :key="tpl.id"
+                class="relative cursor-pointer rounded-[16px] border-2 p-[4px] transition-all duration-200 hover:border-white/60"
+                :class="selectedTemplate === tpl.id ? 'border-white shadow-[0_0_20px_rgba(255,255,255,0.15)]' : 'border-hairline-dark'"
+              >
+                <input type="radio" :value="tpl.id" v-model="selectedTemplate" class="sr-only" />
+                <!-- Preview Image Placeholder -->
+                <div class="w-full aspect-[3/4] bg-white rounded-[12px] flex items-center justify-center overflow-hidden">
+                  <img v-if="tpl.image" :src="tpl.image" :alt="tpl.name" class="w-full h-full object-cover object-top" />
+                  <span v-else class="text-stone text-[13px] italic">Preview</span>
+                </div>
+                <!-- Label -->
+                <div class="flex items-center gap-[8px] mt-[12px] px-[8px] pb-[8px]">
+                  <div class="w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors" :class="selectedTemplate === tpl.id ? 'border-white' : 'border-stone'">
+                    <div v-if="selectedTemplate === tpl.id" class="w-[10px] h-[10px] rounded-full bg-white"></div>
+                  </div>
+                  <div>
+                    <div class="text-[14px] font-semibold text-on-dark">{{ tpl.name }}</div>
+                    <div class="text-[12px] text-stone">{{ tpl.desc }}</div>
+                  </div>
+                </div>
+                <!-- Default Badge -->
+                <span v-if="tpl.isDefault" class="absolute top-[12px] right-[12px] bg-white text-ink text-[10px] font-bold uppercase tracking-[0.5px] px-[8px] py-[2px] rounded-full">Default</span>
+              </label>
+            </div>
+          </div>
+
           <!-- =================== EDUCATION CUSTOM FORM =================== -->
-          <div v-if="steps[currentStep]?.id === 'education'">
+          <div v-else-if="steps[currentStep]?.id === 'education'">
 
             <!-- Education Form (single entry) -->
             <div class="flex flex-col gap-[16px]">
@@ -341,7 +372,7 @@
           </div>
 
           <!-- CV Visual Preview -->
-          <div class="bg-white text-black p-[40px] rounded-[20px] leading-[1.5] max-w-[800px] mx-auto" v-if="hasPreviewData">
+          <div class="bg-white text-black p-[40px] rounded-[20px] leading-[1.5] max-w-[800px] mx-auto" v-if="hasPreviewData" :style="{ fontFamily: templateFont }">
             <!-- Personal Info -->
             <div class="text-center mb-[20px]">
                 <h2 class="text-[30px] mb-[4px] uppercase tracking-[1px] font-bold">{{ formData.full_name || '[Nama Anda]' }}</h2>
@@ -425,7 +456,7 @@
     </div>
 
     <!-- Hidden Print Container -->
-    <div class="hidden print:block absolute left-0 top-0 w-full m-0 p-[40px] border-none shadow-none rounded-none bg-white text-black leading-[1.5]">
+    <div class="hidden print:block absolute left-0 top-0 w-full m-0 p-[40px] border-none shadow-none rounded-none bg-white text-black leading-[1.5]" :style="{ fontFamily: templateFont }">
         <!-- Personal -->
         <div class="text-center mb-[20px]">
             <h2 class="text-[30px] mb-[4px] uppercase tracking-[1px] font-bold">{{ formData.full_name || '[Nama Anda]' }}</h2>
@@ -520,6 +551,14 @@ useHead({
 const steps = ref([])
 const expertiseAreas = ref([])
 const targetExpertise = ref("Software Development")
+const selectedTemplate = ref('modern_ats')
+
+// ===================== CV TEMPLATES =====================
+const CV_TEMPLATES = [
+  { id: 'modern_ats', name: 'Modern ATS', desc: 'Desain minimalis dan bersih, paling populer.', image: '', isDefault: true, font: "'Calibri', sans-serif" },
+  { id: 'classic_ats', name: 'Classic ATS', desc: 'Tata letak tradisional dan formal.', image: '', isDefault: false, font: "'Times New Roman', serif" },
+  { id: 'executive_ats', name: 'Executive ATS', desc: 'Gaya eksekutif premium dan profesional.', image: '', isDefault: false, font: "'Cambria', serif" },
+]
 const formData = reactive({})
 const suggestions = reactive({})
 const errors = reactive({ gpa: "", email: "", linkedin: "" })
@@ -579,6 +618,11 @@ const hasPreviewData = computed(() => {
   return formData.full_name || formData.summary || educations.value.length > 0 || workExperiences.value.length > 0 || formData.technical_skills || formData.cert_name
 })
 
+const templateFont = computed(() => {
+  const tpl = CV_TEMPLATES.find(t => t.id === selectedTemplate.value)
+  return tpl ? tpl.font : "'Calibri', sans-serif"
+})
+
 // ===================== LIFECYCLE =====================
 onMounted(async () => {
   // Load saved simple form data
@@ -591,6 +635,10 @@ onMounted(async () => {
       })
     } catch(e) {}
   }
+
+  // Load saved template selection
+  const savedTemplate = localStorage.getItem('jobfinder_cv_template')
+  if (savedTemplate) selectedTemplate.value = savedTemplate
 
   // Load saved educations
   const savedEdu = localStorage.getItem('jobfinder_cv_educations')
@@ -619,7 +667,9 @@ onMounted(async () => {
       axios.get("/api/cv/builder-sections"),
       axios.get("/api/expertise-areas"),
     ])
-    steps.value = secRes.data
+    // Insert template selection as the first step
+    const templateStep = { id: 'template_select', title: 'Pilih Template', fields: [] }
+    steps.value = [templateStep, ...secRes.data]
     expertiseAreas.value = areaRes.data
   } catch (e) {
     console.error(e)
@@ -644,6 +694,10 @@ watch(maxStepReached, (val) => {
   localStorage.setItem('jobfinder_cv_maxStep', val.toString())
 })
 
+watch(selectedTemplate, (val) => {
+  localStorage.setItem('jobfinder_cv_template', val)
+})
+
 // Auto-load education form when navigating to the education step
 watch(currentStep, (newStep) => {
   if (steps.value.length > 0 && steps.value[newStep]?.id === 'education') {
@@ -655,6 +709,7 @@ watch(currentStep, (newStep) => {
 function isStepValid(stepIndex) {
   if (stepIndex >= steps.value.length) return true
   const section = steps.value[stepIndex]
+  if (section.id === 'template_select') return true
 
   if (section.id === 'education') {
     // Auto-save education from form if form has data
