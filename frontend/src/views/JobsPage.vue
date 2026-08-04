@@ -37,24 +37,12 @@
           <svg class="animate-[spin_1s_linear_infinite]" viewBox="0 0 24 24" width="16" height="16">
             <circle class="animate-[dash_1.5s_ease-in-out_infinite] [stroke-dasharray:60] [stroke-dashoffset:60]" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
           </svg>
-          <span class="text-sm font-medium">Memperbarui data dari semua sumber...</span>
+          <span class="text-sm font-medium capitalize">Men-scrape {{ currentPlatform || '...' }} ({{ platformIndex }}/{{ platforms.length }})...</span>
           <span class="ml-auto font-mono text-[12px] text-stone">{{ scrapeElapsed }}s</span>
         </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-sm">
-          <div v-for="c in scrapeCategories" :key="c" class="bg-surface-deep rounded-sm p-sm border border-hairline-dark">
-            <div class="flex items-center justify-between mb-xs">
-              <span class="text-[12px] font-medium capitalize">{{ c }}</span>
-              <span class="text-[11px] font-mono text-stone">{{ spiderCount(c) }}/7</span>
-            </div>
-            <div class="flex flex-wrap gap-[4px]">
-              <span v-for="(s, name) in (scrapeStatus[c] || {}).spiders || {}" :key="name"
-                :class="['text-[10px] px-[6px] py-[2px] rounded-full border', s.status === 'done' ? 'text-accent-teal border-white/20' : 'text-stone border-white/10']">
-                {{ name }}{{ s.status === 'done' ? ' ✓' : '' }}
-              </span>
-              <span v-if="!Object.keys((scrapeStatus[c] || {}).spiders || {}).length" class="text-[10px] text-stone italic">menunggu...</span>
-            </div>
-          </div>
+        <div class="flex items-center gap-sm flex-wrap">
+          <span class="text-[12px] text-stone">Scraping 1 platform per sekali tekan, bergiliran di antara {{ platforms.length }} platform.</span>
+          <span v-if="lastAdded" class="text-[12px] text-accent-teal">{{ lastAdded }} job baru ditambahkan</span>
         </div>
 
         <div v-if="scrapeLog.length" class="mt-sm max-h-[110px] overflow-y-auto font-mono text-[11px] text-stone space-y-[2px]">
@@ -279,8 +267,10 @@ const total = ref(0)
 const totalPages = ref(0)
 const loadingMore = ref(false)
 
-const scrapeCategories = ['fulltime', 'parttime', 'internship', 'hybrid', 'contract']
-const scrapeStatus = ref({})
+const platforms = ['glints', 'jobstreet', 'kalibrr', 'kitalulus', 'linkedin', 'pintarnya', 'techinasia']
+const currentPlatform = ref("")
+const platformIndex = ref(0)
+const lastAdded = ref(0)
 const scrapeLog = ref([])
 const scrapeElapsed = ref(0)
 const cooldownMsg = ref("")
@@ -387,7 +377,9 @@ onMounted(async () => {
     if (isScraping.value) {
       scrapeElapsed.value = 0
       scrapeLog.value = []
-      scrapeStatus.value = {}
+      currentPlatform.value = ""
+      platformIndex.value = 0
+      lastAdded.value = 0
       if (!scrapeTimer) scrapeTimer = setInterval(() => scrapeElapsed.value++, 1000)
     } else {
       clearInterval(scrapeTimer)
@@ -399,13 +391,12 @@ onMounted(async () => {
     if (evt.status === "done") {
       clearInterval(scrapeTimer)
       scrapeTimer = null
+      lastAdded.value = evt.added || 0
     }
-    if (evt.status === "category-start") {
-      scrapeStatus.value[evt.category] = { running: true, spiders: {} }
-    } else if (evt.category && evt.spider) {
-      const cat = scrapeStatus.value[evt.category] || (scrapeStatus.value[evt.category] = { running: true, spiders: {} })
-      cat.spiders = cat.spiders || {}
-      cat.spiders[evt.spider] = { status: evt.status, items: evt.items || 0 }
+    if (evt.status === "platform-start") {
+      currentPlatform.value = evt.platform
+      platformIndex.value = evt.index
+      lastAdded.value = 0
     }
     if (evt.message) {
       scrapeLog.value.push(`${new Date().toLocaleTimeString('id-ID', { hour12: false })} ${evt.message}`)
@@ -426,12 +417,6 @@ onUnmounted(() => {
   cooldownTimer = null
   if (socket) socket.disconnect()
 })
-
-function spiderCount(c) {
-  const cat = scrapeStatus.value[c]
-  if (!cat || !cat.spiders) return 0
-  return Object.values(cat.spiders).filter((s) => s.status === 'done').length
-}
 
 function applyJobsPayload(data) {
   if (!data) return

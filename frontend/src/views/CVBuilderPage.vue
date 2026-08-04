@@ -11,6 +11,7 @@
     <div class="flex flex-col md:flex-row gap-xl print:hidden items-start">
       <!-- Sidebar Navigation -->
       <aside class="w-full md:w-[280px] shrink-0 md:sticky top-[100px] bg-surface-elevated rounded-[20px] py-xl border border-hairline-dark">
+
         <div class="mb-[24px] px-[16px]">
           <label class="text-[12px] mb-[4px] text-on-dark-mute block font-semibold">Target Keahlian / Bidang</label>
           <select v-model="targetExpertise" class="w-full text-[14px] bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
@@ -78,8 +79,14 @@
                 <div v-if="eduErrors.institution" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.institution }}</div>
               </div>
 
-              <!-- Period Start -->
-              <div class="grid grid-cols-2 gap-[12px]">
+              <!-- Show Date Toggle -->
+              <label class="flex items-center gap-[8px] cursor-pointer">
+                <input type="checkbox" v-model="eduForm.showDate" class="w-[18px] h-[18px] rounded accent-white" />
+                <span class="text-[14px] text-on-dark-mute">Tampilkan tanggal pada CV</span>
+              </label>
+
+              <!-- Period Start (shown only if showDate) -->
+              <div v-if="eduForm.showDate" class="grid grid-cols-2 gap-[12px]">
                 <div class="flex flex-col">
                   <label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Mulai <span class="text-accent-danger font-bold">*</span></label>
                   <select v-model="eduForm.startMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
@@ -98,8 +105,14 @@
                 </div>
               </div>
 
-              <!-- Period End -->
-              <div class="grid grid-cols-2 gap-[12px]">
+              <!-- Is Currently Studying Checkbox (shown only if showDate) -->
+              <label v-if="eduForm.showDate" class="flex items-center gap-[8px] cursor-pointer">
+                <input type="checkbox" v-model="eduForm.isCurrent" class="w-[18px] h-[18px] rounded accent-white" />
+                <span class="text-[14px] text-on-dark-mute">Saya masih dalam pendidikan ini</span>
+              </label>
+
+              <!-- Period End (shown only if showDate AND not current) -->
+              <div v-if="eduForm.showDate && !eduForm.isCurrent" class="grid grid-cols-2 gap-[12px]">
                 <div class="flex flex-col">
                   <label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Selesai <span class="text-accent-danger font-bold">*</span></label>
                   <select v-model="eduForm.endMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
@@ -357,7 +370,7 @@
                       <div class="text-[12px] font-bold">{{ edu.degree }} {{ edu.major }} | IPK: {{ formatGPA(edu.gpa) }}/4.00</div>
                       <div class="text-[12px]">{{ edu.institution }}</div>
                     </div>
-                    <div class="text-[12px] text-black font-bold">{{ edu.startMonth }} {{ edu.startYear }} - {{ edu.endMonth }} {{ edu.endYear }}</div>
+                    <div v-if="edu.showDate" class="text-[12px] text-black font-bold">{{ edu.startMonth }} {{ edu.startYear }} - {{ edu.isCurrent ? 'Sekarang' : edu.endMonth + ' ' + edu.endYear }}</div>
                   </div>
                 </div>
             </div>
@@ -441,7 +454,7 @@
                         <div class="text-[12px] font-bold">{{ edu.degree }} {{ edu.major }} | IPK: {{ formatGPA(edu.gpa) }}/4.00</div>
                         <div class="text-[12px]">{{ edu.institution }}</div>
                     </div>
-                    <div class="text-[12px] text-black font-bold">{{ edu.startMonth }} {{ edu.startYear }} - {{ edu.endMonth }} {{ edu.endYear }}</div>
+                    <div v-if="edu.showDate" class="text-[12px] text-black font-bold">{{ edu.startMonth }} {{ edu.startYear }} - {{ edu.isCurrent ? 'Sekarang' : edu.endMonth + ' ' + edu.endYear }}</div>
                 </div>
             </div>
         </div>
@@ -530,7 +543,8 @@ const eduEditIndex = ref(-1)
 const eduForm = reactive({
   degree: '', major: '', institution: '',
   startMonth: '', startYear: '', endMonth: '', endYear: '',
-  gpa: '', experiences: []
+  gpa: '', experiences: [],
+  showDate: true, isCurrent: false
 })
 const eduErrors = reactive({})
 
@@ -739,10 +753,14 @@ function validateEduForm() {
   if (!eduForm.degree.trim()) { eduErrors.degree = 'Gelar wajib diisi.'; valid = false }
   if (!eduForm.major.trim()) { eduErrors.major = 'Jurusan wajib diisi.'; valid = false }
   if (!eduForm.institution.trim()) { eduErrors.institution = 'Institusi wajib diisi.'; valid = false }
-  if (!eduForm.startMonth) { eduErrors.startMonth = 'Bulan mulai wajib dipilih.'; valid = false }
-  if (!eduForm.startYear) { eduErrors.startYear = 'Tahun mulai wajib dipilih.'; valid = false }
-  if (!eduForm.endMonth) { eduErrors.endMonth = 'Bulan selesai wajib dipilih.'; valid = false }
-  if (!eduForm.endYear) { eduErrors.endYear = 'Tahun selesai wajib dipilih.'; valid = false }
+  if (eduForm.showDate) {
+    if (!eduForm.startMonth) { eduErrors.startMonth = 'Bulan mulai wajib dipilih.'; valid = false }
+    if (!eduForm.startYear) { eduErrors.startYear = 'Tahun mulai wajib dipilih.'; valid = false }
+    if (!eduForm.isCurrent) {
+      if (!eduForm.endMonth) { eduErrors.endMonth = 'Bulan selesai wajib dipilih.'; valid = false }
+      if (!eduForm.endYear) { eduErrors.endYear = 'Tahun selesai wajib dipilih.'; valid = false }
+    }
+  }
 
   if (!eduForm.gpa.toString().trim()) {
     eduErrors.gpa = 'IPK wajib diisi.'; valid = false
@@ -751,7 +769,7 @@ function validateEduForm() {
     if (isNaN(num) || num < 0 || num > 4) { eduErrors.gpa = 'IPK harus berada pada rentang 0.00 - 4.00.'; valid = false }
   }
 
-  if (eduForm.startMonth && eduForm.startYear && eduForm.endMonth && eduForm.endYear) {
+  if (eduForm.showDate && !eduForm.isCurrent && eduForm.startMonth && eduForm.startYear && eduForm.endMonth && eduForm.endYear) {
     if (!isPeriodValid(eduForm.startMonth, eduForm.startYear, eduForm.endMonth, eduForm.endYear)) {
       eduErrors.period = 'Periode selesai tidak boleh lebih awal dari periode mulai.'; valid = false
     }
@@ -763,6 +781,7 @@ function resetEduForm() {
   eduForm.degree = ''; eduForm.major = ''; eduForm.institution = ''
   eduForm.startMonth = ''; eduForm.startYear = ''; eduForm.endMonth = ''; eduForm.endYear = ''
   eduForm.gpa = ''; eduForm.experiences = []
+  eduForm.showDate = true; eduForm.isCurrent = false
   eduEditIndex.value = -1
   clearEduErrors(); resetEduExpForm()
 }
@@ -771,10 +790,12 @@ function saveEducation() {
   if (!validateEduForm()) return
   const entry = {
     degree: eduForm.degree.trim(), major: eduForm.major.trim(), institution: eduForm.institution.trim(),
-    startMonth: eduForm.startMonth, startYear: eduForm.startYear,
-    endMonth: eduForm.endMonth, endYear: eduForm.endYear,
+    startMonth: eduForm.showDate ? eduForm.startMonth : '', startYear: eduForm.showDate ? eduForm.startYear : '',
+    endMonth: (eduForm.showDate && !eduForm.isCurrent) ? eduForm.endMonth : '',
+    endYear: (eduForm.showDate && !eduForm.isCurrent) ? eduForm.endYear : '',
     gpa: eduForm.gpa.toString().trim(),
-    experiences: []
+    experiences: [],
+    showDate: eduForm.showDate, isCurrent: eduForm.isCurrent
   }
   // Always save as single entry (index 0)
   educations.value = [entry]
@@ -787,6 +808,8 @@ function loadEduFormFromSaved() {
     eduForm.startMonth = edu.startMonth; eduForm.startYear = edu.startYear
     eduForm.endMonth = edu.endMonth; eduForm.endYear = edu.endYear
     eduForm.gpa = edu.gpa; eduForm.experiences = []
+    eduForm.showDate = edu.showDate !== undefined ? edu.showDate : true
+    eduForm.isCurrent = edu.isCurrent || false
     clearEduErrors()
   }
 }
@@ -933,7 +956,11 @@ async function analyzeBuiltCV() {
   analysisResult.value = ""
   
   const eduText = educations.value.map(e => {
-    let t = `${e.degree} ${e.major} di ${e.institution} (IPK: ${e.gpa}/4.00), ${e.startMonth} ${e.startYear} - ${e.endMonth} ${e.endYear}`
+    let dateStr = ''
+    if (e.showDate) {
+      dateStr = `, ${e.startMonth} ${e.startYear} - ${e.isCurrent ? 'Sekarang' : e.endMonth + ' ' + e.endYear}`
+    }
+    let t = `${e.degree} ${e.major} di ${e.institution} (IPK: ${e.gpa}/4.00)${dateStr}`
     if (e.experiences.length) {
       t += '\nPengalaman: ' + e.experiences.map(x => `${x.role} ${x.title}: ${x.description}`).join('; ')
     }

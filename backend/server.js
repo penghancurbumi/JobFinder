@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url)
 const { PDFParse } = require("pdf-parse")
 import { createServer } from "http"
 import { Server } from "socket.io"
-import { scrapeAll, runCleanup } from "./scrapers/index.js"
+import { scrapeOnePlatform, runCleanup, PLATFORMS } from "./scrapers/index.js"
 import { analyzeCV } from "./cvAnalyzer.js"
 import { getBuilderSections, getSuggestion } from "./cvBuilder.js"
 import { chat } from "./chatbot.js"
@@ -30,14 +30,19 @@ app.use(express.json())
 let isScraping = false
 let lastScrapeEnd = 0
 // Minimum wait between manual "Perbarui Data" scrapes (prevents spam/time waste)
-const MIN_SCRAPE_INTERVAL_MS = 5 * 60 * 1000
+const MIN_SCRAPE_INTERVAL_MS = 60 * 1000
+// Round-robin: each press scrapes ONE platform, advancing through PLATFORMS.
+let nextPlatformIdx = 0
 
 async function performScrape() {
   if (isScraping) return
   isScraping = true
   io.emit("scrape-status", { status: "scraping" })
   try {
-    await scrapeAll((evt) => io.emit("scrape-progress", evt))
+    const idx = nextPlatformIdx
+    nextPlatformIdx = (nextPlatformIdx + 1) % PLATFORMS.length
+    const platform = PLATFORMS[idx]
+    await scrapeOnePlatform(platform, idx + 1, PLATFORMS.length, (evt) => io.emit("scrape-progress", evt))
     await refreshJobsCache()
     const result = await getFilteredJobs("", "all", "all", "newest", "", "", false, 1, 200)
     io.emit("jobs-updated", result)

@@ -12,11 +12,11 @@ const NOT_FOUND_FILE = path.join(EXPORTS_DIR, "not_found.txt")
 // that cannot launch from a hidden/background process (shell:false).
 const PYTHON_EXE = "C:\\Users\\Muhammad Al Fakhreza\\AppData\\Local\\Python\\bin\\python.exe"
 
-// Run up to N category scrapes at the same time
-const CONCURRENCY = 2
-// How many listing pages to paginate per spider per category
+// The 7 supported platforms, scraped one at a time (round-robin) on demand.
+const PLATFORMS = ["glints", "jobstreet", "kalibrr", "kitalulus", "linkedin", "pintarnya", "techinasia"]
+// How many listing pages to paginate per scrape
 const MAX_PAGES = 1
-// Safety cap per category (way above realistic run time)
+// Safety cap per scrape (way above realistic run time)
 const CATEGORY_TIMEOUT_MS = 15 * 60 * 1000
 // Expired-job cleanup thresholds (see db.js deleteExpiredJobs)
 const EXPIRED_OPTIONS = { maxAgeDays: 90, notSeenDays: 30, notSeenMinAgeDays: 7 }
@@ -226,38 +226,27 @@ function runCategory(cmd, category, onProgress) {
   })
 }
 
-export async function scrapeAll(onProgress) {
-  console.log("Starting Python Scrapy jobs for 5 job types (parallel)...")
+// Scrape a single platform. Each "Perbarui Data" press scrapes one platform
+// only (fast); the backend advances through PLATFORMS round-robin.
+export async function scrapeOnePlatform(platform, index, total, onProgress) {
+  onProgress?.({ status: "platform-start", platform, index, total, message: `Mulai scrape ${platform} (${index}/${total})` })
+  console.log(`Scraping platform: ${platform} (${index}/${total})...`)
 
-  const jobTypes = [
-    { type: "fulltime", cmd: `python -m scrapy crawl_all -a job_type=fulltime -a max_pages=${MAX_PAGES}` },
-    { type: "parttime", cmd: `python -m scrapy crawl_all -a job_type=parttime -a max_pages=${MAX_PAGES}` },
-    { type: "intern", cmd: `python -m scrapy crawl_all -a job_type=internship -a max_pages=${MAX_PAGES}` },
-    { type: "hybrid", cmd: `python -m scrapy crawl_all -a work_type=hybrid -a max_pages=${MAX_PAGES}` },
-    { type: "freelance", cmd: `python -m scrapy crawl_all -a job_type=contract -a max_pages=${MAX_PAGES}` }
-  ]
-
-  let idx = 0
-  const categoryDone = new Set()
-
-  async function worker() {
-    while (idx < jobTypes.length) {
-      const jt = jobTypes[idx++]
-      onProgress?.({ category: jt.type, status: "category-start", message: `Mulai kategori ${jt.type}` })
-      await runCategory(jt.cmd, jt.type, (evt) => {
-        if (evt.status === "category-done") categoryDone.add(evt.category)
-        onProgress?.(evt)
-      })
+  const cmd = `python -m scrapy crawl ${platform} -a max_pages=${MAX_PAGES}`
+  await runCategory(cmd, platform, (evt) => {
+    if (evt.spider) {
+      onProgress?.({ status: "platform-spider", platform, spider: evt.spider, done: evt.status === "done", items: evt.items, message: evt.message })
+    } else {
+      onProgress?.(evt)
     }
-  }
+  })
 
-  const workers = Array.from({ length: Math.min(CONCURRENCY, jobTypes.length) }, worker)
-  await Promise.all(workers)
-
-  console.log("All categories scraped. Importing exports into DB...")
+  console.log(`Importing exports for ${platform}...`)
   const added = await insertScrapedFiles("all")
   const cleanup = await runCleanup()
-  console.log(`Scrapy execution completed. Total new jobs added: ${added} | removed: ${cleanup.total}`)
-  onProgress?.({ status: "done", added, removed: cleanup })
-  return { added, cleanup }
+  console.log(`Platform ${platform} done. Added: ${added} | removed: ${cleanup.total}`)
+  onProgress?.({ status: "done", platform, added, removed: cleanup })
+  return { platform, added, cleanup }
 }
+
+export { PLATFORMS }
