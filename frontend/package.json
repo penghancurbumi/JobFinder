@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@iconify/vue": "^5.0.1",
     "@vueuse/head": "^2.0.0",
     "axios": "^1.7.9",
     "chart.js": "^4.5.1",

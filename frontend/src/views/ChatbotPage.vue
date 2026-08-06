@@ -11,12 +11,15 @@
         <div v-for="(msg, i) in messages" :key="i" class="flex" :class="msg.role === 'user' ? 'justify-end' : 'justify-start'">
           <div class="max-w-[80%] px-[16px] py-[12px] rounded-[20px] text-[15px] leading-[1.6] whitespace-pre-wrap tracking-[0.24px]" 
                :class="msg.role === 'user' ? 'bg-white text-ink rounded-br-[4px]' : 'bg-surface-elevated text-on-dark rounded-bl-[4px]'">
-            {{ msg.content }}
+            <span v-html="msg.role === 'assistant' ? renderContent(msg.content) : escapeHtml(msg.content)"></span><span v-if="msg.streaming" class="stream-cursor"></span>
           </div>
         </div>
 
         <div v-if="loading" class="flex justify-start">
-          <div class="max-w-[80%] px-[16px] py-[12px] rounded-[20px] text-[15px] leading-[1.6] whitespace-pre-wrap tracking-[0.24px] bg-surface-elevated text-on-dark rounded-bl-[4px] typing">Menganalisis...</div>
+          <div class="max-w-[80%] px-[16px] py-[12px] rounded-[20px] text-[15px] leading-[1.6] whitespace-pre-wrap tracking-[0.24px] bg-surface-elevated text-on-dark rounded-bl-[4px]">
+            <span class="thinking-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+            <span class="text-stone text-sm">AI sedang berpikir</span>
+          </div>
         </div>
       </div>
 
@@ -25,7 +28,7 @@
           <button
             v-for="q in quickQuestions"
             :key="q.text"
-            class="bg-surface-elevated text-on-dark-mute border border-hairline-dark rounded-full px-[14px] py-[6px] text-[13px] font-sans cursor-pointer transition-all duration-200 whitespace-nowrap hover:bg-canvas-dark hover:text-on-dark hover:border-primary"
+            class="bg-surface-elevated text-on-dark-mute border border-hairline-dark rounded-full px-[14px] py-[6px] text-[13px] font-sans cursor-pointer transition-all duration-200 whitespace-nowrap hover:bg-canvas-dark hover:text-on-dark"
             @click="sendQuick(q.text)"
           >
             {{ q.label }}
@@ -43,7 +46,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted } from "vue"
+import { ref, nextTick, onMounted, onUnmounted } from "vue"
 import axios from "axios"
 import { useHead } from "@vueuse/head"
 
@@ -63,6 +66,7 @@ const loading = ref(false)
 const loadingHistory = ref(true)
 const chatRef = ref(null)
 const sessionId = ref("")
+let typeTimers = []
 
 const quickQuestions = [
   { label: "Lowongan Software Dev", text: "Saya ingin cari lowongan software development" },
@@ -79,6 +83,51 @@ onMounted(async () => {
   loadingHistory.value = false
   scrollDown()
 })
+
+onUnmounted(() => {
+  typeTimers.forEach(clearInterval)
+  typeTimers = []
+})
+
+// Escape HTML then turn URLs into clickable links (safe for assistant replies).
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+}
+
+function renderContent(text) {
+  const escaped = escapeHtml(text)
+  return escaped.replace(/(https?:\/\/[^\s<]+)/g, (match) => {
+    let url = match
+    const trailing = url.match(/[),.;:!?'"]+$/)
+    if (trailing) url = url.slice(0, -trailing[0].length)
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>${match.slice(url.length)}`
+  })
+}
+
+// Type out the latest assistant message progressively (typewriter effect).
+function typeAssistantReply(msg, fullText) {
+  msg.content = ""
+  msg.streaming = true
+  const tickMs = 30
+  const ticks = Math.max(18, Math.min(110, Math.round(fullText.length / 9)))
+  const chunk = Math.max(1, Math.ceil(fullText.length / ticks))
+  let i = 0
+  const timer = setInterval(() => {
+    i += chunk
+    msg.content = fullText.slice(0, i)
+    scrollDown()
+    if (i >= fullText.length) {
+      msg.content = fullText
+      msg.streaming = false
+      clearInterval(timer)
+    }
+  }, tickMs)
+  typeTimers.push(timer)
+}
 
 async function send() {
   if (!input.value.trim() || loading.value) return
@@ -106,6 +155,10 @@ async function sendMessage(text) {
       messages.value = data.history
     } else {
       messages.value.push({ role: "assistant", content: data.reply })
+    }
+    const last = messages.value[messages.value.length - 1]
+    if (last && last.role === "assistant") {
+      typeAssistantReply(last, last.content || "")
     }
   } catch {
     messages.value.push({ role: "assistant", content: "Terjadi kesalahan saat menghubungi asisten. Silakan coba lagi." })
@@ -139,5 +192,44 @@ function scrollDown() {
   border-radius: 50%;
   margin-left: 4px;
   animation: pulse-opacity 1s infinite;
+}
+.thinking-dots {
+  display: inline-flex;
+  gap: 3px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.thinking-dots .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: currentColor;
+  animation: dot-bounce 1.2s infinite;
+}
+.thinking-dots .dot:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dots .dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dot-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-3px); opacity: 1; }
+}
+.stream-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  background-color: currentColor;
+  animation: cursor-blink 0.8s step-end infinite;
+}
+.chat-link {
+  color: #93c5fd;
+  text-decoration: underline;
+  word-break: break-all;
+}
+.chat-link:hover {
+  color: #60a5fa;
+}
+@keyframes cursor-blink {
+  50% { opacity: 0; }
 }
 </style>

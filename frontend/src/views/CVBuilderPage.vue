@@ -288,6 +288,23 @@
 
           <!-- =================== GENERIC FORM (personal_info, summary, skills, certifications) =================== -->
           <div v-else class="flex flex-col gap-[20px]">
+            <div v-if="steps[currentStep].id === 'personal_info'" class="flex flex-col gap-sm mb-lg">
+              <label class="flex items-center gap-sm cursor-pointer w-max">
+                <input type="checkbox" v-model="useProfilePicture" class="w-[18px] h-[18px] rounded accent-white" />
+                <span class="text-[14px] text-on-dark-mute font-semibold">Gunakan Foto Profil</span>
+              </label>
+              <div v-if="useProfilePicture" class="flex flex-col gap-xs mt-xs">
+                <label class="mb-[8px] font-semibold text-on-dark-mute">Foto Profil</label>
+                <div class="flex items-center gap-md">
+                  <div class="w-[80px] h-[80px] rounded-full overflow-hidden border-2 border-hairline-dark bg-surface-deep flex shrink-0">
+                    <img v-if="profilePictureUrl" :src="profilePictureUrl" class="w-full h-full object-cover" />
+                    <Icon v-else icon="iconamoon:profile-fill" class="text-[60px] text-stone mx-auto my-auto" />
+                  </div>
+                  <input type="file" accept="image/*" @change="onProfilePictureChange" class="w-full text-[14px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-surface-deep file:text-on-dark hover:file:bg-surface-elevated cursor-pointer" />
+                </div>
+              </div>
+            </div>
+
             <div v-for="field in steps[currentStep].fields" :key="field.key" class="flex flex-col">
               <label class="mb-[8px] font-semibold text-on-dark-mute">
                 {{ field.label }} 
@@ -333,7 +350,7 @@
                 v-model="formData[field.key]" 
                 :placeholder="field.placeholder"
                 rows="4"
-                class="w-full h-40 bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"
+                class="w-full h-80 bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"
               ></textarea>
               
               <span class="text-[12px] text-stone mt-[6px]">{{ field.hint }}</span>
@@ -366,22 +383,125 @@
             </div>
           </div>
           
-          <div v-if="analysisResult" class="mb-[24px] p-xl border border-hairline-dark rounded-[20px] bg-surface-deep">
-            <h4 class="text-[20px] font-medium leading-[1.4] mb-[12px] text-on-dark">Hasil Analisis AI</h4>
-            <div v-html="analysisResult" class="analysis-content"></div>
+          <div v-if="analysisResult" class="mb-[32px] animate-fade-in">
+            <h2 class="text-[24px] font-medium leading-[1.33] tracking-[0] mb-xl text-on-dark">Laporan Analisis</h2>
+
+            <!-- Error Handling -->
+            <div v-if="analysisResult.analysis?.error" class="bg-accent-danger text-white rounded-[20px] p-xxl mb-xl">
+              Gagal menganalisis CV: {{ analysisResult.analysis.message }}
+            </div>
+
+            <template v-else>
+              <!-- Score Summary -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-xl mb-xl">
+                <div class="bg-surface-elevated rounded-[20px] p-xxl flex items-center gap-xl border border-hairline-dark">
+                  <div class="w-[100px] h-[100px] shrink-0 relative">
+                    <Doughnut :data="builderOverallChartData" :options="builderDoughnutOptions" />
+                  </div>
+                  <div>
+                    <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Overall Score</span>
+                    <h3 class="text-[32px] font-medium leading-[1.19] tracking-[-0.32px] m-0 text-white">{{ analysisResult.analysis?.overallScore || 0 }}<span class="text-[20px] text-on-dark-mute">/100</span></h3>
+                    <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute mt-[4px]">Kecocokan dengan posisi {{ targetExpertise }}</p>
+                  </div>
+                </div>
+                
+                <div class="bg-surface-elevated rounded-[20px] p-xxl flex items-center gap-xl border border-hairline-dark">
+                  <div class="w-[100px] h-[100px] shrink-0 relative">
+                    <Doughnut :data="builderAtsChartData" :options="builderDoughnutOptions" />
+                  </div>
+                  <div>
+                    <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">ATS Score</span>
+                    <h3 class="text-[32px] font-medium leading-[1.19] tracking-[-0.32px] m-0" :class="analysisResult.ats?.isATS ? 'text-accent-teal' : 'text-accent-danger'">{{ analysisResult.ats?.score || 0 }}<span class="text-[20px] text-on-dark-mute">%</span></h3>
+                    <span class="inline-block rounded-full text-[13px] font-medium mt-[4px]" :class="analysisResult.ats?.isATS ? 'text-accent-teal' : 'text-accent-danger'">
+                      {{ analysisResult.ats?.isATS ? 'Format ATS Valid' : 'Format ATS Kurang' }}
+                    </span>
+                    <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute mt-[4px]">{{ analysisResult.ats?.matchedSections?.length || 0 }} / {{ analysisResult.ats?.totalSections || 0 }} bagian wajib ditemukan</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Charts Dashboard -->
+              <div class="bg-surface-elevated rounded-[20px] p-xxl mb-xl border border-hairline-dark">
+                <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-lg block text-stone">Analisis Kategori (Line Chart)</span>
+                <div class="relative h-[300px] w-full">
+                  <Line :data="builderLineChartData" :options="builderLineOptions" />
+                </div>
+              </div>
+
+              <!-- Summary -->
+              <div v-if="analysisResult.analysis?.summary" class="bg-surface-elevated rounded-[20px] p-xxl mb-xl border border-hairline-dark">
+                <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Resume Summary</span>
+                <p class="text-[16px] font-normal leading-[1.6] text-on-dark-mute mt-sm">{{ analysisResult.analysis.summary }}</p>
+              </div>
+
+              <!-- Detailed Insights -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-xl mb-xl">
+                <div v-if="analysisResult.analysis?.strengths?.length" class="bg-surface-elevated rounded-[20px] p-xxl border-t-3 border-accent-teal">
+                  <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Kekuatan (Strengths)</span>
+                  <ul class="pl-[20px] mt-md text-[14px] font-normal leading-[1.5] list-disc">
+                    <li v-for="(item, idx) in analysisResult.analysis.strengths" :key="'bs'+idx" class="mb-[8px] text-on-dark-mute">{{ item }}</li>
+                  </ul>
+                </div>
+                
+                <div v-if="analysisResult.analysis?.weaknesses?.length" class="bg-surface-elevated rounded-[20px] p-xxl border-t-3 border-accent-danger">
+                  <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Kelemahan (Weaknesses)</span>
+                  <ul class="pl-[20px] mt-md text-[14px] font-normal leading-[1.5] list-disc">
+                    <li v-for="(item, idx) in analysisResult.analysis.weaknesses" :key="'bw'+idx" class="mb-[8px] text-on-dark-mute">{{ item }}</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-xl mb-xl">
+                <div class="bg-surface-elevated rounded-[20px] p-xxl border border-hairline-dark">
+                  <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Keyword Match</span>
+                  <div class="flex flex-wrap gap-[8px] mt-[12px]">
+                    <span v-for="(kw, idx) in analysisResult.analysis?.keywordMatch" :key="'bkw'+idx" class="inline-flex items-center gap-[6px] bg-gray/10 text-white border border-white/25 rounded-full px-[12px] py-[4px] text-[13px]">
+                      <span class="inline-block rounded-full bg-white w-[4px] h-[4px]"></span> {{ kw }}
+                    </span>
+                    <span v-if="!analysisResult.analysis?.keywordMatch?.length" class="text-[14px] font-normal leading-[1.5] text-stone">Tidak ada keyword yang cocok.</span>
+                  </div>
+                </div>
+                
+                <div class="bg-surface-elevated rounded-[20px] p-xxl border border-hairline-dark">
+                  <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Missing Skills</span>
+                  <div class="flex flex-wrap gap-[8px] mt-[12px]">
+                    <span v-for="(kw, idx) in analysisResult.analysis?.missingSkills" :key="'bmk'+idx" class="inline-flex items-center gap-[6px] bg-gray/10 text-white border border-white/25 rounded-full px-[12px] py-[4px] text-[13px]">
+                      <span class="inline-block rounded-full bg-white w-[4px] h-[4px]"></span> {{ kw }}
+                    </span>
+                    <span v-if="!analysisResult.analysis?.missingSkills?.length" class="text-[14px] font-normal leading-[1.5] text-stone">Tidak ada skill yang terlewat. Bagus!</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recommendations -->
+              <div v-if="analysisResult.analysis?.recommendations?.length" class="bg-surface-elevated rounded-[20px] p-xxl border-l-3 border-primary">
+                <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Rekomendasi AI</span>
+                <ul class="pl-[20px] mt-md text-[14px] font-normal leading-[1.6] list-disc">
+                  <li v-for="(rec, idx) in analysisResult.analysis.recommendations" :key="'br'+idx" class="mb-[12px] text-on-dark-mute">
+                    {{ rec }}
+                  </li>
+                </ul>
+              </div>
+            </template>
           </div>
 
           <!-- CV Visual Preview -->
           <div class="bg-white text-black p-[40px] rounded-[20px] leading-[1.5] max-w-[800px] mx-auto" v-if="hasPreviewData" :style="{ fontFamily: templateFont }">
             <!-- Personal Info -->
-            <div class="text-center mb-[20px]">
-                <h2 class="text-[30px] mb-[4px] uppercase tracking-[1px] font-bold">{{ formData.full_name || '[Nama Anda]' }}</h2>
-                <p class="text-[12px]">
-                    {{ (!errors.email && formData.email) ? formData.email + ' | ' : '' }}
-                    {{ formData.phone ? formData.phone + ' | ' : '' }}
-                    {{ formData.address ? formData.address + ' | ' : '' }}
-                    {{ (!errors.linkedin && formData.linkedin) ? formData.linkedin : '' }}
-                </p>
+            <div class="mb-[20px] flex items-center gap-[24px]" :class="useProfilePicture ? 'justify-start text-left' : 'justify-center text-center flex-col'">
+                <div v-if="useProfilePicture" class="w-[100px] h-[110px] overflow-hidden shrink-0">
+                  <img v-if="profilePictureUrl" :src="profilePictureUrl" class="w-full h-full object-cover" />
+                  <Icon v-else icon="iconamoon:profile-fill" class="w-full h-full text-stone" />
+                </div>
+                <div :class="useProfilePicture ? 'flex-1' : ''">
+                  <h2 class="text-[28px] mb-[4px] uppercase tracking-[1px] font-bold">{{ formData.full_name || '[Nama Anda]' }}</h2>
+                  <p class="text-[12px]">
+                      {{ (!errors.email && formData.email) ? formData.email + ' | ' : '' }}
+                      {{ formData.phone ? formData.phone + ' | ' : '' }}
+                      {{ formData.address ? formData.address + ' | ' : '' }}
+                      {{ (!errors.linkedin && formData.linkedin) ? formData.linkedin : '' }}
+                  </p>
+                </div>
             </div>
             
             <!-- Summary -->
@@ -458,27 +578,33 @@
     <!-- Hidden Print Container -->
     <div class="hidden print:block absolute left-0 top-0 w-full m-0 p-[40px] border-none shadow-none rounded-none bg-white text-black leading-[1.5]" :style="{ fontFamily: templateFont }">
         <!-- Personal -->
-        <div class="text-center mb-[20px]">
-            <h2 class="text-[30px] mb-[4px] uppercase tracking-[1px] font-bold">{{ formData.full_name || '[Nama Anda]' }}</h2>
-            <p class="text-[12px]">
-                {{ (!errors.email && formData.email) ? formData.email + ' | ' : '' }}
-                {{ formData.phone ? formData.phone + ' | ' : '' }}
-                {{ formData.address ? formData.address + ' | ' : '' }}
-                {{ (!errors.linkedin && formData.linkedin) ? formData.linkedin : '' }}
-            </p>
+        <div class="mb-[20px] flex items-center gap-[24px]" :class="useProfilePicture ? 'justify-start text-left' : 'justify-center text-center flex-col'">
+            <div v-if="useProfilePicture" class="w-[100px] h-[110px] overflow-hidden shrink-0">
+              <img v-if="profilePictureUrl" :src="profilePictureUrl" class="w-full h-full object-cover" />
+              <Icon v-else icon="iconamoon:profile-fill" class="w-full h-full text-stone" />
+            </div>
+            <div :class="useProfilePicture ? 'flex-1' : ''">
+              <h2 class="text-[28px] mb-[4px] uppercase tracking-[1px] font-bold">{{ formData.full_name || '[Nama Anda]' }}</h2>
+              <p class="text-[12px]">
+                  {{ (!errors.email && formData.email) ? formData.email + ' | ' : '' }}
+                  {{ formData.phone ? formData.phone + ' | ' : '' }}
+                  {{ formData.address ? formData.address + ' | ' : '' }}
+                  {{ (!errors.linkedin && formData.linkedin) ? formData.linkedin : '' }}
+              </p>
+            </div>
         </div>
         
         <!-- Summary -->
         <div class="mb-[15px]" v-if="formData.summary">
             <h4 class="text-[14px] uppercase mb-[4px] font-bold">RINGKASAN PROFESIONAL</h4>
-            <div class="border-b-2 border-black mb-[12px]"></div>
+            <div class="border-b border-black mb-[12px]"></div>
             <p class="text-[12px] text-justify">{{ formData.summary }}</p>
         </div>
         
         <!-- Education (print) -->
         <div class="mb-[15px]" v-if="educations.length > 0">
             <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENDIDIKAN</h4>
-            <div class="border-b-2 border-black mb-[12px]"></div>
+            <div class="border-bborder-black mb-[12px]"></div>
             <div v-for="(edu, idx) in educations" :key="'print-edu-'+idx" class="mb-[16px]">
                 <div class="flex justify-between items-start flex-wrap gap-[4px]">
                     <div>
@@ -493,7 +619,7 @@
         <!-- Work Experience (print) -->
         <div class="mb-[15px]" v-if="workExperiences.length > 0">
             <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENGALAMAN & PROJEK</h4>
-            <div class="border-b-2 border-black mb-[12px]"></div>
+            <div class="border-b border-black mb-[12px]"></div>
             <div v-for="(work, idx) in workExperiences" :key="'print-work-'+idx" class="mb-[16px]">
                 <div class="flex justify-between items-start flex-wrap gap-[4px]">
                     <div>
@@ -511,7 +637,7 @@
         <!-- Skills (print) -->
         <div class="mb-[15px]" v-if="formData.technical_skills || formData.soft_skills">
             <h4 class="text-[14px] uppercase mb-[4px] font-bold">KEAHLIAN</h4>
-            <div class="border-b-2 border-black mb-[12px]"></div>
+            <div class="border-b border-black mb-[12px]"></div>
             <p v-if="formData.technical_skills" class="text-[12px]"><strong>Keahlian Teknis:</strong> {{ formData.technical_skills }}</p>
             <p v-if="formData.soft_skills" class="text-[12px]"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
         </div>
@@ -519,7 +645,7 @@
         <!-- Certifications (print) -->
         <div class="mb-[15px]" v-if="formData.cert_name">
             <h4 class="text-[14px] uppercase mb-[4px] font-bold">SERTIFIKASI</h4>
-            <div class="border-b-2 border-black mb-[12px]"></div>
+            <div class="border-b border-black mb-[12px]"></div>
             <div class="mb-[12px]">
                 <div class="flex justify-between text-[14px]">
                     <strong>{{ formData.cert_name }}</strong>
@@ -535,6 +661,9 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from "vue"
 import axios from "axios"
+import { Icon } from "@iconify/vue"
+import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js'
+import { Line, Doughnut } from 'vue-chartjs'
 import { useHead } from "@vueuse/head"
 
 useHead({
@@ -547,13 +676,14 @@ useHead({
 })
 
 
+ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale, LinearScale, ArcElement)
+
 // ===================== STATE =====================
 const steps = ref([])
 const expertiseAreas = ref([])
 const targetExpertise = ref("Software Development")
 const selectedTemplate = ref('modern_ats')
 
-// ===================== CV TEMPLATES =====================
 const CV_TEMPLATES = [
   { id: 'modern_ats', name: 'Modern ATS', desc: 'Desain minimalis dan bersih, paling populer.', image: '', isDefault: true, font: "'Calibri', sans-serif" },
   { id: 'classic_ats', name: 'Classic ATS', desc: 'Tata letak tradisional dan formal.', image: '', isDefault: false, font: "'Times New Roman', serif" },
@@ -562,10 +692,21 @@ const CV_TEMPLATES = [
 const formData = reactive({})
 const suggestions = reactive({})
 const errors = reactive({ gpa: "", email: "", linkedin: "" })
-const analysisResult = ref("")
+const analysisResult = ref(null)
 const analyzing = ref(false)
 const currentStep = ref(0)
 const maxStepReached = ref(0)
+const useProfilePicture = ref(false)
+const profilePictureUrl = ref("")
+
+function onProfilePictureChange(e) {
+  const file = e.target.files[0]
+  if (file) {
+    profilePictureUrl.value = URL.createObjectURL(file)
+  } else {
+    profilePictureUrl.value = ""
+  }
+}
 
 // Simple form fields (personal info, summary, skills, certifications)
 const FIELDS = [
@@ -1006,9 +1147,68 @@ async function getSuggestion(field) {
 }
 
 // ===================== ANALYZE CV =====================
+// ===================== CHART CONFIGS FOR BUILDER ANALYSIS =====================
+const builderDoughnutOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  cutout: '75%',
+  plugins: { legend: { display: false }, tooltip: { enabled: false } }
+}
+
+const builderOverallChartData = computed(() => {
+  const score = analysisResult.value?.analysis?.overallScore || 0
+  return {
+    labels: ['Score', 'Remaining'],
+    datasets: [{
+      data: [score, 100 - score],
+      backgroundColor: ['#ffffff', 'rgba(255,255,255,0.08)'],
+      borderWidth: 0
+    }]
+  }
+})
+
+const builderAtsChartData = computed(() => {
+  const score = analysisResult.value?.ats?.score || 0
+  const color = score >= 25 ? '#00a87e' : '#e23b4a'
+  return {
+    labels: ['Score', 'Remaining'],
+    datasets: [{
+      data: [score, 100 - score],
+      backgroundColor: [color, 'rgba(255,255,255,0.08)'],
+      borderWidth: 0
+    }]
+  }
+})
+
+const builderLineOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: { min: 0, max: 100, ticks: { color: '#8d969e' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+    x: { ticks: { color: '#8d969e' }, grid: { display: false } }
+  },
+  plugins: { legend: { display: false } }
+}
+
+const builderLineChartData = computed(() => {
+  const cats = analysisResult.value?.analysis?.categories || {}
+  return {
+    labels: ['Skills', 'Experience', 'Education', 'Projects', 'Certificates', 'Soft Skills'],
+    datasets: [{
+      label: 'Skor Kategori',
+      data: [cats.Skills||0, cats.Experience||0, cats.Education||0, cats.Projects||0, cats.Certificates||0, cats.SoftSkills||0],
+      borderColor: '#ffffff',
+      backgroundColor: 'rgba(90, 90, 90, 0.3)',
+      pointBackgroundColor: '#ffffff',
+      fill: true,
+      tension: 0.4
+    }]
+  }
+})
+
 async function analyzeBuiltCV() {
   analyzing.value = true
-  analysisResult.value = ""
+  analysisResult.value = null
   
   const eduText = educations.value.map(e => {
     let dateStr = ''
@@ -1048,84 +1248,44 @@ async function analyzeBuiltCV() {
     const { data } = await axios.post("/api/cv/analyze", form)
     
     if (data.analysis && typeof data.analysis === "object" && data.analysis.error) {
-        analysisResult.value = `<p>Salah: ${data.analysis.message}</p>`
+        analysisResult.value = data
         return
     }
 
     if (data.analysis && data.analysis.overallScore !== undefined) {
-        analysisResult.value = formatAnalysisHtml(data, data.analysis)
-    } else if (data.analysis && typeof data.analysis === "string") {
-        analysisResult.value = data.analysis
-            .replace(/```html\n?/g, "")
-            .replace(/```\n?/g, "")
-            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+        analysisResult.value = data
     } else {
-        analysisResult.value = "Analisis gagal atau kosong."
+        analysisResult.value = { analysis: { error: true, message: "Analisis gagal atau kosong." }, ats: { isATS: false, score: 0, matchedSections: [], totalSections: 0 } }
     }
   } catch (e) {
     console.error(e)
-    analysisResult.value = "Gagal memindai CV. Silakan coba lagi."
+    analysisResult.value = { analysis: { error: true, message: "Gagal memindai CV. Silakan coba lagi." }, ats: { isATS: false, score: 0, matchedSections: [], totalSections: 0 } }
   } finally {
     analyzing.value = false
   }
 }
 
-function esc(s) {
-  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]))
-}
 
-function listItems(arr) {
-  if (!Array.isArray(arr)) return ""
-  return arr.length ? `<ul>${arr.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""
-}
 
-function formatAnalysisHtml(data, a) {
-  let html = ""
-  const ats = data.ats || {}
-
-  html += `<p class="mb-[16px]"><strong>Skor Keseluruhan: ${esc(a.overallScore)}/100</strong></p>`
-
-  if (ats.score !== undefined) {
-    html += `<p class="mb-[16px]"><strong>Skor ATS: ${esc(ats.score)}%</strong>${ats.isATS ? " (Format ATS terdeteksi)" : " (Gaya CV non-ATS)"}</p>`
-  }
-
-  if (a.summary) html += `<p class="mb-[16px]">${esc(a.summary)}</p>`
-
-  if (Array.isArray(a.strengths) && a.strengths.length) {
-    html += `<p class="mb-[8px]"><strong>Keunggulan:</strong></p>${listItems(a.strengths)}`
-  }
-  if (Array.isArray(a.weaknesses) && a.weaknesses.length) {
-    html += `<p class="mb-[8px]"><strong>Kelemahan:</strong></p>${listItems(a.weaknesses)}`
-  }
-  if (Array.isArray(a.missingSkills) && a.missingSkills.length) {
-    html += `<p class="mb-[8px]"><strong>Skill yang Perlu Dilengkapi:</strong></p>${listItems(a.missingSkills)}`
-  }
-  if (Array.isArray(a.keywordMatch) && a.keywordMatch.length) {
-    html += `<p class="mb-[8px]"><strong>Keyword Cocok:</strong></p>${listItems(a.keywordMatch)}`
-  }
-  if (Array.isArray(a.recommendations) && a.recommendations.length) {
-    html += `<p class="mb-[8px]"><strong>Rekomendasi:</strong></p>${listItems(a.recommendations)}`
-  }
-  if (a.categories && typeof a.categories === "object") {
-    html += `<p class="mb-[8px]"><strong>Skor per Kategori:</strong></p><ul>`
-    for (const [k, v] of Object.entries(a.categories)) {
-      html += `<li>${esc(k)}: ${esc(v)}</li>`
-    }
-    html += `</ul>`
-  }
-  return html
-}
 
 function downloadPDF() { window.print() }
 </script>
 
 <style scoped>
-.analysis-content :deep(table) { margin: 16px 0; width: 100%; border-collapse: collapse; }
-.analysis-content :deep(th), .analysis-content :deep(td) { padding: 8px 12px; border: 1px solid var(--color-hairline-dark); }
-.analysis-content :deep(th) { background: var(--color-surface-deep); text-align: left; color: var(--color-on-dark); }
+.animate-fade-in { animation: fadeIn 0.5s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+</style>
 
+<style>
 @media print {
-  @page { margin: 0; }
+  @page { 
+    margin: 0; 
+    size: A4 portrait;
+  }
+  body { 
+    -webkit-print-color-adjust: exact; 
+    print-color-adjust: exact; 
+  }
   body * {
     visibility: hidden;
   }

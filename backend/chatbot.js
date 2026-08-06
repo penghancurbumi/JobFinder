@@ -19,6 +19,9 @@ const JOB_KEYWORDS = [
   "graphic design", "software", "data", "marketing", "it",
   "apply", "lamar", "hire", "recruit", "vacancy",
   "lulusan", "fresh graduate", "entry level",
+  "developer", "engineer", "designer", "design", "ui", "ux",
+  "analyst", "admin", "sales", "finance", "accounting", "hrd",
+  "backend", "frontend", "fullstack", "mobile", "devops", "cloud", "qa",
 ]
 
 function isJobQuery(message) {
@@ -26,6 +29,76 @@ function isJobQuery(message) {
   const adviceWords = ["tips", "bagaimana", "cara", "persiapan", "berikan", "prospek", "ceritakan"]
   if (adviceWords.some(w => q.includes(w))) return false
   return JOB_KEYWORDS.some(kw => q.includes(kw))
+}
+
+// ----- Relevance matching for job queries -----
+const STOPWORDS = new Set([
+  "yang","dan","di","ke","dengan","untuk","dalam","adalah","tidak","akan","dapat","anda","saya","ini","itu","pada","dari","atau","juga","sudah","bisa","harus","lebih","sangat","telah","saat","setelah","seperti","karena","jika","antara","tersebut","secara","mereka","kami","kita","sebuah","hal","bagi",
+  "cari","kerja","kerjaan","lowongan","pekerjaan","posisi","bidang","mau","ingin","tolong","info","ada","mencari","tentang","bagaimana","saja","minta","lihat","semua","butuh","apa","kah","dkk","dll","please","bantu",
+])
+
+function extractTerms(message) {
+  const cleaned = String(message).toLowerCase().replace(/[^a-z0-9\s]/g, " ")
+  return [...new Set(cleaned.split(/\s+/).filter((t) => t.length >= 2 && !STOPWORDS.has(t)))]
+}
+
+function scoreJob(job, terms) {
+  // Match against structured fields only (title, expertise, company, source,
+  // jobType, workType). Description is excluded to avoid false positives from
+  // short/common substrings (e.g. "ui" inside "juicer", "pilot" in prose).
+  const fields = [job.title, job.expertise, job.company, job.source, job.jobType, job.workType]
+  const words = new Set(
+    fields.flatMap((f) => String(f || "").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean))
+  )
+
+  let matched = 0
+  for (const t of terms) {
+    let hit = false
+    for (const w of words) {
+      if (t.length <= 2 ? w === t : w.startsWith(t)) { hit = true; break }
+    }
+    if (hit) matched++
+  }
+  return terms.length > 0 ? matched / terms.length : 0
+}
+
+// Answer a job query purely from the stored jobs (never hallucinate).
+function answerJobQuery(message, scrapedJobs) {
+  if (!scrapedJobs || scrapedJobs.length === 0) {
+    return 'Data lowongan belum tersedia. Silakan tekan tombol "Perbarui Data" terlebih dahulu agar chatbot bisa mencarikan lowongan sesuai keinginanmu.'
+  }
+
+  const terms = extractTerms(message)
+  if (terms.length === 0) {
+    return "Saya bisa bantu mencari lowongan berdasarkan bidang. Contoh:\n- \"lowongan software developer\"\n- \"lowongan UI/UX design\"\n- \"magang data analyst\"\n- \"part time marketing\"\n\nAtau lihat semua lowongan di halaman Peluang."
+  }
+
+  const scored = scrapedJobs
+    .map((job) => ({ job, score: scoreJob(job, terms) }))
+    .filter((s) => s.score > 0)
+    .sort((a, b) => b.score - a.score || String(b.job.postedDate || "").localeCompare(String(a.job.postedDate || "")))
+
+  const exact = scored.filter((s) => s.score >= 1)
+  if (exact.length > 0) {
+    // Enrich sparse exact results with strong partial matches (>= 0.5) so the
+    // answer reflects the whole field, e.g. "software developer" also surfaces
+    // backend/fullstack/mobile dev roles.
+    const list = [...exact]
+    if (exact.length < 5) list.push(...scored.filter((s) => s.score >= 0.5 && s.score < 1))
+    const seen = new Set()
+    const uniq = []
+    for (const s of list) {
+      if (!seen.has(s.job.url)) { seen.add(s.job.url); uniq.push(s.job) }
+      if (uniq.length === 5) break
+    }
+    return formatJobsAsText(uniq)
+  }
+
+  if (scored.length > 0) {
+    return `Belum ada lowongan yang cocok persis dengan "${message}" untuk saat ini. Namun, ini lowongan yang mungkin relevan dengan keinginanmu:\n\n${formatJobsAsText(scored.map((s) => s.job))}`
+  }
+
+  return `Belum ada lowongan yang cocok dengan "${message}" untuk saat ini. Coba kata kunci lain (misal: "software developer", "UI/UX design", "data analyst", "marketing"), atau lihat semua lowongan di halaman Peluang.`
 }
 
 function formatJobsAsText(jobs, limit = 5) {
@@ -123,34 +196,11 @@ function cleanOutput(text) {
   return result.trim()
 }
 
-function formatJobSearchResult(jobs, query) {
-  if (!jobs || jobs.length === 0) {
-    return `Maaf, saya tidak menemukan lowongan yang cocok dengan "${query}" saat ini. Coba gunakan kata kunci lain atau periksa kembali halaman Peluang untuk data terbaru.`
-  }
-  return formatJobsAsText(jobs)
-}
-
 export async function chat(message, history = [], scrapedJobs = []) {
-  if (isJobQuery(message) && scrapedJobs.length > 0) {
-    const q = message.toLowerCase()
-    const filtered = scrapedJobs.filter(j => {
-      const searchText = `${j.title} ${j.expertise} ${j.company} ${j.description || ""} ${j.source}`.toLowerCase()
-      return searchText.includes(q)
-    })
-
-    if (filtered.length > 0) {
-      return cleanOutput(formatJobSearchResult(filtered, q))
-    }
-
-    const broadFilter = scrapedJobs.filter(j => {
-      const searchText = `${j.title} ${j.expertise} ${j.company} ${j.description || ""}`.toLowerCase()
-      const keywords = q.split(/\s+/).filter(k => k.length > 2)
-      return keywords.some(k => searchText.includes(k))
-    })
-
-    if (broadFilter.length > 0) {
-      return cleanOutput(formatJobSearchResult(broadFilter, q))
-    }
+  // Job queries are answered directly from the stored jobs so the chatbot
+  // always returns real, relevant listings (never invents jobs).
+  if (isJobQuery(message)) {
+    return answerJobQuery(message, scrapedJobs)
   }
 
   const SYSTEM_PROMPT = `Kamu adalah asisten karir yang membantu pengguna mencari pekerjaan dan mengembangkan karir.
