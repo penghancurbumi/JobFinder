@@ -195,6 +195,32 @@ async function runScheduledCleanup() {
 setInterval(runScheduledCleanup, 24 * 60 * 60 * 1000)
 setTimeout(runScheduledCleanup, 5000)
 
+// ===================== GOOGLE FONTS PROXY =====================
+let googleFontsCache = null
+let googleFontsCacheTime = 0
+const FONTS_CACHE_TTL = 24 * 60 * 60 * 1000 // 24 jam
+
+app.get("/api/google-fonts", async (req, res) => {
+  try {
+    const now = Date.now()
+    if (googleFontsCache && (now - googleFontsCacheTime) < FONTS_CACHE_TTL) {
+      return res.json(googleFontsCache)
+    }
+    const response = await fetch("https://fonts.google.com/metadata/fonts")
+    const json = await response.json()
+    const fonts = json.familyMetadataList.map(f => ({
+      family: f.family,
+      category: f.category,
+    }))
+    googleFontsCache = fonts
+    googleFontsCacheTime = now
+    res.json(fonts)
+  } catch (e) {
+    console.error("Failed to fetch Google Fonts metadata:", e.message)
+    res.status(500).json({ error: "Gagal mengambil daftar font" })
+  }
+})
+
 app.get("/api/expertise-areas", (req, res) => res.json(EXPERTISE_AREAS))
 
 app.get("/api/jobs", async (req, res) => {
