@@ -62,11 +62,13 @@
                 :class="selectedTemplate === tpl.id ? 'border-white shadow-[0_0_20px_rgba(255,255,255,0.15)]' : 'border-hairline-dark'"
               >
                 <input type="radio" :value="tpl.id" v-model="selectedTemplate" class="sr-only" />
+
                 <!-- Preview Image Placeholder -->
                 <div class="w-full aspect-[3/4] bg-white rounded-[12px] flex items-center justify-center overflow-hidden">
                   <img v-if="tpl.image" :src="tpl.image" :alt="tpl.name" class="w-full h-full object-cover object-top" />
                   <span v-else class="text-stone text-[13px] italic">Preview</span>
                 </div>
+
                 <!-- Label -->
                 <div class="flex items-center gap-[8px] mt-[12px] px-[8px] pb-[8px]">
                   <div class="w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors" :class="selectedTemplate === tpl.id ? 'border-white' : 'border-stone'">
@@ -80,6 +82,79 @@
                 <!-- Default Badge -->
                 <span v-if="tpl.isDefault" class="absolute top-[12px] right-[12px] bg-white text-ink text-[10px] font-bold uppercase tracking-[0.5px] px-[8px] py-[2px] rounded-full">Default</span>
               </label>
+            </div>
+
+            <!-- =================== FONT SELECTOR =================== -->
+            <div class="mt-[32px] pt-[24px] border-t border-hairline-dark" @mouseleave="onFontSelectorMouseLeave">
+              <label class="block text-[14px] font-semibold text-on-dark-mute mb-[12px]">Font CV</label>
+
+              <!-- Search & Filter -->
+              <div class="flex gap-[8px] mb-[12px]">
+                <div class="relative flex-1">
+                  <Icon icon="mdi:magnify" class="absolute left-[12px] top-1/2 -translate-y-1/2 text-stone text-[18px] pointer-events-none" />
+                  <input
+                    v-model="fontSearch"
+                    type="text"
+                    placeholder="Cari font..."
+                    class="w-full bg-transparent border border-hairline-dark rounded-[10px] h-[40px] pl-[36px] pr-[12px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone"
+                  />
+                </div>
+              </div>
+
+              <!-- Live Preview (hover / selected) -->
+              <div v-if="hoveredFont || selectedFont" class="mb-[12px] px-[16px] py-[12px] rounded-[12px] bg-white/5 border border-white/20">
+                <div class="flex items-center justify-between mb-[4px]">
+                  <div class="text-[11px] text-stone">
+                    <span v-if="hoveredFont" class="text-white/60">Pratinjau:</span>
+                    <span v-else>Font terpilih:</span>
+                    <strong class="text-on-dark ml-[4px]">{{ hoveredFont || selectedFont }}</strong>
+                  </div>
+                  <button v-if="!hoveredFont && selectedFont" type="button" @click="selectedFont = ''; selectedFontName = ''" class="text-stone hover:text-on-dark transition-colors shrink-0">
+                    <Icon icon="mdi:close" class="text-[16px]" />
+                  </button>
+                </div>
+                <div
+                  class="text-[20px] text-on-dark"
+                  :style="{ fontFamily: `'${hoveredFont || selectedFont}', sans-serif` }"
+                >The quick brown fox jumps over the lazy dog</div>
+              </div>
+
+              <!-- Font List -->
+              <div v-if="fontLoading" class="flex items-center justify-center py-[32px] gap-[8px] text-stone text-[14px]">
+                <Icon icon="mdi:loading" class="animate-spin text-[20px]" /> Memuat daftar font...
+              </div>
+              <div
+                v-else
+                ref="fontListRef"
+                class="h-[280px] overflow-y-auto rounded-[12px] border border-hairline-dark divide-y divide-hairline-dark"
+                tabindex="0"
+                @keydown="onListKeyDown"
+                @wheel.stop
+              >
+                <button
+                  v-for="f in filteredGoogleFonts" :key="f.family"
+                  type="button"
+                  @click="selectFont(f)"
+                  @mouseenter="onFontHover(f.family)"
+                  class="w-full flex items-center justify-between px-[14px] py-[10px] transition-colors hover:bg-white/5 text-left"
+                  :class="selectedFont === f.family ? 'bg-white/8 text-on-dark' : 'text-on-dark-mute'"
+                >
+                  <div class="flex items-center gap-[10px]">
+                    <div class="w-[16px] h-[16px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors" :class="selectedFont === f.family ? 'border-white' : 'border-stone'">
+                      <div v-if="selectedFont === f.family" class="w-[8px] h-[8px] rounded-full bg-white"></div>
+                    </div>
+                    <div>
+                      <span class="text-[14px] font-medium">{{ f.family }}</span>
+                      <span class="text-[11px] text-stone ml-[8px] capitalize">{{ f.category }}</span>
+                    </div>
+                  </div>
+                  <!-- Preview Aa (jika font sudah dimuat) -->
+                  <span v-if="loadedFonts.includes(f.family)" class="text-[13px] text-stone" :style="{ fontFamily: `'${f.family}', sans-serif` }">Aa</span>
+                </button>
+                <div v-if="filteredGoogleFonts.length === 0" class="text-center text-stone text-[13px] py-[24px]">Tidak ada font ditemukan.</div>
+              </div>
+
+              <p class="text-[12px] text-stone mt-[10px]">{{ googleFonts.length.toLocaleString() }} font tersedia. Font akan dimuat otomatis saat dipilih.</p>
             </div>
           </div>
 
@@ -112,7 +187,7 @@
 
               <!-- Show Date Toggle -->
               <label class="flex items-center gap-[8px] cursor-pointer">
-                <input type="checkbox" v-model="eduForm.showDate" class="w-[18px] h-[18px] rounded accent-white" />
+                <input type="checkbox" v-model="eduForm.showDate" class="w-[15px] h-[15px] rounded accent-white" />
                 <span class="text-[14px] text-on-dark-mute">Tampilkan tanggal pada CV</span>
               </label>
 
@@ -126,6 +201,7 @@
                   </select>
                   <div v-if="eduErrors.startMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.startMonth }}</div>
                 </div>
+
                 <div class="flex flex-col">
                   <label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Mulai <span class="text-accent-danger font-bold">*</span></label>
                   <select v-model="eduForm.startYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
@@ -138,7 +214,7 @@
 
               <!-- Is Currently Studying Checkbox (shown only if showDate) -->
               <label v-if="eduForm.showDate" class="flex items-center gap-[8px] cursor-pointer">
-                <input type="checkbox" v-model="eduForm.isCurrent" class="w-[18px] h-[18px] rounded accent-white" />
+                <input type="checkbox" v-model="eduForm.isCurrent" class="w-[15px] h-[15px] rounded accent-white" />
                 <span class="text-[14px] text-on-dark-mute">Saya masih dalam pendidikan ini</span>
               </label>
 
@@ -152,6 +228,7 @@
                   </select>
                   <div v-if="eduErrors.endMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.endMonth }}</div>
                 </div>
+
                 <div class="flex flex-col">
                   <label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Selesai <span class="text-accent-danger font-bold">*</span></label>
                   <select v-model="eduForm.endYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
@@ -216,6 +293,7 @@
 
                 <!-- Period Start -->
                 <div class="grid grid-cols-2 gap-[12px]">
+
                   <div class="flex flex-col">
                     <label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Mulai <span class="text-accent-danger font-bold">*</span></label>
                     <select v-model="workForm.startMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
@@ -224,6 +302,7 @@
                     </select>
                     <div v-if="workErrors.startMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.startMonth }}</div>
                   </div>
+
                   <div class="flex flex-col">
                     <label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Mulai <span class="text-accent-danger font-bold">*</span></label>
                     <select v-model="workForm.startYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
@@ -236,7 +315,7 @@
 
                 <!-- Current Job Checkbox -->
                 <label class="flex items-center gap-[8px] cursor-pointer">
-                  <input type="checkbox" v-model="workForm.current" class="w-[18px] h-[18px] rounded accent-white" />
+                  <input type="checkbox" v-model="workForm.current" class="w-[15px] h-[15px] rounded accent-white" />
                   <span class="text-[14px] text-on-dark-mute">Saya masih bekerja di perusahaan ini</span>
                 </label>
 
@@ -290,17 +369,19 @@
           <div v-else class="flex flex-col gap-[20px]">
             <div v-if="steps[currentStep].id === 'personal_info'" class="flex flex-col gap-sm mb-lg">
               <label class="flex items-center gap-sm cursor-pointer w-max">
-                <input type="checkbox" v-model="useProfilePicture" class="w-[18px] h-[18px] rounded accent-white" />
+                <input type="checkbox" v-model="useProfilePicture" class="w-[15px] h-[15px] rounded accent-white" />
                 <span class="text-[14px] text-on-dark-mute font-semibold">Gunakan Foto Profil</span>
               </label>
-              <div v-if="useProfilePicture" class="flex flex-col gap-xs mt-xs">
+
+              <!-- =================== PROFILE PICTURE CUSTOM FORM =================== -->
+              <div v-if="useProfilePicture" class="flex flex-col gap-xs mt-sm">
                 <label class="mb-[8px] font-semibold text-on-dark-mute">Foto Profil</label>
-                <div class="flex items-center gap-md">
-                  <div class="w-[80px] h-[80px] rounded-full overflow-hidden border-2 border-hairline-dark bg-surface-deep flex shrink-0">
+                <div class="flex items-center gap-lg">
+                  <div class="w-[100px] h-[100px] rounded-full overflow-hidden border-2 border-hairline-dark bg-white flex shrink-0">
                     <img v-if="profilePictureUrl" :src="profilePictureUrl" class="w-full h-full object-cover" />
-                    <Icon v-else icon="iconamoon:profile-fill" class="text-[60px] text-stone mx-auto my-auto" />
+                    <Icon v-else icon="iconamoon:profile-fill" class="text-[70px] text-gray-300 mx-auto my-auto" />
                   </div>
-                  <input type="file" accept="image/*" @change="onProfilePictureChange" class="w-full text-[14px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-surface-deep file:text-on-dark hover:file:bg-surface-elevated cursor-pointer" />
+                  <input type="file" accept="image/*" @change="onProfilePictureChange" class="w-full text-[14px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border file:border-hairline-dark file:text-sm file:font-medium file:bg-transparent file:text-on-dark hover:file:bg-surface-elevated file:cursor-pointer" />
                 </div>
               </div>
             </div>
@@ -659,7 +740,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from "vue"
+import { ref, reactive, computed, onMounted, watch, nextTick } from "vue"
 import axios from "axios"
 import { Icon } from "@iconify/vue"
 import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js'
@@ -683,12 +764,81 @@ const steps = ref([])
 const expertiseAreas = ref([])
 const targetExpertise = ref("Software Development")
 const selectedTemplate = ref('modern_ats')
+const selectedFont = ref('')
+const selectedFontName = ref('')
+
+// ===================== GOOGLE FONTS =====================
+const googleFonts = ref([])
+const fontLoading = ref(false)
+const fontSearch = ref('')
+const fontCategory = ref('')
+const loadedFonts = ref([])
+const hoveredFont = ref('')
+
+const filteredGoogleFonts = computed(() => {
+  let list = googleFonts.value
+  if (fontCategory.value) {
+    list = list.filter(f => f.category === fontCategory.value)
+  }
+  if (fontSearch.value.trim()) {
+    const q = fontSearch.value.trim().toLowerCase()
+    list = list.filter(f => f.family.toLowerCase().includes(q))
+  }
+  return list
+})
+
+async function fetchGoogleFonts() {
+  fontLoading.value = true
+  try {
+    const res = await fetch('/api/google-fonts')
+    if (!res.ok) throw new Error('Server error')
+    googleFonts.value = await res.json()
+  } catch (e) {
+    console.error('Gagal memuat daftar font Google:', e)
+  } finally {
+    fontLoading.value = false
+  }
+}
+
+async function loadFont(family) {
+  if (loadedFonts.value.includes(family)) return
+  const id = `gf-${family.replace(/\s+/g, '-')}`
+  if (!document.getElementById(id)) {
+    const link = document.createElement('link')
+    link.id = id
+    link.rel = 'stylesheet'
+    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@400;700&display=swap`
+    document.head.appendChild(link)
+  }
+  try {
+    await document.fonts.load(`16px '${family}'`)
+  } catch (e) { /* ignore */ }
+  if (!loadedFonts.value.includes(family)) {
+    loadedFonts.value = [...loadedFonts.value, family]
+  }
+}
+
+// Preload font for hover preview (non-blocking, fire and forget)
+function onFontHover(family) {
+  hoveredFont.value = family
+  if (!loadedFonts.value.includes(family)) {
+    loadFont(family) // loads async, preview will appear when ready
+  }
+}
+
+async function selectFont(f) {
+  selectedFont.value = f.family
+  selectedFontName.value = f.family
+  hoveredFont.value = ''
+  await loadFont(f.family)
+}
 
 const CV_TEMPLATES = [
   { id: 'modern_ats', name: 'Modern ATS', desc: 'Desain minimalis dan bersih, paling populer.', image: '', isDefault: true, font: "'Calibri', sans-serif" },
   { id: 'classic_ats', name: 'Classic ATS', desc: 'Tata letak tradisional dan formal.', image: '', isDefault: false, font: "'Times New Roman', serif" },
   { id: 'executive_ats', name: 'Executive ATS', desc: 'Gaya eksekutif premium dan profesional.', image: '', isDefault: false, font: "'Cambria', serif" },
 ]
+
 const formData = reactive({})
 const suggestions = reactive({})
 const errors = reactive({ gpa: "", email: "", linkedin: "" })
@@ -760,6 +910,7 @@ const hasPreviewData = computed(() => {
 })
 
 const templateFont = computed(() => {
+  if (selectedFont.value) return `'${selectedFont.value}', sans-serif`
   const tpl = CV_TEMPLATES.find(t => t.id === selectedTemplate.value)
   return tpl ? tpl.font : "'Calibri', sans-serif"
 })
@@ -816,6 +967,9 @@ onMounted(async () => {
     console.error(e)
     expertiseAreas.value = ["Software Development", "IT Infra", "Graphic Design", "Data Science"]
   }
+
+  // Fetch all Google Fonts
+  fetchGoogleFonts()
 })
 
 // ===================== WATCHERS =====================
@@ -1265,8 +1419,69 @@ async function analyzeBuiltCV() {
   }
 }
 
+const keyboardIndex = ref(-1)
+const fontListRef = ref(null)
 
+// Reset navigasi keyboard saat search/filter berubah
+watch([fontSearch, fontCategory], () => {
+  keyboardIndex.value = -1
+  hoveredFont.value = ''
+})
 
+const isKeyboardNav = ref(false)
+let keyNavTimer = null
+
+function markKeyboardNav() {
+  isKeyboardNav.value = true
+  clearTimeout(keyNavTimer)
+  keyNavTimer = setTimeout(() => { isKeyboardNav.value = false }, 300)
+}
+
+function onFontSelectorMouseLeave() {
+  if (!isKeyboardNav.value) {
+    hoveredFont.value = ''
+  }
+}
+
+function onListKeyDown(e) {
+  const total = filteredGoogleFonts.value.length
+  if (total === 0) return
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    markKeyboardNav()
+    keyboardIndex.value = keyboardIndex.value < 0 ? 0 : (keyboardIndex.value + 1) % total
+    const font = filteredGoogleFonts.value[keyboardIndex.value]
+    if (font) onFontHover(font.family)
+    scrollToIndex()
+
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    markKeyboardNav()
+    keyboardIndex.value = keyboardIndex.value < 0 ? total - 1 : (keyboardIndex.value === 0 ? total - 1 : keyboardIndex.value - 1)
+    const font = filteredGoogleFonts.value[keyboardIndex.value]
+    if (font) onFontHover(font.family)
+    scrollToIndex()
+
+  } else if (e.key === 'Enter') {
+    e.preventDefault()
+    if (keyboardIndex.value >= 0) {
+      const font = filteredGoogleFonts.value[keyboardIndex.value]
+      if (font) selectFont(font)
+    }
+  } else if (e.key === 'Escape') {
+    hoveredFont.value = ''
+    keyboardIndex.value = -1
+  }
+}
+
+async function scrollToIndex() {
+  await nextTick()
+  const container = fontListRef.value
+  const buttons = container?.querySelectorAll('button')
+  const el = buttons?.[keyboardIndex.value]
+  el?.scrollIntoView({ block: 'nearest' })
+}
 
 function downloadPDF() { window.print() }
 </script>
