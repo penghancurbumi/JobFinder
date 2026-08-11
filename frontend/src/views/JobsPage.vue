@@ -18,30 +18,35 @@
             <input type="text" v-model="locationQuery" placeholder="Kota, lokasi, atau Remote..." class="w-full bg-surface-elevated border border-hairline-dark rounded-sm h-[44px] pl-[44px] pr-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone text-sm transition-all" />
           </div>
 
-          <button @click="requestScrape" class="w-full md:w-auto shrink-0 inline-flex items-center justify-center font-medium rounded-sm transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[24px] h-[44px] text-[14px] gap-[8px]" :disabled="isScraping || !!cooldownMsg">
-            <svg v-if="isScraping" class="animate-[spin_1s_linear_infinite]" viewBox="0 0 24 24" width="16" height="16">
-              <circle class="animate-[dash_1.5s_ease-in-out_infinite] [stroke-dasharray:60] [stroke-dashoffset:60]" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
-            </svg>
-            {{ isScraping ? 'Memperbarui Data...' : 'Perbarui Data' }}
-          </button>
+          <div class="flex flex-col gap-[6px] w-full md:w-auto shrink-0">
+            <button @click="requestScrape" class="w-full inline-flex items-center justify-center font-medium rounded-sm transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[24px] h-[44px] text-[14px] gap-[8px]" :disabled="backgroundRunning">
+              <svg v-if="backgroundRunning" class="animate-[spin_1s_linear_infinite]" viewBox="0 0 24 24" width="16" height="16">
+                <circle class="animate-[dash_1.5s_ease-in-out_infinite] [stroke-dasharray:60] [stroke-dashoffset:60]" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
+              </svg>
+              {{ backgroundRunning ? 'Menyegarkan...' : 'Perbarui Data' }}
+            </button>
+            <span class="text-[12px] text-stone text-center md:text-left">
+              Data: {{ dataStatus.total != null ? dataStatus.total.toLocaleString('id-ID') : '...' }} lowongan • diperbarui {{ lastUpdatedText }}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div v-if="cooldownMsg" class="mb-xl bg-surface-elevated rounded-md p-lg border border-hairline-dark">
-        <span class="text-sm font-medium">{{ cooldownMsg }}</span>
+      <div v-if="statusMsg" class="mb-xl bg-surface-elevated rounded-md p-lg border border-hairline-dark">
+        <span class="text-sm font-medium" :class="statusType === 'error' ? 'text-accent-danger' : 'text-accent-teal'">{{ statusMsg }}</span>
       </div>
 
-      <!-- Live scrape progress -->
-      <div v-if="isScraping" class="mb-xl bg-surface-elevated rounded-md p-lg border border-hairline-dark">
+      <!-- Live background refresh progress (subtle — user can keep browsing) -->
+      <div v-if="backgroundRunning" class="mb-xl bg-surface-elevated rounded-md p-lg border border-hairline-dark">
         <div class="flex items-center gap-sm mb-sm">
           <svg class="animate-[spin_1s_linear_infinite]" viewBox="0 0 24 24" width="16" height="16">
             <circle class="animate-[dash_1.5s_ease-in-out_infinite] [stroke-dasharray:60] [stroke-dashoffset:60]" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
           </svg>
-          <span class="text-sm font-medium capitalize">Men-scrape {{ currentPlatform || '...' }} ({{ platformIndex }}/{{ platforms.length }})...</span>
+          <span class="text-sm font-medium capitalize">Menyegarkan data di background: {{ currentPlatform || '...' }} ({{ platformIndex }}/{{ platforms.length }})</span>
           <span class="ml-auto font-mono text-[12px] text-stone">{{ scrapeElapsed }}s</span>
         </div>
         <div class="flex items-center gap-sm flex-wrap">
-          <span class="text-[12px] text-stone">Scraping 1 platform per sekali tekan, bergiliran di antara {{ platforms.length }} platform.</span>
+          <span class="text-[12px] text-stone">Kamu tetap bisa browsing — data akan terbarui otomatis.</span>
           <span v-if="lastAdded" class="text-[12px] text-accent-teal">{{ lastAdded }} job baru ditambahkan</span>
         </div>
 
@@ -260,7 +265,10 @@ useHead({
 
 const jobs = ref([])
 const loading = ref(true)
-const isScraping = ref(false)
+const backgroundRunning = ref(false)
+const dataStatus = ref({})
+const statusMsg = ref("")
+const statusType = ref("ok")
 const page = ref(1)
 const limit = 24
 const total = ref(0)
@@ -273,9 +281,8 @@ const platformIndex = ref(0)
 const lastAdded = ref(0)
 const scrapeLog = ref([])
 const scrapeElapsed = ref(0)
-const cooldownMsg = ref("")
 let scrapeTimer = null
-let cooldownTimer = null
+let statusTimer = null
 
 // Filters
 const activeTipe = ref("all")
@@ -356,41 +363,83 @@ function formatPostedDate(raw) {
   return null
 }
 
+const lastUpdatedText = computed(() => {
+  const iso = dataStatus.value.lastUpdatedAt
+  if (!iso) return "belum pernah"
+  const diff = Date.now() - new Date(iso).getTime()
+  const min = Math.floor(diff / 60000)
+  if (min < 1) return "baru saja"
+  if (min < 60) return `${min} menit lalu`
+  const h = Math.floor(min / 60)
+  if (h < 24) return `${h} jam lalu`
+  return `${Math.floor(h / 24)} hari lalu`
+})
+
+async function refreshStatus() {
+  try {
+    const res = await fetch("http://localhost:3000/api/status")
+    if (res.ok) dataStatus.value = await res.json()
+  } catch { /* ignore */ }
+}
+
+function setStatusMsg(msg, type = "ok") {
+  statusMsg.value = msg
+  statusType.value = type
+  clearTimeout(statusTimer)
+  statusTimer = setTimeout(() => { statusMsg.value = "" }, 5000)
+}
+
 onMounted(async () => {
   await fetchPage(1, false)
+  refreshStatus()
 
   socket = io("http://localhost:3000")
   
   socket.on("jobs-updated", (data) => {
     applyJobsPayload(data)
+    refreshStatus()
   })
   
   socket.on("scrape-status", (data) => {
-    if (data.status === "cooldown") {
-      isScraping.value = false
-      startCooldown(data.waitSeconds || 300)
+    if (data.status === "fresh") {
+      setStatusMsg(data.message || "Data sudah terbaru", "ok")
       return
     }
-    clearTimeout(cooldownTimer)
-    cooldownMsg.value = ""
-    isScraping.value = data.status === "scraping"
-    if (isScraping.value) {
+    if (data.status === "error") {
+      setStatusMsg(data.message || "Terjadi kesalahan saat memperbarui", "error")
+      backgroundRunning.value = false
+      clearInterval(scrapeTimer)
+      scrapeTimer = null
+      return
+    }
+    if (data.status === "background") {
+      if (data.message) setStatusMsg(data.message, "ok")
+      backgroundRunning.value = true
       scrapeElapsed.value = 0
       scrapeLog.value = []
       currentPlatform.value = ""
       platformIndex.value = 0
       lastAdded.value = 0
       if (!scrapeTimer) scrapeTimer = setInterval(() => scrapeElapsed.value++, 1000)
-    } else {
+      return
+    }
+    if (data.status === "idle") {
+      backgroundRunning.value = false
       clearInterval(scrapeTimer)
       scrapeTimer = null
+      if (data.total != null || data.lastUpdated) {
+        dataStatus.value = {
+          ...dataStatus.value,
+          total: data.total != null ? data.total : dataStatus.value.total,
+          lastUpdatedAt: data.lastUpdated || dataStatus.value.lastUpdatedAt,
+        }
+      }
+      refreshStatus()
     }
   })
 
   socket.on("scrape-progress", (evt) => {
     if (evt.status === "done") {
-      clearInterval(scrapeTimer)
-      scrapeTimer = null
       lastAdded.value = evt.added || 0
     }
     if (evt.status === "platform-start") {
@@ -406,15 +455,14 @@ onMounted(async () => {
 
   socket.on("connect", () => {
     loading.value = false
-    // Don't auto-scrape - just show existing data
   })
 })
 
 onUnmounted(() => {
   clearInterval(scrapeTimer)
   scrapeTimer = null
-  clearInterval(cooldownTimer)
-  cooldownTimer = null
+  clearTimeout(statusTimer)
+  statusTimer = null
   if (socket) socket.disconnect()
 })
 
@@ -506,23 +554,8 @@ function resetFilters() {
   hasSalary.value = false
 }
 
-function startCooldown(seconds) {
-  cooldownMsg.value = `Tunggu ${seconds} detik sebelum memperbarui lagi`
-  clearInterval(cooldownTimer)
-  cooldownTimer = setInterval(() => {
-    seconds--
-    if (seconds <= 0) {
-      clearInterval(cooldownTimer)
-      cooldownTimer = null
-      cooldownMsg.value = ""
-    } else {
-      cooldownMsg.value = `Tunggu ${seconds} detik sebelum memperbarui lagi`
-    }
-  }, 1000)
-}
-
 function requestScrape() {
-  if (socket && !isScraping.value && !cooldownMsg.value) {
+  if (socket && !backgroundRunning.value) {
     socket.emit("request-scrape")
   }
 }

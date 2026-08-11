@@ -7,13 +7,13 @@ const require = createRequire(import.meta.url)
 const { PDFParse } = require("pdf-parse")
 import { createServer } from "http"
 import { Server } from "socket.io"
-import { scrapeOnePlatform, runCleanup, PLATFORMS } from "./scrapers/index.js"
+import { runFullCycle, runCleanup } from "./scrapers/index.js"
 import { analyzeCV } from "./cvAnalyzer.js"
 import { getBuilderSections, getSuggestion } from "./cvBuilder.js"
 import { chat } from "./chatbot.js"
 import { runBot } from "./telegramBot.js"
 import { EXPERTISE_AREAS } from "./constants.js"
-import { fetchAll, fetchOne, runQuery, getJobsCache, loadJobsCache, refreshJobsCache } from "./db.js"
+import { fetchAll, fetchOne, runQuery, getJobsCache, loadJobsCache, refreshJobsCache, getDataStatus } from "./db.js"
 
 const app = express()
 const httpServer = createServer(app)
@@ -27,34 +27,61 @@ const PORT = process.env.PORT || 3000
 app.use(cors())
 app.use(express.json())
 
-let isScraping = false
-let lastScrapeEnd = 0
-// Minimum wait between manual "Perbarui Data" scrapes (prevents spam/time waste)
-const MIN_SCRAPE_INTERVAL_MS = 60 * 1000
-// Round-robin: each press scrapes ONE platform, advancing through PLATFORMS.
-let nextPlatformIdx = 0
+// ---- Data freshness & background refresh ----
+// "Perbarui Data" is now a status check + trigger: it never blocks the UI.
+// Real scraping runs in the background, only when the dataset is stale (some
+// job not re-seen within 24h) or as a forced safety cycle every 48h.
+const STALE_HOURS = 24
+const STALE_CHECK_MS = 3 * 60 * 60 * 1000 // check for stale data every ~3h
+const FORCE_CYCLE_MS = 48 * 60 * 60 * 1000 // max age between full cycles
+const CYCLE_START_DELAY_MS = 15 * 1000 // wait before first background check
 
-async function performScrape() {
-  if (isScraping) return
-  isScraping = true
-  io.emit("scrape-status", { status: "scraping" })
+let cycleRunning = false
+let lastCycleAt = 0
+
+function isDataStale(status) {
+  if (!status) return true
+  if (status.total === 0) return true
+  if (status.staleCount > 0) return true
+  if (lastCycleAt > 0 && Date.now() - lastCycleAt > FORCE_CYCLE_MS) return true
+  return false
+}
+
+async function runBackgroundCycle() {
+  if (cycleRunning) return
+  cycleRunning = true
+  io.emit("scrape-status", { status: "background", message: "Menyegarkan data di background…" })
   try {
-    const idx = nextPlatformIdx
-    nextPlatformIdx = (nextPlatformIdx + 1) % PLATFORMS.length
-    const platform = PLATFORMS[idx]
-    await scrapeOnePlatform(platform, idx + 1, PLATFORMS.length, (evt) => io.emit("scrape-progress", evt))
+    await runFullCycle((evt) => io.emit("scrape-progress", evt))
     await refreshJobsCache()
+    lastCycleAt = Date.now()
     const result = await getFilteredJobs("", "all", "all", "newest", "", "", false, 1, 200)
     io.emit("jobs-updated", result)
-    io.emit("scrape-status", { status: "idle", lastUpdated: new Date() })
+    const status = await getDataStatus()
+    io.emit("scrape-status", { status: "idle", lastUpdated: status.lastUpdatedAt, total: status.total })
+    console.log("Background refresh cycle completed")
   } catch (e) {
-    console.error("Scrape failed:", e.message)
+    console.error("Background refresh failed:", e.message)
     io.emit("scrape-status", { status: "error", message: e.message })
   } finally {
-    isScraping = false
-    lastScrapeEnd = Date.now()
+    cycleRunning = false
   }
 }
+
+async function checkStaleAndRefresh() {
+  try {
+    const status = await getDataStatus()
+    if (isDataStale(status)) {
+      console.log("Stale data detected, starting background refresh cycle")
+      runBackgroundCycle()
+    }
+  } catch (e) {
+    console.error("Stale check failed:", e.message)
+  }
+}
+
+setInterval(checkStaleAndRefresh, STALE_CHECK_MS)
+setTimeout(checkStaleAndRefresh, CYCLE_START_DELAY_MS)
 
 async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy = "newest", location = "", experience = "", hasSalary = false, education = "all", page = 1, limit = 200) {
   page = Math.max(parseInt(page, 10) || 1, 1)
@@ -155,22 +182,34 @@ async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy
 
 io.on("connection", async (socket) => {
   console.log("Client connected via WebSocket")
-  socket.emit("scrape-status", { status: isScraping ? "scraping" : "idle" })
+  try {
+    const status = await getDataStatus()
+    socket.emit("scrape-status", {
+      status: cycleRunning ? "background" : "idle",
+      lastUpdated: status.lastUpdatedAt,
+      total: status.total,
+      stale: isDataStale(status),
+    })
+  } catch { /* ignore */ }
   const result = await getFilteredJobs()
   socket.emit("jobs-updated", result)
   
-  socket.on("request-scrape", () => {
-    const sinceEnd = Date.now() - lastScrapeEnd
-    const waitMs = lastScrapeEnd > 0 ? MIN_SCRAPE_INTERVAL_MS - sinceEnd : 0
-    if (waitMs > 0) {
-      socket.emit("scrape-status", {
-        status: "cooldown",
-        waitSeconds: Math.ceil(waitMs / 1000),
-        message: `Tunggu ${Math.ceil(waitMs / 1000)} detik sebelum memperbarui lagi`
-      })
+  socket.on("request-scrape", async () => {
+    if (cycleRunning) {
+      socket.emit("scrape-status", { status: "background", message: "Refresh sedang berjalan di background" })
       return
     }
-    performScrape()
+    try {
+      const status = await getDataStatus()
+      if (isDataStale(status)) {
+        socket.emit("scrape-status", { status: "background", message: "Data basi — refresh dimulai di background" })
+        runBackgroundCycle()
+      } else {
+        socket.emit("scrape-status", { status: "fresh", message: "Data sudah terbaru" })
+      }
+    } catch (e) {
+      socket.emit("scrape-status", { status: "error", message: e.message })
+    }
   })
 
   socket.on("filter-jobs", async ({ search, bidang, tipe, sortBy, location, experience, hasSalary, education, page, limit }) => {
@@ -179,8 +218,8 @@ io.on("connection", async (socket) => {
   })
 })
 
-// No auto-scraping: data is refreshed only when the user presses "Perbarui Data",
-// which emits the "request-scrape" socket event handled above.
+// No blocking scrape: refreshing is triggered by the background stale-data
+// scheduler above, or on-demand by "request-scrape" when the data is stale.
 
 // Remove expired jobs daily (and once at startup) so data doesn't pile up.
 async function runScheduledCleanup() {
@@ -238,6 +277,15 @@ app.get("/api/jobs", async (req, res) => {
     limit
   )
   res.json(result)
+})
+
+app.get("/api/status", async (req, res) => {
+  try {
+    const status = await getDataStatus()
+    res.json({ ...status, stale: isDataStale(status), cycleRunning })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
 })
 
 app.post("/api/cv/analyze", upload.single("cv"), async (req, res) => {

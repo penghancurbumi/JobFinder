@@ -250,3 +250,21 @@ export async function scrapeOnePlatform(platform, index, total, onProgress) {
 }
 
 export { PLATFORMS }
+
+// Run one full refresh pass across all platforms, one at a time, with a short
+// politeness delay between them. Used by the background stale-data scheduler
+// so the whole dataset gets freshened without hammering the source sites.
+export async function runFullCycle(onProgress) {
+  const results = []
+  const pauseMs = 15000
+  for (let i = 0; i < PLATFORMS.length; i++) {
+    const platform = PLATFORMS[i]
+    onProgress?.({ status: "cycle-platform", platform, index: i + 1, total: PLATFORMS.length })
+    const result = await scrapeOnePlatform(platform, i + 1, PLATFORMS.length, onProgress)
+    results.push(result)
+    if (i < PLATFORMS.length - 1) {
+      await new Promise((r) => setTimeout(r, pauseMs))
+    }
+  }
+  return results
+}

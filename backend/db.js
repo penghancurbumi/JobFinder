@@ -121,6 +121,28 @@ export function invalidateJobsCache() {
   jobsCache = null
 }
 
+// ---- Data freshness / staleness ----
+// Used to decide whether a background refresh is needed. A dataset is "stale"
+// when some active job hasn't been re-seen within the last 24h (i.e. the top
+// listing pages may have changed) — the background cycle then refreshes it.
+export async function getDataStatus() {
+  const totalRow = await fetchOne("SELECT COUNT(*) AS c FROM jobs")
+  const lastSeenRow = await fetchOne(
+    "SELECT MAX(lastSeenAt) AS max FROM jobs WHERE lastSeenAt IS NOT NULL AND lastSeenAt != ''"
+  )
+  const staleRow = await fetchOne(
+    `SELECT COUNT(*) AS c FROM jobs
+       WHERE lastSeenAt IS NOT NULL AND lastSeenAt != '' AND lastSeenAt < ?`,
+    [new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()]
+  )
+  return {
+    total: totalRow?.c || 0,
+    lastUpdatedAt: lastSeenRow?.max || null,
+    staleCount: staleRow?.c || 0,
+  }
+}
+
+
 // ---- Expired-job cleanup ----
 // Delete jobs that no longer exist on the source platforms so the dataset
 // stays bounded instead of accumulating forever.
