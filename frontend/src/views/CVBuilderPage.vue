@@ -2,74 +2,76 @@
   <div class="min-h-screen pt-[88px] bg-canvas-dark text-on-dark font-sans">
     <div class="w-full mx-auto px-[32px] md:px-[72px]">
       <div class="print:hidden mb-xl">
-      <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-sm block">Sistem Pembangun Dokumen ATS</span>
-      <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark">Pembuat CV</h1>
-      <p class="mt-sm text-on-dark-mute text-[16px] font-normal leading-[1.5]">Rakit bagian-bagian CV Anda langkah demi langkah. Tanda <span class="text-accent-danger">*</span> wajib diisi.</p>
-    </div>
+        <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-sm block">Sistem Pembangun Dokumen ATS</span>
+        <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark">Pembuat CV</h1>
+        <p class="mt-sm text-on-dark-mute text-[16px] font-normal leading-[1.5]">Rakit bagian-bagian CV Anda langkah demi langkah. Tanda <span class="text-accent-danger">*</span> wajib diisi.</p>
+      </div>
 
-    <!-- Wizard Layout -->
-    <div class="flex flex-col md:flex-row gap-xl print:hidden items-start">
-      <!-- Sidebar Navigation -->
-      <aside class="w-full md:w-[280px] shrink-0 md:sticky top-[100px] bg-surface-elevated rounded-[20px] py-xl border border-hairline-dark">
+      <!-- Wizard Layout -->
+      <div class="flex flex-col md:flex-row gap-xl print:hidden items-start">
 
-        <div class="mb-[24px] px-[16px]">
-          <label class="text-[12px] mb-[4px] text-on-dark-mute block font-semibold">Target Keahlian / Bidang</label>
-          <select v-model="targetExpertise" class="w-full text-[14px] bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
-            <option v-for="a in expertiseAreas" :key="a" :value="a" class="bg-surface-elevated text-on-dark">{{ a }}</option>
-          </select>
-        </div>
-        
-        <ul class="list-none m-0 p-0 flex md:block overflow-x-auto md:overflow-visible pb-[12px] md:pb-0">
-          <li v-for="(section, index) in steps" :key="section.id" 
-              class="flex shrink-0 items-center px-[16px] py-[12px] rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent"
-              :class="{ 
-                'bg-surface-deep !text-on-dark font-medium !border-white': currentStep === index, 
-                'cursor-pointer': index <= maxStepReached || index === currentStep + 1,
-                'opacity-50 cursor-not-allowed': index > maxStepReached && index !== currentStep + 1
-              }"
-              @click="goToStep(index)">
-            <div class="w-[28px] h-[28px] rounded-full border border-hairline-dark flex items-center justify-center text-[12px] mr-[12px] shrink-0 transition-colors" :class="{ 'bg-white text-ink border-white': index < maxStepReached || (index < currentStep) }">{{ index + 1 }}</div>
-            <div class="text-[14px]">{{ section.title }}</div>
-          </li>
-          <li class="flex shrink-0 items-center px-[16px] py-[12px] rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent"
-              :class="{ 
-                'bg-surface-deep !text-on-dark font-medium !border-white': currentStep === steps.length,
-                'cursor-pointer': steps.length <= maxStepReached,
-                'opacity-50 cursor-not-allowed': steps.length > maxStepReached
-              }" 
-              @click="goToStep(steps.length)">
-            <div class="w-[28px] h-[28px] rounded-full border border-hairline-dark flex items-center justify-center text-[12px] mr-[12px] shrink-0 transition-colors" :class="{ 'bg-white text-ink border-white': maxStepReached >= steps.length }">✓</div>
-            <div class="text-[14px]">Preview &amp; Export</div>
-          </li>
-        </ul>
-      </aside>
+        <!-- Sidebar Navigation -->
+        <aside class="w-full md:w-[280px] shrink-0 md:sticky top-[100px] bg-surface-elevated rounded-[20px] py-xl border border-hairline-dark">
+          <!-- Target Expertise -->
+          <div class="mb-[24px] px-[16px]">
+            <label class="text-[12px] mb-[4px] text-on-dark-mute block font-semibold">Target Keahlian / Bidang</label>
+            <select v-model="targetExpertise" class="w-full text-[14px] bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
+              <option v-for="a in expertiseAreas" :key="a" :value="a" class="bg-surface-elevated text-on-dark">{{ a }}</option>
+            </select>
+          </div>
 
-      <!-- Main Content Panel -->
-      <main class="flex-grow min-w-0 bg-surface-elevated rounded-[20px] p-xl md:p-xxl w-full border border-hairline-dark">
-        <!-- Active Form Section -->
-        <div v-if="currentStep < steps.length">
-          <h3 class="text-[24px] font-medium leading-[1.33] mb-[24px] text-on-dark">
-            {{ steps[currentStep].title }}
-          </h3>
+          <ul class="list-none m-0 p-0 flex md:block overflow-x-auto md:overflow-visible pb-[12px] md:pb-0">
+            <!-- Step 0: Template Select -->
+            <li class="flex shrink-0 items-center px-[16px] py-[12px] rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent cursor-pointer"
+                :class="{ 'bg-surface-deep !text-on-dark font-medium !border-white': currentStep === 0 }"
+                @click="goToStep(0)">
+              <div class="w-[28px] h-[28px] rounded-full border border-hairline-dark flex items-center justify-center text-[12px] mr-[12px] shrink-0 transition-colors" :class="{ 'bg-white text-ink border-white': currentStep > 0 }">1</div>
+              <div class="text-[14px]">Pilih Template</div>
+            </li>
 
-          <!-- =================== TEMPLATE SELECT CUSTOM FORM =================== -->
-          <div v-if="steps[currentStep]?.id === 'template_select'">
-            <p class="text-[14px] text-on-dark-mute mb-[24px]">Pilih template CV ATS yang ingin Anda gunakan. Template akan menentukan tata letak dan gaya CV Anda.</p>
+            <!-- Template-specific steps -->
+            <li v-for="(section, index) in activeSteps" :key="section.id"
+                class="flex shrink-0 items-center px-[16px] py-[12px] rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent"
+                :class="{
+                  'bg-surface-deep !text-on-dark font-medium !border-white': currentStep === index + 1,
+                  'cursor-pointer': index + 1 <= maxStepReached,
+                  'opacity-50 cursor-not-allowed': index + 1 > maxStepReached
+                }"
+                @click="goToStep(index + 1)">
+              <div class="w-[28px] h-[28px] rounded-full border border-hairline-dark flex items-center justify-center text-[12px] mr-[12px] shrink-0 transition-colors" :class="{ 'bg-white text-ink border-white': index + 1 < currentStep }">{{ index + 2 }}</div>
+              <div class="text-[14px]">{{ section.title }}</div>
+            </li>
+
+            <!-- Preview Step -->
+            <li class="flex shrink-0 items-center px-[16px] py-[12px] rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent"
+                :class="{
+                  'bg-surface-deep !text-on-dark font-medium !border-white': currentStep === totalSteps - 1,
+                  'cursor-pointer': totalSteps - 1 <= maxStepReached,
+                  'opacity-50 cursor-not-allowed': totalSteps - 1 > maxStepReached
+                }"
+                @click="goToStep(totalSteps - 1)">
+              <div class="w-[28px] h-[28px] rounded-full border border-hairline-dark flex items-center justify-center text-[12px] mr-[12px] shrink-0 transition-colors" :class="{ 'bg-white text-ink border-white': maxStepReached >= totalSteps - 1 }">✓</div>
+              <div class="text-[14px]">Preview & Export</div>
+            </li>
+          </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-grow min-w-0 bg-surface-elevated rounded-[20px] p-xl md:p-xxl w-full border border-hairline-dark">
+
+          <!-- ===== STEP 0: TEMPLATE SELECT ===== -->
+          <div v-if="currentStep === 0">
+            <h3 class="text-[24px] font-medium leading-[1.33] mb-[24px] text-on-dark">Pilih Template</h3>
+            <p class="text-[14px] text-on-dark-mute mb-[24px]">Pilih template CV. Setiap template memiliki desain preview dan bagian input yang berbeda.</p>
+
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-[16px]">
-              <label 
-                v-for="tpl in CV_TEMPLATES" :key="tpl.id"
+              <label v-for="tpl in CV_TEMPLATES" :key="tpl.id"
                 class="relative cursor-pointer rounded-[16px] border-2 p-[4px] transition-all duration-200 hover:border-white/60"
-                :class="selectedTemplate === tpl.id ? 'border-white shadow-[0_0_20px_rgba(255,255,255,0.15)]' : 'border-hairline-dark'"
-              >
+                :class="selectedTemplate === tpl.id ? 'border-white shadow-[0_0_20px_rgba(255,255,255,0.15)]' : 'border-hairline-dark'">
                 <input type="radio" :value="tpl.id" v-model="selectedTemplate" class="sr-only" />
-
-                <!-- Preview Image Placeholder -->
-                <div class="w-full aspect-[3/4] bg-white rounded-[12px] flex items-center justify-center overflow-hidden">
-                  <img v-if="tpl.image" :src="tpl.image" :alt="tpl.name" class="w-full h-full object-cover object-top" />
-                  <span v-else class="text-stone text-[13px] italic">Preview</span>
+                <div class="w-full aspect-[3/4] bg-white rounded-[12px] overflow-hidden flex items-center justify-center">
                 </div>
-
-                <!-- Label -->
+                
                 <div class="flex items-center gap-[8px] mt-[12px] px-[8px] pb-[8px]">
                   <div class="w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors" :class="selectedTemplate === tpl.id ? 'border-white' : 'border-stone'">
                     <div v-if="selectedTemplate === tpl.id" class="w-[10px] h-[10px] rounded-full bg-white"></div>
@@ -79,673 +81,186 @@
                     <div class="text-[12px] text-stone">{{ tpl.desc }}</div>
                   </div>
                 </div>
-                <!-- Default Badge -->
                 <span v-if="tpl.isDefault" class="absolute top-[12px] right-[12px] bg-white text-ink text-[10px] font-bold uppercase tracking-[0.5px] px-[8px] py-[2px] rounded-full">Default</span>
               </label>
             </div>
 
-            <!-- =================== FONT SELECTOR =================== -->
-            <div class="mt-[32px] pt-[24px] border-t border-hairline-dark" @mouseleave="onFontSelectorMouseLeave">
-              <label class="block text-[14px] font-semibold text-on-dark-mute mb-[12px]">Font CV</label>
-
-              <!-- Search & Filter -->
-              <div class="flex gap-[8px] mb-[12px]">
-                <div class="relative flex-1">
-                  <Icon icon="mdi:magnify" class="absolute left-[12px] top-1/2 -translate-y-1/2 text-stone text-[18px] pointer-events-none" />
-                  <input
-                    v-model="fontSearch"
-                    type="text"
-                    placeholder="Cari font..."
-                    class="w-full bg-transparent border border-hairline-dark rounded-[10px] h-[40px] pl-[36px] pr-[12px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone"
-                  />
-                </div>
+            <!-- Font Selector -->
+            <div class="mt-[32px] pt-[24px] border-t border-hairline-dark">
+              <label class="block text-[14px] font-semibold text-on-dark-mute mb-[12px]">Font CV (opsional)</label>
+              <div class="relative flex-1 mb-[12px]">
+                <Icon icon="mdi:magnify" class="absolute left-[12px] top-1/2 -translate-y-1/2 text-stone text-[18px] pointer-events-none" />
+                <input v-model="fontSearch" type="text" placeholder="Cari font..." class="w-full bg-transparent border border-hairline-dark rounded-[10px] h-[40px] pl-[36px] pr-[12px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
               </div>
 
-              <!-- Live Preview (hover / selected) -->
-              <div v-if="hoveredFont || selectedFont" class="mb-[12px] px-[16px] py-[12px] rounded-[12px] bg-white/5 border border-white/20">
-                <div class="flex items-center justify-between mb-[4px]">
-                  <div class="text-[11px] text-stone">
-                    <span v-if="hoveredFont" class="text-white/60">Pratinjau:</span>
-                    <span v-else>Font terpilih:</span>
-                    <strong class="text-on-dark ml-[4px]">{{ hoveredFont || selectedFont }}</strong>
-                  </div>
-                  <button v-if="!hoveredFont && selectedFont" type="button" @click="selectedFont = ''; selectedFontName = ''" class="text-stone hover:text-on-dark transition-colors shrink-0">
-                    <Icon icon="mdi:close" class="text-[16px]" />
-                  </button>
-                </div>
-                <div
-                  class="text-[20px] text-on-dark"
-                  :style="{ fontFamily: `'${hoveredFont || selectedFont}', sans-serif` }"
-                >The quick brown fox jumps over the lazy dog</div>
+              <!-- Selected font indicator -->
+              <div v-if="selectedFont" class="mb-[12px] flex items-center justify-between px-[14px] py-[10px] rounded-[10px] bg-white/5 border border-white/20">
+                <span class="text-[15px] text-on-dark" :style="{ fontFamily: `'${selectedFont}', sans-serif` }">{{ selectedFont }}</span>
+                <button type="button" @click="selectedFont = ''; selectedFontName = ''" class="text-stone hover:text-on-dark transition-colors shrink-0 ml-[12px]">
+                  <Icon icon="mdi:close" class="text-[16px]" />
+                </button>
               </div>
 
-              <!-- Font List -->
               <div v-if="fontLoading" class="flex items-center justify-center py-[32px] gap-[8px] text-stone text-[14px]">
                 <Icon icon="mdi:loading" class="animate-spin text-[20px]" /> Memuat daftar font...
               </div>
-              <div
-                v-else
-                ref="fontListRef"
-                class="h-[280px] overflow-y-auto rounded-[12px] border border-hairline-dark divide-y divide-hairline-dark"
-                tabindex="0"
-                @keydown="onListKeyDown"
-                @wheel.stop
-              >
-                <button
-                  v-for="f in filteredGoogleFonts" :key="f.family"
-                  type="button"
-                  @click="selectFont(f)"
-                  @mouseenter="onFontHover(f.family)"
-                  class="w-full flex items-center justify-between px-[14px] py-[10px] transition-colors hover:bg-white/5 text-left"
-                  :class="selectedFont === f.family ? 'bg-white/8 text-on-dark' : 'text-on-dark-mute'"
-                >
-                  <div class="flex items-center gap-[10px]">
-                    <div class="w-[16px] h-[16px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors" :class="selectedFont === f.family ? 'border-white' : 'border-stone'">
-                      <div v-if="selectedFont === f.family" class="w-[8px] h-[8px] rounded-full bg-white"></div>
-                    </div>
-                    <div>
-                      <span class="text-[14px] font-medium">{{ f.family }}</span>
-                      <span class="text-[11px] text-stone ml-[8px] capitalize">{{ f.category }}</span>
-                    </div>
+
+              <div v-else ref="fontListRef" class="h-[280px] overflow-y-auto rounded-[12px] border border-hairline-dark divide-y divide-hairline-dark" tabindex="0" @wheel.stop>
+                <button v-for="f in filteredGoogleFonts" :key="f.family" type="button"
+                  @click="selectFont(f)" @mouseenter="onFontHover(f.family)"
+                  class="w-full flex items-center gap-[10px] px-[14px] py-[10px] transition-colors hover:bg-white/5 text-left"
+                  :class="selectedFont === f.family ? 'bg-white/8' : ''">
+                  <div class="w-[16px] h-[16px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors" :class="selectedFont === f.family ? 'border-white' : 'border-stone'">
+                    <div v-if="selectedFont === f.family" class="w-[8px] h-[8px] rounded-full bg-white"></div>
                   </div>
-                  <!-- Preview Aa (jika font sudah dimuat) -->
-                  <span v-if="loadedFonts.includes(f.family)" class="text-[13px] text-stone" :style="{ fontFamily: `'${f.family}', sans-serif` }">Aa</span>
+                  <!-- Font name rendered in its own typeface -->
+                  <span
+                    class="text-[15px] transition-colors"
+                    :class="selectedFont === f.family ? 'text-on-dark' : 'text-on-dark-mute'"
+                    :style="loadedFonts.includes(f.family) ? { fontFamily: `'${f.family}', sans-serif` } : {}"
+                  >{{ f.family }}</span>
+                  <span class="text-[11px] text-stone capitalize ml-[2px]">{{ f.category }}</span>
                 </button>
                 <div v-if="filteredGoogleFonts.length === 0" class="text-center text-stone text-[13px] py-[24px]">Tidak ada font ditemukan.</div>
               </div>
-
-              <p class="text-[12px] text-stone mt-[10px]">{{ googleFonts.length.toLocaleString() }} font tersedia. Font akan dimuat otomatis saat dipilih.</p>
+              <p class="text-[12px] text-stone mt-[10px]">{{ googleFonts.length.toLocaleString() }} font tersedia. Font dimuat otomatis saat di-hover.</p>
             </div>
           </div>
 
-          <!-- =================== EDUCATION CUSTOM FORM =================== -->
-          <div v-else-if="steps[currentStep]?.id === 'education'">
-
-            <!-- Education Form (single entry) -->
-            <div class="flex flex-col gap-[16px]">
-              <!-- Gelar -->
-              <div class="flex flex-col">
-                <label class="mb-[8px] font-semibold text-on-dark-mute">Gelar <span class="text-accent-danger font-bold">*</span></label>
-                <input v-model="eduForm.degree" placeholder="Contoh: S1" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
-                <span class="text-[12px] text-stone mt-[6px]">Jenjang pendidikan (D3, S1, S2, dll.)</span>
-                <div v-if="eduErrors.degree" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.degree }}</div>
-              </div>
-
-              <!-- Jurusan -->
-              <div class="flex flex-col">
-                <label class="mb-[8px] font-semibold text-on-dark-mute">Jurusan <span class="text-accent-danger font-bold">*</span></label>
-                <input v-model="eduForm.major" placeholder="Contoh: Teknik Informatika" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
-                <div v-if="eduErrors.major" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.major }}</div>
-              </div>
-
-              <!-- Institusi -->
-              <div class="flex flex-col">
-                <label class="mb-[8px] font-semibold text-on-dark-mute">Institusi / Universitas <span class="text-accent-danger font-bold">*</span></label>
-                <input v-model="eduForm.institution" placeholder="Contoh: Universitas Indonesia" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
-                <div v-if="eduErrors.institution" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.institution }}</div>
-              </div>
-
-              <!-- Show Date Toggle -->
-              <label class="flex items-center gap-[8px] cursor-pointer">
-                <input type="checkbox" v-model="eduForm.showDate" class="w-[15px] h-[15px] rounded accent-white" />
-                <span class="text-[14px] text-on-dark-mute">Tampilkan tanggal pada CV</span>
-              </label>
-
-              <!-- Period Start (shown only if showDate) -->
-              <div v-if="eduForm.showDate" class="grid grid-cols-2 gap-[12px]">
-                <div class="flex flex-col">
-                  <label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Mulai <span class="text-accent-danger font-bold">*</span></label>
-                  <select v-model="eduForm.startMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
-                    <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Bulan --</option>
-                    <option v-for="m in MONTHS" :key="'esm-'+m" :value="m" class="bg-surface-elevated text-on-dark">{{ m }}</option>
-                  </select>
-                  <div v-if="eduErrors.startMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.startMonth }}</div>
-                </div>
-
-                <div class="flex flex-col">
-                  <label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Mulai <span class="text-accent-danger font-bold">*</span></label>
-                  <select v-model="eduForm.startYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
-                    <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Tahun --</option>
-                    <option v-for="y in YEARS" :key="'esy-'+y" :value="y" class="bg-surface-elevated text-on-dark">{{ y }}</option>
-                  </select>
-                  <div v-if="eduErrors.startYear" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.startYear }}</div>
-                </div>
-              </div>
-
-              <!-- Is Currently Studying Checkbox (shown only if showDate) -->
-              <label v-if="eduForm.showDate" class="flex items-center gap-[8px] cursor-pointer">
-                <input type="checkbox" v-model="eduForm.isCurrent" class="w-[15px] h-[15px] rounded accent-white" />
-                <span class="text-[14px] text-on-dark-mute">Saya masih dalam pendidikan ini</span>
-              </label>
-
-              <!-- Period End (shown only if showDate AND not current) -->
-              <div v-if="eduForm.showDate && !eduForm.isCurrent" class="grid grid-cols-2 gap-[12px]">
-                <div class="flex flex-col">
-                  <label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Selesai <span class="text-accent-danger font-bold">*</span></label>
-                  <select v-model="eduForm.endMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
-                    <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Bulan --</option>
-                    <option v-for="m in MONTHS" :key="'eem-'+m" :value="m" class="bg-surface-elevated text-on-dark">{{ m }}</option>
-                  </select>
-                  <div v-if="eduErrors.endMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.endMonth }}</div>
-                </div>
-
-                <div class="flex flex-col">
-                  <label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Selesai <span class="text-accent-danger font-bold">*</span></label>
-                  <select v-model="eduForm.endYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
-                    <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Tahun --</option>
-                    <option v-for="y in YEARS" :key="'eey-'+y" :value="y" class="bg-surface-elevated text-on-dark">{{ y }}</option>
-                  </select>
-                  <div v-if="eduErrors.endYear" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.endYear }}</div>
-                </div>
-              </div>
-              <div v-if="eduErrors.period" class="text-accent-danger text-[12px]">{{ eduErrors.period }}</div>
-
-              <!-- IPK -->
-              <div class="flex flex-col">
-                <label class="mb-[8px] font-semibold text-on-dark-mute">IPK <span class="text-accent-danger font-bold">*</span></label>
-                <input v-model="eduForm.gpa" placeholder="Contoh: 3.50" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
-                <span class="text-[12px] text-stone mt-[6px]">Format desimal, skala 0.00 - 4.00</span>
-                <div v-if="eduErrors.gpa" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.gpa }}</div>
-              </div>
-            </div>
+          <!-- ===== TEMPLATE FORM STEPS ===== -->
+          <div v-else-if="currentStep < totalSteps - 1">
+            <h3 class="text-[24px] font-medium leading-[1.33] mb-[24px] text-on-dark">{{ activeSteps[currentStep - 1]?.title }}</h3>
+            <component
+              :is="activeTemplateComponent"
+              ref="templateRef"
+              :step-index="currentStep - 1"
+              :is-preview="false"
+              :template-font="templateFont"
+              :target-expertise="targetExpertise"
+            />
           </div>
 
-          <!-- =================== EXPERIENCE CUSTOM FORM =================== -->
-          <div v-else-if="steps[currentStep]?.id === 'experience'">
-
-            <!-- Saved Work Experiences List -->
-            <div v-if="workExperiences.length > 0" class="mb-[24px]">
-              <span class="text-[13px] font-semibold text-stone uppercase tracking-[1px] mb-[12px] block">Pengalaman Kerja Tersimpan ({{ workExperiences.length }})</span>
-              <div v-for="(work, idx) in workExperiences" :key="'work-'+idx" class="border border-hairline-dark rounded-[12px] p-[16px] mb-[12px]">
-                <div class="flex justify-between items-start gap-[12px]">
-                  <div class="flex-1 min-w-0">
-                    <div class="font-semibold text-on-dark text-[14px]">{{ work.position }}</div>
-                    <div class="text-[14px] text-on-dark-mute">{{ work.company }}</div>
-                    <div class="text-[13px] text-stone">{{ work.startMonth }} {{ work.startYear }} - {{ work.current ? 'Sekarang' : work.endMonth + ' ' + work.endYear }}</div>
-                    <div class="text-[12px] text-stone mt-[4px]">{{ work.jobDescriptions.filter(j => j.trim()).length }} jobdesk</div>
-                  </div>
-                  <div class="flex gap-[8px] shrink-0">
-                    <button @click="editWorkExperience(idx)" class="text-[13px] px-[12px] py-[4px] rounded-full border border-hairline-dark text-on-dark-mute hover:bg-surface-elevated transition-colors">Edit</button>
-                    <button @click="deleteWorkExperience(idx)" class="text-[13px] px-[12px] py-[4px] rounded-full border border-accent-danger/30 text-accent-danger hover:bg-accent-danger/10 transition-colors">Hapus</button>
-                  </div>
-                </div>
+          <!-- ===== PREVIEW & EXPORT STEP ===== -->
+          <div v-else>
+            <div class="flex justify-between items-center mb-[24px] flex-wrap gap-[12px]">
+              <h3 class="text-[24px] font-medium leading-[1.33] text-on-dark">Pratinjau Dokumen</h3>
+              <div class="flex gap-[12px]">
+                <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[13px] px-[16px] h-[32px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed" @click="analyzeBuiltCV" :disabled="analyzing">
+                  {{ analyzing ? 'Memindai...' : 'Scan ATS Score' }}
+                </button>
+                <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[13px] px-[16px] h-[32px] bg-on-dark text-ink hover:bg-white/90" @click="downloadPDF">
+                  Unduh PDF
+                </button>
               </div>
             </div>
 
-            <!-- Work Experience Form -->
-            <div class="border border-hairline-dark rounded-[16px] p-[20px]">
-              <h4 class="text-[16px] font-semibold text-on-dark mb-[20px]">{{ workEditIndex >= 0 ? 'Edit Pengalaman Kerja' : 'Tambah Pengalaman Kerja Baru' }}</h4>
-
-              <div class="flex flex-col gap-[16px]">
-                <!-- Perusahaan -->
-                <div class="flex flex-col">
-                  <label class="mb-[8px] font-semibold text-on-dark-mute">Nama Perusahaan <span class="text-accent-danger font-bold">*</span></label>
-                  <input v-model="workForm.company" placeholder="Contoh: PT ABC" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
-                  <div v-if="workErrors.company" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.company }}</div>
-                </div>
-
-                <!-- Posisi -->
-                <div class="flex flex-col">
-                  <label class="mb-[8px] font-semibold text-on-dark-mute">Posisi/Jabatan <span class="text-accent-danger font-bold">*</span></label>
-                  <input v-model="workForm.position" placeholder="Contoh: Frontend Developer" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
-                  <div v-if="workErrors.position" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.position }}</div>
-                </div>
-
-                <!-- Period Start -->
-                <div class="grid grid-cols-2 gap-[12px]">
-
-                  <div class="flex flex-col">
-                    <label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Mulai <span class="text-accent-danger font-bold">*</span></label>
-                    <select v-model="workForm.startMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
-                      <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Bulan --</option>
-                      <option v-for="m in MONTHS" :key="'wsm-'+m" :value="m" class="bg-surface-elevated text-on-dark">{{ m }}</option>
-                    </select>
-                    <div v-if="workErrors.startMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.startMonth }}</div>
-                  </div>
-
-                  <div class="flex flex-col">
-                    <label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Mulai <span class="text-accent-danger font-bold">*</span></label>
-                    <select v-model="workForm.startYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
-                      <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Tahun --</option>
-                      <option v-for="y in YEARS" :key="'wsy-'+y" :value="y" class="bg-surface-elevated text-on-dark">{{ y }}</option>
-                    </select>
-                    <div v-if="workErrors.startYear" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.startYear }}</div>
-                  </div>
-                </div>
-
-                <!-- Current Job Checkbox -->
-                <label class="flex items-center gap-[8px] cursor-pointer">
-                  <input type="checkbox" v-model="workForm.current" class="w-[15px] h-[15px] rounded accent-white" />
-                  <span class="text-[14px] text-on-dark-mute">Saya masih bekerja di perusahaan ini</span>
-                </label>
-
-                <!-- Period End (hidden if current job) -->
-                <div v-if="!workForm.current" class="grid grid-cols-2 gap-[12px]">
-                  <div class="flex flex-col">
-                    <label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Selesai <span class="text-accent-danger font-bold">*</span></label>
-                    <select v-model="workForm.endMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
-                      <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Bulan --</option>
-                      <option v-for="m in MONTHS" :key="'wem-'+m" :value="m" class="bg-surface-elevated text-on-dark">{{ m }}</option>
-                    </select>
-                    <div v-if="workErrors.endMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.endMonth }}</div>
-                  </div>
-                  <div class="flex flex-col">
-                    <label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Selesai <span class="text-accent-danger font-bold">*</span></label>
-                    <select v-model="workForm.endYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
-                      <option value="" disabled class="bg-surface-elevated text-on-dark">-- Pilih Tahun --</option>
-                      <option v-for="y in YEARS" :key="'wey-'+y" :value="y" class="bg-surface-elevated text-on-dark">{{ y }}</option>
-                    </select>
-                    <div v-if="workErrors.endYear" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.endYear }}</div>
-                  </div>
-                </div>
-                <div v-if="workErrors.period" class="text-accent-danger text-[12px]">{{ workErrors.period }}</div>
-
-                <!-- Jobdesk / Deskripsi Pekerjaan -->
-                <div class="border-t border-hairline-dark pt-[16px] mt-[8px]">
-                  <h5 class="text-[14px] font-semibold text-on-dark mb-[12px]">Jobdesk / Deskripsi Pekerjaan <span class="text-accent-danger font-bold">*</span></h5>
-                  <div class="flex flex-col gap-[8px]">
-                    <div v-for="(jd, jdIdx) in workForm.jobDescriptions" :key="'jd-'+jdIdx" class="flex gap-[8px] items-start">
-                      <span class="text-on-dark-mute text-[14px] mt-[12px] shrink-0">{{ jdIdx + 1 }}.</span>
-                      <textarea v-model="workForm.jobDescriptions[jdIdx]" :placeholder="'Deskripsi pekerjaan #' + (jdIdx + 1)" rows="2" class="flex-1 h-40 bg-transparent border border-hairline-dark rounded-[12px] p-[12px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
-                      <button v-if="workForm.jobDescriptions.length > 1" @click="removeJobDescription(jdIdx)" class="shrink-0 mt-[8px] text-accent-danger text-[16px] w-[32px] h-[32px] rounded-full border border-accent-danger/30 flex items-center justify-center hover:bg-accent-danger/10 transition-colors">✕</button>
+            <!-- ATS Analysis Result -->
+            <div v-if="analysisResult" class="mb-[32px] animate-fade-in">
+              <h2 class="text-[24px] font-medium leading-[1.33] tracking-[0] mb-xl text-on-dark">Laporan Analisis</h2>
+              <div v-if="analysisResult.analysis?.error" class="bg-accent-danger text-white rounded-[20px] p-xxl mb-xl">
+                Gagal menganalisis CV: {{ analysisResult.analysis.message }}
+              </div>
+              <template v-else>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-xl mb-xl">
+                  <div class="bg-surface-elevated rounded-[20px] p-xxl flex items-center gap-xl border border-hairline-dark">
+                    <div class="w-[100px] h-[100px] shrink-0 relative"><Doughnut :data="overallChartData" :options="doughnutOptions" /></div>
+                    <div>
+                      <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Overall Score</span>
+                      <h3 class="text-[32px] font-medium leading-[1.19] tracking-[-0.32px] m-0 text-white">{{ analysisResult.analysis?.overallScore || 0 }}<span class="text-[20px] text-on-dark-mute">/100</span></h3>
+                      <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute mt-[4px]">Kecocokan dengan {{ targetExpertise }}</p>
                     </div>
                   </div>
-                  <div v-if="workErrors.jobDescriptions" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.jobDescriptions }}</div>
-                  <button @click="addJobDescription" class="mt-[12px] text-[13px] px-[16px] py-[6px] rounded-full border border-hairline-dark text-on-dark hover:bg-surface-elevated transition-colors">+ Tambah Jobdesk</button>
-                </div>
-              </div>
-
-              <!-- Save / Cancel for work experience -->
-              <div class="flex gap-[12px] mt-[24px] pt-[16px] border-t border-hairline-dark">
-                <button @click="saveWorkExperience" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90">
-                  {{ workEditIndex >= 0 ? 'Simpan Perubahan' : 'Simpan Pengalaman Kerja' }}
-                </button>
-                <button v-if="workEditIndex >= 0" @click="cancelWorkEdit" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Batal</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- =================== GENERIC FORM (personal_info, summary, skills, certifications) =================== -->
-          <div v-else class="flex flex-col gap-[20px]">
-            <div v-if="steps[currentStep].id === 'personal_info'" class="flex flex-col gap-sm mb-lg">
-              <label class="flex items-center gap-sm cursor-pointer w-max">
-                <input type="checkbox" v-model="useProfilePicture" class="w-[15px] h-[15px] rounded accent-white" />
-                <span class="text-[14px] text-on-dark-mute font-semibold">Gunakan Foto Profil</span>
-              </label>
-
-              <!-- =================== PROFILE PICTURE CUSTOM FORM =================== -->
-              <div v-if="useProfilePicture" class="flex flex-col gap-xs mt-sm">
-                <label class="mb-[8px] font-semibold text-on-dark-mute">Foto Profil</label>
-                <div class="flex items-center gap-lg">
-                  <div class="w-[100px] h-[100px] rounded-full overflow-hidden border-2 border-hairline-dark bg-white flex shrink-0">
-                    <img v-if="profilePictureUrl" :src="profilePictureUrl" class="w-full h-full object-cover" />
-                    <Icon v-else icon="iconamoon:profile-fill" class="text-[70px] text-gray-300 mx-auto my-auto" />
+                  <div class="bg-surface-elevated rounded-[20px] p-xxl flex items-center gap-xl border border-hairline-dark">
+                    <div class="w-[100px] h-[100px] shrink-0 relative"><Doughnut :data="atsChartData" :options="doughnutOptions" /></div>
+                    <div>
+                      <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">ATS Score</span>
+                      <h3 class="text-[32px] font-medium leading-[1.19] tracking-[-0.32px] m-0" :class="analysisResult.ats?.isATS ? 'text-accent-teal' : 'text-accent-danger'">{{ analysisResult.ats?.score || 0 }}<span class="text-[20px] text-on-dark-mute">%</span></h3>
+                      <span class="inline-block rounded-full text-[13px] font-medium mt-[4px]" :class="analysisResult.ats?.isATS ? 'text-accent-teal' : 'text-accent-danger'">{{ analysisResult.ats?.isATS ? 'Format ATS Valid' : 'Format ATS Kurang' }}</span>
+                    </div>
                   </div>
-                  <input type="file" accept="image/*" @change="onProfilePictureChange" class="w-full text-[14px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border file:border-hairline-dark file:text-sm file:font-medium file:bg-transparent file:text-on-dark hover:file:bg-surface-elevated file:cursor-pointer" />
                 </div>
-              </div>
+
+                <div class="bg-surface-elevated rounded-[20px] p-xxl mb-xl border border-hairline-dark">
+                  <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-lg block text-stone">Analisis Kategori</span>
+                  <div class="relative h-[280px] w-full"><Line :data="lineChartData" :options="lineOptions" /></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-xl mb-xl">
+                  <div v-if="analysisResult.analysis?.strengths?.length" class="bg-surface-elevated rounded-[20px] p-xxl border-t-3 border-accent-teal">
+                    <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Kekuatan</span>
+                    <ul class="pl-[20px] mt-md text-[14px] list-disc"><li v-for="(item, i) in analysisResult.analysis.strengths" :key="i" class="mb-[8px] text-on-dark-mute">{{ item }}</li></ul>
+                  </div>
+                  <div v-if="analysisResult.analysis?.weaknesses?.length" class="bg-surface-elevated rounded-[20px] p-xxl border-t-3 border-accent-danger">
+                    <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Kelemahan</span>
+                    <ul class="pl-[20px] mt-md text-[14px] list-disc"><li v-for="(item, i) in analysisResult.analysis.weaknesses" :key="i" class="mb-[8px] text-on-dark-mute">{{ item }}</li></ul>
+                  </div>
+                </div>
+
+                <div v-if="analysisResult.analysis?.recommendations?.length" class="bg-surface-elevated rounded-[20px] p-xxl border-l-3 border-primary mb-xl">
+                  <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Rekomendasi AI</span>
+                  <ul class="pl-[20px] mt-md text-[14px] list-disc"><li v-for="(rec, i) in analysisResult.analysis.recommendations" :key="i" class="mb-[12px] text-on-dark-mute">{{ rec }}</li></ul>
+                </div>
+              </template>
             </div>
 
-            <div v-for="field in steps[currentStep].fields" :key="field.key" class="flex flex-col">
-              <label class="mb-[8px] font-semibold text-on-dark-mute">
-                {{ field.label }} 
-                <span v-if="field.required" class="text-accent-danger font-bold">*</span>
-                <button v-if="field.key === 'description' || field.key === 'summary' || field.key === 'technical_skills' || field.key === 'soft_skills'" class="bg-transparent border-none text-white cursor-pointer text-[12px] ml-[12px] px-[8px] py-[2px] rounded-full transition-colors duration-200 hover:bg-white/10" @click.prevent="getSuggestion(field)" title="Minta saran AI">💡 AI Suggestion</button>
-              </label>
-              
-              <input 
-                v-if="field.key !== 'gpa' && field.key !== 'description' && field.key !== 'summary' && field.key !== 'email' && field.key !== 'linkedin'" 
-                v-model="formData[field.key]" 
-                :placeholder="field.placeholder" 
-                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone"
+            <!-- CV Preview via template component -->
+            <div class="rounded-[20px] overflow-hidden shadow-2xl max-w-[800px] mx-auto">
+              <component
+                :is="activeTemplateComponent"
+                ref="previewTemplateRef"
+                :step-index="0"
+                :is-preview="true"
+                :template-font="templateFont"
+                :target-expertise="targetExpertise"
               />
-              
-              <input 
-                v-else-if="field.key === 'email'"
-                type="email"
-                v-model="formData[field.key]" 
-                :placeholder="field.placeholder" 
-                @input="validateEmail"
-                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone"
-              />
+            </div>
+            <div v-if="!hasPreviewData" class="text-stone text-center p-[40px] italic border border-dashed border-hairline-dark rounded-[20px]">
+              Mulai isi data Anda pada tahapan sebelumnya untuk melihat pratinjau.
+            </div>
 
-              <input 
-                v-else-if="field.key === 'linkedin'"
-                type="url"
-                v-model="formData[field.key]" 
-                :placeholder="field.placeholder" 
-                @input="validateLinkedIn"
-                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone"
-              />
-
-              <input 
-                v-else-if="field.key === 'gpa'"
-                v-model="formData[field.key]" 
-                :placeholder="field.placeholder" 
-                @input="validateGPA"
-                class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone"
-              />
-
-              <textarea 
-                v-else 
-                v-model="formData[field.key]" 
-                :placeholder="field.placeholder"
-                rows="4"
-                class="w-full h-80 bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"
-              ></textarea>
-              
-              <span class="text-[12px] text-stone mt-[6px]">{{ field.hint }}</span>
-              <div v-if="errors[field.key]" class="text-accent-danger text-[12px] mt-[6px]">{{ errors[field.key] }}</div>
-              
-              <div v-if="suggestions[field.key]" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px] border-white">
-                <span class="font-semibold text-white">Saran AI:</span> {{ suggestions[field.key] }}
-              </div>
+            <div class="flex justify-between mt-[32px] pt-[16px] border-t border-hairline-dark">
+              <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated" @click="prevStep">Sebelumnya</button>
             </div>
           </div>
 
-          <!-- Wizard Actions -->
-          <div class="flex justify-between mt-[32px] pt-[24px] border-t border-hairline-dark">
+          <!-- Wizard Navigation Buttons (form steps) -->
+          <div v-if="currentStep > 0 && currentStep < totalSteps - 1" class="flex justify-between mt-[32px] pt-[24px] border-t border-hairline-dark">
             <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed" :disabled="currentStep === 0" @click="prevStep">Sebelumnya</button>
             <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90" @click="nextStep">Selanjutnya</button>
           </div>
-        </div>
-
-        <!-- Preview Section -->
-        <div v-else>
-          <div class="flex justify-between items-center mb-[24px] flex-wrap gap-[12px]">
-            <h3 class="text-[24px] font-medium leading-[1.33] text-on-dark">Pratinjau Dokumen</h3>
-            <div class="flex gap-[12px]">
-              <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[13px] px-[16px] h-[32px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed" @click="analyzeBuiltCV" :disabled="analyzing">
-                {{ analyzing ? 'Memindai...' : 'Scan ATS Score' }}
-              </button>
-              <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[13px] px-[16px] h-[32px] bg-on-dark text-ink hover:bg-white/90" @click="downloadPDF">
-                Unduh PDF
-              </button>
-            </div>
-          </div>
-          
-          <div v-if="analysisResult" class="mb-[32px] animate-fade-in">
-            <h2 class="text-[24px] font-medium leading-[1.33] tracking-[0] mb-xl text-on-dark">Laporan Analisis</h2>
-
-            <!-- Error Handling -->
-            <div v-if="analysisResult.analysis?.error" class="bg-accent-danger text-white rounded-[20px] p-xxl mb-xl">
-              Gagal menganalisis CV: {{ analysisResult.analysis.message }}
-            </div>
-
-            <template v-else>
-              <!-- Score Summary -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-xl mb-xl">
-                <div class="bg-surface-elevated rounded-[20px] p-xxl flex items-center gap-xl border border-hairline-dark">
-                  <div class="w-[100px] h-[100px] shrink-0 relative">
-                    <Doughnut :data="builderOverallChartData" :options="builderDoughnutOptions" />
-                  </div>
-                  <div>
-                    <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Overall Score</span>
-                    <h3 class="text-[32px] font-medium leading-[1.19] tracking-[-0.32px] m-0 text-white">{{ analysisResult.analysis?.overallScore || 0 }}<span class="text-[20px] text-on-dark-mute">/100</span></h3>
-                    <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute mt-[4px]">Kecocokan dengan posisi {{ targetExpertise }}</p>
-                  </div>
-                </div>
-                
-                <div class="bg-surface-elevated rounded-[20px] p-xxl flex items-center gap-xl border border-hairline-dark">
-                  <div class="w-[100px] h-[100px] shrink-0 relative">
-                    <Doughnut :data="builderAtsChartData" :options="builderDoughnutOptions" />
-                  </div>
-                  <div>
-                    <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">ATS Score</span>
-                    <h3 class="text-[32px] font-medium leading-[1.19] tracking-[-0.32px] m-0" :class="analysisResult.ats?.isATS ? 'text-accent-teal' : 'text-accent-danger'">{{ analysisResult.ats?.score || 0 }}<span class="text-[20px] text-on-dark-mute">%</span></h3>
-                    <span class="inline-block rounded-full text-[13px] font-medium mt-[4px]" :class="analysisResult.ats?.isATS ? 'text-accent-teal' : 'text-accent-danger'">
-                      {{ analysisResult.ats?.isATS ? 'Format ATS Valid' : 'Format ATS Kurang' }}
-                    </span>
-                    <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute mt-[4px]">{{ analysisResult.ats?.matchedSections?.length || 0 }} / {{ analysisResult.ats?.totalSections || 0 }} bagian wajib ditemukan</p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Charts Dashboard -->
-              <div class="bg-surface-elevated rounded-[20px] p-xxl mb-xl border border-hairline-dark">
-                <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-lg block text-stone">Analisis Kategori (Line Chart)</span>
-                <div class="relative h-[300px] w-full">
-                  <Line :data="builderLineChartData" :options="builderLineOptions" />
-                </div>
-              </div>
-
-              <!-- Summary -->
-              <div v-if="analysisResult.analysis?.summary" class="bg-surface-elevated rounded-[20px] p-xxl mb-xl border border-hairline-dark">
-                <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Resume Summary</span>
-                <p class="text-[16px] font-normal leading-[1.6] text-on-dark-mute mt-sm">{{ analysisResult.analysis.summary }}</p>
-              </div>
-
-              <!-- Detailed Insights -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-xl mb-xl">
-                <div v-if="analysisResult.analysis?.strengths?.length" class="bg-surface-elevated rounded-[20px] p-xxl border-t-3 border-accent-teal">
-                  <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Kekuatan (Strengths)</span>
-                  <ul class="pl-[20px] mt-md text-[14px] font-normal leading-[1.5] list-disc">
-                    <li v-for="(item, idx) in analysisResult.analysis.strengths" :key="'bs'+idx" class="mb-[8px] text-on-dark-mute">{{ item }}</li>
-                  </ul>
-                </div>
-                
-                <div v-if="analysisResult.analysis?.weaknesses?.length" class="bg-surface-elevated rounded-[20px] p-xxl border-t-3 border-accent-danger">
-                  <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Kelemahan (Weaknesses)</span>
-                  <ul class="pl-[20px] mt-md text-[14px] font-normal leading-[1.5] list-disc">
-                    <li v-for="(item, idx) in analysisResult.analysis.weaknesses" :key="'bw'+idx" class="mb-[8px] text-on-dark-mute">{{ item }}</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-xl mb-xl">
-                <div class="bg-surface-elevated rounded-[20px] p-xxl border border-hairline-dark">
-                  <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Keyword Match</span>
-                  <div class="flex flex-wrap gap-[8px] mt-[12px]">
-                    <span v-for="(kw, idx) in analysisResult.analysis?.keywordMatch" :key="'bkw'+idx" class="inline-flex items-center gap-[6px] bg-gray/10 text-white border border-white/25 rounded-full px-[12px] py-[4px] text-[13px]">
-                      <span class="inline-block rounded-full bg-white w-[4px] h-[4px]"></span> {{ kw }}
-                    </span>
-                    <span v-if="!analysisResult.analysis?.keywordMatch?.length" class="text-[14px] font-normal leading-[1.5] text-stone">Tidak ada keyword yang cocok.</span>
-                  </div>
-                </div>
-                
-                <div class="bg-surface-elevated rounded-[20px] p-xxl border border-hairline-dark">
-                  <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Missing Skills</span>
-                  <div class="flex flex-wrap gap-[8px] mt-[12px]">
-                    <span v-for="(kw, idx) in analysisResult.analysis?.missingSkills" :key="'bmk'+idx" class="inline-flex items-center gap-[6px] bg-gray/10 text-white border border-white/25 rounded-full px-[12px] py-[4px] text-[13px]">
-                      <span class="inline-block rounded-full bg-white w-[4px] h-[4px]"></span> {{ kw }}
-                    </span>
-                    <span v-if="!analysisResult.analysis?.missingSkills?.length" class="text-[14px] font-normal leading-[1.5] text-stone">Tidak ada skill yang terlewat. Bagus!</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Recommendations -->
-              <div v-if="analysisResult.analysis?.recommendations?.length" class="bg-surface-elevated rounded-[20px] p-xxl border-l-3 border-primary">
-                <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Rekomendasi AI</span>
-                <ul class="pl-[20px] mt-md text-[14px] font-normal leading-[1.6] list-disc">
-                  <li v-for="(rec, idx) in analysisResult.analysis.recommendations" :key="'br'+idx" class="mb-[12px] text-on-dark-mute">
-                    {{ rec }}
-                  </li>
-                </ul>
-              </div>
-            </template>
+          <!-- Template select next button -->
+          <div v-if="currentStep === 0" class="flex justify-end mt-[32px] pt-[24px] border-t border-hairline-dark">
+            <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90" @click="nextStep">Selanjutnya</button>
           </div>
 
-          <!-- CV Visual Preview -->
-          <div class="bg-white text-black p-[40px] rounded-[20px] leading-[1.5] max-w-[800px] mx-auto" v-if="hasPreviewData" :style="{ fontFamily: templateFont }">
-            <!-- Personal Info -->
-            <div class="mb-[20px] flex items-center gap-[24px]" :class="useProfilePicture ? 'justify-start text-left' : 'justify-center text-center flex-col'">
-                <div v-if="useProfilePicture" class="w-[100px] h-[110px] overflow-hidden shrink-0">
-                  <img v-if="profilePictureUrl" :src="profilePictureUrl" class="w-full h-full object-cover" />
-                  <Icon v-else icon="iconamoon:profile-fill" class="w-full h-full text-stone" />
-                </div>
-                <div :class="useProfilePicture ? 'flex-1' : ''">
-                  <h2 class="text-[28px] mb-[4px] uppercase tracking-[1px] font-bold">{{ formData.full_name || '[Nama Anda]' }}</h2>
-                  <p class="text-[12px]">
-                      {{ (!errors.email && formData.email) ? formData.email + ' | ' : '' }}
-                      {{ formData.phone ? formData.phone + ' | ' : '' }}
-                      {{ formData.address ? formData.address + ' | ' : '' }}
-                      {{ (!errors.linkedin && formData.linkedin) ? formData.linkedin : '' }}
-                  </p>
-                </div>
-            </div>
-            
-            <!-- Summary -->
-            <div class="mb-[15px]" v-if="formData.summary">
-                <h4 class="text-[14px] uppercase mb-[4px] font-bold">RINGKASAN PROFESIONAL</h4>
-                <div class="border-b-2 border-black mb-[12px]"></div>
-                <p class="text-[12px] text-justify">{{ formData.summary }}</p>
-            </div>
-            
-            <!-- Education -->
-            <div class="mb-[15px]" v-if="educations.length > 0">
-                <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENDIDIKAN</h4>
-                <div class="border-b-2 border-black mb-[12px]"></div>
-                <div v-for="(edu, idx) in educations" :key="'prev-edu-'+idx" class="mb-[16px]">
-                  <div class="flex justify-between items-start flex-wrap gap-[4px]">
-                    <div>
-                      <div class="text-[12px] font-bold">{{ edu.degree }} {{ edu.major }} | IPK: {{ formatGPA(edu.gpa) }}/4.00</div>
-                      <div class="text-[12px]">{{ edu.institution }}</div>
-                    </div>
-                    <div v-if="edu.showDate" class="text-[12px] text-black font-bold">{{ edu.startMonth }} {{ edu.startYear }} - {{ edu.isCurrent ? 'Sekarang' : edu.endMonth + ' ' + edu.endYear }}</div>
-                  </div>
-                </div>
-            </div>
-            
-            <!-- Work Experience -->
-            <div class="mb-[15px]" v-if="workExperiences.length > 0">
-                <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENGALAMAN & PROJEK</h4>
-                <div class="border-b-2 border-black mb-[12px]"></div>
-                <div v-for="(work, idx) in workExperiences" :key="'prev-work-'+idx" class="mb-[16px]">
-                    <div class="flex justify-between items-start flex-wrap gap-[4px]">
-                        <div>
-                            <div class="text-[12px] font-bold">{{ work.company }}</div>
-                            <div class="text-[11px] italic">{{ work.position }}</div> 
-                        </div>
-                        <div class="text-[12px] shrink-0 text-black font-bold">{{ work.startMonth }} {{ work.startYear }} - {{ work.current ? 'Sekarang' : work.endMonth + ' ' + work.endYear }}</div>
-                    </div>
-                    <ul class="mt-[2px] pl-[24px] list-disc">
-                        <li v-for="(jd, jdIdx) in work.jobDescriptions.filter(j => j.trim())" :key="'prev-jd-'+jdIdx" class="text-[12px] mb-[2px]">{{ jd }}</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- Skills -->
-            <div class="mb-[15px]" v-if="formData.technical_skills || formData.soft_skills">
-                <h4 class="text-[14px] uppercase mb-[4px] font-bold">KEAHLIAN</h4>
-                <div class="border-b-2 border-black mb-[12px]"></div>
-                <p v-if="formData.technical_skills" class="text-[12px]"><strong>Keahlian Teknis:</strong> {{ formData.technical_skills }}</p>
-                <p v-if="formData.soft_skills" class="text-[12px]"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
-            </div>
-            
-            <!-- Certifications -->
-            <div class="mb-[15px]" v-if="formData.cert_name">
-                <h4 class="text-[14px] uppercase mb-[4px] font-bold">SERTIFIKASI</h4>
-                <div class="border-b-2 border-black mb-[12px]"></div>
-                <div class="mb-[12px]">
-                    <div class="flex justify-between text-[14px]">
-                        <strong>{{ formData.cert_name }}</strong>
-                        <span>{{ formData.issuer }}</span>
-                    </div>
-                </div>
-            </div>
-          </div>
-          <div v-else class="text-stone text-center p-[40px] italic border border-dashed border-hairline-dark rounded-[20px]">
-            Mulai isi data Anda pada tahapan sebelumnya untuk melihat pratinjau.
-          </div>
-
-          <div class="flex justify-between mt-[32px] pt-[16px] border-t border-hairline-dark">
-            <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated" @click="prevStep">Sebelumnya</button>
-          </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
 
-    <!-- Hidden Print Container -->
-    <div class="hidden print:block absolute left-0 top-0 w-full m-0 p-[40px] border-none shadow-none rounded-none bg-white text-black leading-[1.5]" :style="{ fontFamily: templateFont }">
-        <!-- Personal -->
-        <div class="mb-[20px] flex items-center gap-[24px]" :class="useProfilePicture ? 'justify-start text-left' : 'justify-center text-center flex-col'">
-            <div v-if="useProfilePicture" class="w-[100px] h-[110px] overflow-hidden shrink-0">
-              <img v-if="profilePictureUrl" :src="profilePictureUrl" class="w-full h-full object-cover" />
-              <Icon v-else icon="iconamoon:profile-fill" class="w-full h-full text-stone" />
-            </div>
-            <div :class="useProfilePicture ? 'flex-1' : ''">
-              <h2 class="text-[28px] mb-[4px] uppercase tracking-[1px] font-bold">{{ formData.full_name || '[Nama Anda]' }}</h2>
-              <p class="text-[12px]">
-                  {{ (!errors.email && formData.email) ? formData.email + ' | ' : '' }}
-                  {{ formData.phone ? formData.phone + ' | ' : '' }}
-                  {{ formData.address ? formData.address + ' | ' : '' }}
-                  {{ (!errors.linkedin && formData.linkedin) ? formData.linkedin : '' }}
-              </p>
-            </div>
-        </div>
-        
-        <!-- Summary -->
-        <div class="mb-[15px]" v-if="formData.summary">
-            <h4 class="text-[14px] uppercase mb-[4px] font-bold">RINGKASAN PROFESIONAL</h4>
-            <div class="border-b border-black mb-[12px]"></div>
-            <p class="text-[12px] text-justify">{{ formData.summary }}</p>
-        </div>
-        
-        <!-- Education (print) -->
-        <div class="mb-[15px]" v-if="educations.length > 0">
-            <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENDIDIKAN</h4>
-            <div class="border-bborder-black mb-[12px]"></div>
-            <div v-for="(edu, idx) in educations" :key="'print-edu-'+idx" class="mb-[16px]">
-                <div class="flex justify-between items-start flex-wrap gap-[4px]">
-                    <div>
-                        <div class="text-[12px] font-bold">{{ edu.degree }} {{ edu.major }} | IPK: {{ formatGPA(edu.gpa) }}/4.00</div>
-                        <div class="text-[12px]">{{ edu.institution }}</div>
-                    </div>
-                    <div v-if="edu.showDate" class="text-[12px] text-black font-bold">{{ edu.startMonth }} {{ edu.startYear }} - {{ edu.isCurrent ? 'Sekarang' : edu.endMonth + ' ' + edu.endYear }}</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Work Experience (print) -->
-        <div class="mb-[15px]" v-if="workExperiences.length > 0">
-            <h4 class="text-[14px] uppercase mb-[4px] font-bold">PENGALAMAN & PROJEK</h4>
-            <div class="border-b border-black mb-[12px]"></div>
-            <div v-for="(work, idx) in workExperiences" :key="'print-work-'+idx" class="mb-[16px]">
-                <div class="flex justify-between items-start flex-wrap gap-[4px]">
-                    <div>
-                        <div class="text-[12px] font-bold">{{ work.company }}</div>
-                        <div class="text-[11px] italic">{{ work.position }}</div>
-                    </div>
-                    <div class="text-[12px] shrink-0 text-black font-bold">{{ work.startMonth }} {{ work.startYear }} - {{ work.current ? 'Sekarang' : work.endMonth + ' ' + work.endYear }}</div>
-                </div>
-                <ul class="mt-[2px] pl-[24px] list-disc">
-                    <li v-for="(jd, jdIdx) in work.jobDescriptions.filter(j => j.trim())" :key="'print-jd-'+jdIdx" class="text-[12px] mb-[2px]">{{ jd }}</li>
-                </ul>
-            </div>
-        </div>
-        
-        <!-- Skills (print) -->
-        <div class="mb-[15px]" v-if="formData.technical_skills || formData.soft_skills">
-            <h4 class="text-[14px] uppercase mb-[4px] font-bold">KEAHLIAN</h4>
-            <div class="border-b border-black mb-[12px]"></div>
-            <p v-if="formData.technical_skills" class="text-[12px]"><strong>Keahlian Teknis:</strong> {{ formData.technical_skills }}</p>
-            <p v-if="formData.soft_skills" class="text-[12px]"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
-        </div>
-        
-        <!-- Certifications (print) -->
-        <div class="mb-[15px]" v-if="formData.cert_name">
-            <h4 class="text-[14px] uppercase mb-[4px] font-bold">SERTIFIKASI</h4>
-            <div class="border-b border-black mb-[12px]"></div>
-            <div class="mb-[12px]">
-                <div class="flex justify-between text-[14px]">
-                    <strong>{{ formData.cert_name }}</strong>
-                    <span>{{ formData.issuer }}</span>
-                </div>
-            </div>
-        </div>
-      </div>
+    <!-- Print container -->
+    <div class="hidden print:block absolute left-0 top-0 w-full m-0 p-0 border-none shadow-none rounded-none bg-white">
+      <component
+        :is="activeTemplateComponent"
+        :step-index="0"
+        :is-preview="true"
+        :template-font="templateFont"
+        :target-expertise="targetExpertise"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch, nextTick } from "vue"
-import axios from "axios"
-import { Icon } from "@iconify/vue"
+import { ref, computed, onMounted, watch } from 'vue'
+import axios from 'axios'
+import { Icon } from '@iconify/vue'
 import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js'
 import { Line, Doughnut } from 'vue-chartjs'
-import { useHead } from "@vueuse/head"
+import { useHead } from '@vueuse/head'
+
+import ModernATSTemplate from '@/components/cv-templates/ModernATSTemplate.vue'
+import ClassicATSTemplate from '@/components/cv-templates/ClassicATSTemplate.vue'
+import ExecutiveATSTemplate from '@/components/cv-templates/ExecutiveATSTemplate.vue'
 
 useHead({
   title: 'Pembuat CV ATS-Friendly — JobFinder',
@@ -756,30 +271,93 @@ useHead({
   ]
 })
 
-
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale, LinearScale, ArcElement)
 
-// ===================== STATE =====================
-const steps = ref([])
-const expertiseAreas = ref([])
-const targetExpertise = ref("Software Development")
+// ===== TEMPLATES =====
+const CV_TEMPLATES = [
+  { id: 'modern_ats', name: 'Modern ATS', desc: 'Single column, minimalis & bersih.', isDefault: true },
+  { id: 'classic_ats', name: 'Classic ATS', desc: 'Format akademis formal + Referensi.', isDefault: false },
+  { id: 'executive_ats', name: 'Executive ATS', desc: 'Dua kolom premium untuk posisi senior.', isDefault: false },
+]
+
+const TEMPLATE_COMPONENT_MAP = {
+  modern_ats: ModernATSTemplate,
+  classic_ats: ClassicATSTemplate,
+  executive_ats: ExecutiveATSTemplate,
+}
+
+const TEMPLATE_DEFAULT_FONT = {
+  modern_ats: "'Calibri', sans-serif",
+  classic_ats: "'Times New Roman', serif",
+  executive_ats: "'Cambria', serif",
+}
+
+// Steps didefinisikan statis agar sidebar muncul langsung tanpa harus menunggu komponen di-mount
+const TEMPLATE_STEPS = {
+  modern_ats: [
+    { id: 'personal_info', title: 'Informasi Pribadi' },
+    { id: 'summary', title: 'Ringkasan Profesional' },
+    { id: 'education', title: 'Pendidikan' },
+    { id: 'experience', title: 'Pengalaman Kerja' },
+    { id: 'skills', title: 'Keahlian' },
+    { id: 'certifications', title: 'Sertifikasi' },
+  ],
+  classic_ats: [
+    { id: 'personal_info', title: 'Informasi Pribadi' },
+    { id: 'objective', title: 'Tujuan Karir' },
+    { id: 'education', title: 'Pendidikan' },
+    { id: 'experience', title: 'Pengalaman Kerja' },
+    { id: 'skills', title: 'Keahlian' },
+    { id: 'references', title: 'Referensi' },
+  ],
+  executive_ats: [
+    { id: 'personal_info', title: 'Informasi Pribadi' },
+    { id: 'exec_summary', title: 'Executive Summary' },
+    { id: 'competencies', title: 'Core Competencies' },
+    { id: 'experience', title: 'Pengalaman Profesional' },
+    { id: 'education', title: 'Pendidikan' },
+    { id: 'achievements', title: 'Key Achievements' },
+  ],
+}
+
+// ===== STATE =====
 const selectedTemplate = ref('modern_ats')
+const currentStep = ref(0)
+const maxStepReached = ref(0)
+const targetExpertise = ref('Software Development')
+const expertiseAreas = ref(['Software Development', 'IT Infrastructure', 'Data Science', 'Graphic Design', 'Marketing', 'Finance', 'HR Management', 'Product Management'])
+
+const templateRef = ref(null)
+const previewTemplateRef = ref(null)
+const analyzing = ref(false)
+const analysisResult = ref(null)
+
+// Font state
 const selectedFont = ref('')
 const selectedFontName = ref('')
-
-// ===================== GOOGLE FONTS =====================
+const hoveredFont = ref('')
 const googleFonts = ref([])
 const fontLoading = ref(false)
 const fontSearch = ref('')
-const fontCategory = ref('')
 const loadedFonts = ref([])
-const hoveredFont = ref('')
+const fontListRef = ref(null)
+
+// ===== COMPUTED =====
+const activeTemplateComponent = computed(() => TEMPLATE_COMPONENT_MAP[selectedTemplate.value])
+const activeSteps = computed(() => TEMPLATE_STEPS[selectedTemplate.value] || [])
+const totalSteps = computed(() => 1 + activeSteps.value.length + 1) // 0: template select, 1..N: form, N+1: preview
+
+const templateFont = computed(() => {
+  if (selectedFont.value) return `'${selectedFont.value}', sans-serif`
+  return TEMPLATE_DEFAULT_FONT[selectedTemplate.value] || "'Calibri', sans-serif"
+})
+
+const hasPreviewData = computed(() => {
+  return templateRef.value?.hasPreviewData || previewTemplateRef.value?.hasPreviewData || false
+})
 
 const filteredGoogleFonts = computed(() => {
   let list = googleFonts.value
-  if (fontCategory.value) {
-    list = list.filter(f => f.category === fontCategory.value)
-  }
   if (fontSearch.value.trim()) {
     const q = fontSearch.value.trim().toLowerCase()
     list = list.filter(f => f.family.toLowerCase().includes(q))
@@ -787,17 +365,14 @@ const filteredGoogleFonts = computed(() => {
   return list
 })
 
+// ===== FONT FUNCTIONS =====
 async function fetchGoogleFonts() {
   fontLoading.value = true
   try {
     const res = await fetch('/api/google-fonts')
-    if (!res.ok) throw new Error('Server error')
+    if (!res.ok) throw new Error()
     googleFonts.value = await res.json()
-  } catch (e) {
-    console.error('Gagal memuat daftar font Google:', e)
-  } finally {
-    fontLoading.value = false
-  }
+  } catch { } finally { fontLoading.value = false }
 }
 
 async function loadFont(family) {
@@ -805,685 +380,116 @@ async function loadFont(family) {
   const id = `gf-${family.replace(/\s+/g, '-')}`
   if (!document.getElementById(id)) {
     const link = document.createElement('link')
-    link.id = id
-    link.rel = 'stylesheet'
+    link.id = id; link.rel = 'stylesheet'
     link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@400;700&display=swap`
     document.head.appendChild(link)
   }
-  try {
-    await document.fonts.load(`16px '${family}'`)
-  } catch (e) { /* ignore */ }
-  if (!loadedFonts.value.includes(family)) {
-    loadedFonts.value = [...loadedFonts.value, family]
-  }
+  try { await document.fonts.load(`16px '${family}'`) } catch { }
+  if (!loadedFonts.value.includes(family)) loadedFonts.value = [...loadedFonts.value, family]
 }
 
-// Preload font for hover preview (non-blocking, fire and forget)
 function onFontHover(family) {
   hoveredFont.value = family
-  if (!loadedFonts.value.includes(family)) {
-    loadFont(family) // loads async, preview will appear when ready
-  }
+  if (!loadedFonts.value.includes(family)) loadFont(family)
 }
 
 async function selectFont(f) {
-  selectedFont.value = f.family
-  selectedFontName.value = f.family
-  hoveredFont.value = ''
+  selectedFont.value = f.family; selectedFontName.value = f.family; hoveredFont.value = ''
   await loadFont(f.family)
 }
 
-const CV_TEMPLATES = [
-  { id: 'modern_ats', name: 'Modern ATS', desc: 'Desain minimalis dan bersih, paling populer.', image: '', isDefault: true, font: "'Calibri', sans-serif" },
-  { id: 'classic_ats', name: 'Classic ATS', desc: 'Tata letak tradisional dan formal.', image: '', isDefault: false, font: "'Times New Roman', serif" },
-  { id: 'executive_ats', name: 'Executive ATS', desc: 'Gaya eksekutif premium dan profesional.', image: '', isDefault: false, font: "'Cambria', serif" },
-]
-
-const formData = reactive({})
-const suggestions = reactive({})
-const errors = reactive({ gpa: "", email: "", linkedin: "" })
-const analysisResult = ref(null)
-const analyzing = ref(false)
-const currentStep = ref(0)
-const maxStepReached = ref(0)
-const useProfilePicture = ref(false)
-const profilePictureUrl = ref("")
-
-function onProfilePictureChange(e) {
-  const file = e.target.files[0]
-  if (file) {
-    profilePictureUrl.value = URL.createObjectURL(file)
-  } else {
-    profilePictureUrl.value = ""
-  }
-}
-
-// Simple form fields (personal info, summary, skills, certifications)
-const FIELDS = [
-  "full_name", "email", "phone", "address", "linkedin",
-  "summary",
-  "technical_skills", "soft_skills",
-  "cert_name", "issuer",
-]
-FIELDS.forEach(k => formData[k] = "")
-
-// ===================== EDUCATION DATA =====================
-const educations = ref([])
-const eduEditIndex = ref(-1)
-const eduForm = reactive({
-  degree: '', major: '', institution: '',
-  startMonth: '', startYear: '', endMonth: '', endYear: '',
-  gpa: '', experiences: [],
-  showDate: true, isCurrent: false
-})
-const eduErrors = reactive({})
-
-// Education sub-experience
-const eduExpEditIndex = ref(-1)
-const eduExpForm = reactive({
-  title: '', role: '', month: '', year: '', description: ''
-})
-const eduExpErrors = reactive({})
-
-// ===================== WORK EXPERIENCE DATA =====================
-const workExperiences = ref([])
-const workEditIndex = ref(-1)
-const workForm = reactive({
-  company: '', position: '',
-  startMonth: '', startYear: '', endMonth: '', endYear: '',
-  current: false, jobDescriptions: ['']
-})
-const workErrors = reactive({})
-
-// ===================== CONSTANTS =====================
-const MONTHS = [
-  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-]
-const currentYearNum = new Date().getFullYear()
-const YEARS = []
-for (let y = currentYearNum + 5; y >= 1990; y--) { YEARS.push(y) }
-
-// ===================== COMPUTED =====================
-const hasPreviewData = computed(() => {
-  return formData.full_name || formData.summary || educations.value.length > 0 || workExperiences.value.length > 0 || formData.technical_skills || formData.cert_name
-})
-
-const templateFont = computed(() => {
-  if (selectedFont.value) return `'${selectedFont.value}', sans-serif`
-  const tpl = CV_TEMPLATES.find(t => t.id === selectedTemplate.value)
-  return tpl ? tpl.font : "'Calibri', sans-serif"
-})
-
-// ===================== LIFECYCLE =====================
-onMounted(async () => {
-  // Load saved simple form data
-  const savedData = localStorage.getItem('jobfinder_cv_data')
-  if (savedData) {
-    try {
-      const parsed = JSON.parse(savedData)
-      Object.keys(parsed).forEach(k => {
-        if (FIELDS.includes(k)) formData[k] = parsed[k]
-      })
-    } catch(e) {}
-  }
-
-  // Load saved template selection
-  const savedTemplate = localStorage.getItem('jobfinder_cv_template')
-  if (savedTemplate) selectedTemplate.value = savedTemplate
-
-  // Load saved educations
-  const savedEdu = localStorage.getItem('jobfinder_cv_educations')
-  if (savedEdu) {
-    try { educations.value = JSON.parse(savedEdu) } catch(e) {}
-  }
-
-  // Load saved work experiences
-  const savedWork = localStorage.getItem('jobfinder_cv_work')
-  if (savedWork) {
-    try { workExperiences.value = JSON.parse(savedWork) } catch(e) {}
-  }
-
-  // Load edu form from saved education data
-  loadEduFormFromSaved()
-
-  // Load saved navigation progress
-  const savedMaxStep = localStorage.getItem('jobfinder_cv_maxStep')
-  if (savedMaxStep) {
-    try { maxStepReached.value = parseInt(savedMaxStep) || 0 } catch(e) {}
-  }
-
-  // Load steps and expertise areas from API
-  try {
-    const [secRes, areaRes] = await Promise.all([
-      axios.get("/api/cv/builder-sections"),
-      axios.get("/api/expertise-areas"),
-    ])
-    // Insert template selection as the first step
-    const templateStep = { id: 'template_select', title: 'Pilih Template', fields: [] }
-    steps.value = [templateStep, ...secRes.data]
-    expertiseAreas.value = areaRes.data
-  } catch (e) {
-    console.error(e)
-    expertiseAreas.value = ["Software Development", "IT Infra", "Graphic Design", "Data Science"]
-  }
-
-  // Fetch all Google Fonts
-  fetchGoogleFonts()
-})
-
-// ===================== WATCHERS =====================
-watch(formData, (newVal) => {
-  localStorage.setItem('jobfinder_cv_data', JSON.stringify(newVal))
-}, { deep: true })
-
-watch(educations, (val) => {
-  localStorage.setItem('jobfinder_cv_educations', JSON.stringify(val))
-}, { deep: true })
-
-watch(workExperiences, (val) => {
-  localStorage.setItem('jobfinder_cv_work', JSON.stringify(val))
-}, { deep: true })
-
-watch(maxStepReached, (val) => {
-  localStorage.setItem('jobfinder_cv_maxStep', val.toString())
-})
-
-watch(selectedTemplate, (val) => {
-  localStorage.setItem('jobfinder_cv_template', val)
-})
-
-// Auto-load education form when navigating to the education step
-watch(currentStep, (newStep) => {
-  if (steps.value.length > 0 && steps.value[newStep]?.id === 'education') {
-    loadEduFormFromSaved()
-  }
-})
-
-// ===================== NAVIGATION =====================
+// ===== NAVIGATION =====
 function isStepValid(stepIndex) {
-  if (stepIndex >= steps.value.length) return true
-  const section = steps.value[stepIndex]
-  if (section.id === 'template_select') return true
-
-  if (section.id === 'education') {
-    // Auto-save education from form if form has data
-    if (eduForm.degree.trim() && eduForm.major.trim() && eduForm.institution.trim()) {
-      saveEducation()
-    }
-    return educations.value.length > 0
-  }
-  if (section.id === 'experience') return workExperiences.value.length > 0
-
-  let valid = true
-  for (const field of section.fields) {
-    if (field.required && !formData[field.key]) valid = false
-    if (errors[field.key]) valid = false
-  }
-  return valid
+  if (stepIndex === 0) return true // template select always valid
+  if (stepIndex >= totalSteps.value - 1) return true // preview step
+  const internalIdx = stepIndex - 1
+  return templateRef.value?.validate(internalIdx) ?? true
 }
 
 function nextStep() {
   if (isStepValid(currentStep.value)) {
-    if (currentStep.value < steps.value.length) {
+    if (currentStep.value < totalSteps.value - 1) {
       currentStep.value++
-      if (currentStep.value > maxStepReached.value) {
-        maxStepReached.value = currentStep.value
-      }
+      if (currentStep.value > maxStepReached.value) maxStepReached.value = currentStep.value
     }
   } else {
-    const section = steps.value[currentStep.value]
-    if (section?.id === 'education') alert("Harap tambahkan minimal satu data pendidikan.")
-    else if (section?.id === 'experience') alert("Harap tambahkan minimal satu pengalaman kerja.")
-    else alert("Harap lengkapi semua field yang wajib (*).")
+    const stepId = activeSteps.value[currentStep.value - 1]?.id
+    if (stepId === 'education') alert('Harap tambahkan minimal satu data pendidikan.')
+    else if (stepId === 'experience') alert('Harap tambahkan minimal satu pengalaman kerja.')
+    else if (stepId === 'competencies') alert('Harap isi minimal 3 kompetensi inti.')
+    else if (stepId === 'achievements') alert('Harap isi minimal 1 pencapaian utama.')
+    else alert('Harap lengkapi semua field yang wajib (*) sebelum melanjutkan.')
   }
 }
 
-function prevStep() {
-  if (currentStep.value > 0) currentStep.value--
-}
+function prevStep() { if (currentStep.value > 0) currentStep.value-- }
 
 function goToStep(index) {
-  // Allow free navigation to any previously visited step
-  if (index <= maxStepReached.value) {
-    currentStep.value = index
-    return
-  }
-  // Allow going one step forward if current step is valid
+  if (index <= maxStepReached.value) { currentStep.value = index; return }
   if (index === currentStep.value + 1 && isStepValid(currentStep.value)) {
     currentStep.value = index
-    if (index > maxStepReached.value) {
-      maxStepReached.value = index
-    }
-    return
+    if (index > maxStepReached.value) maxStepReached.value = index
   }
 }
 
-// ===================== VALIDATION HELPERS =====================
-function validateEmail() {
-  const val = formData.email
-  if (!val) { errors.email = ""; return }
-  errors.email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) ? "" : "Format email tidak valid."
-}
+// ===== ATS ANALYSIS =====
+const doughnutOptions = { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
 
-function validateLinkedIn() {
-  const val = formData.linkedin
-  if (!val) { errors.linkedin = ""; return }
-  errors.linkedin = /linkedin\.com\/(in|pub|profile)/i.test(val) ? "" : "Format harus tautan profil LinkedIn (misal: linkedin.com/in/nama)."
-}
-
-function validateGPA() {
-  const val = formData.gpa
-  if (!val) { errors.gpa = ""; return }
-  const isValid = /^([0-4](\.\d+)?)(?:\/4(?:\.0+)?)?$/.test(val)
-  if (!isValid) { errors.gpa = "Format harus desimal (misal 3.8 atau 3.8/4.0). Maksimal 4.0."; return }
-  const num = parseFloat(val.split('/')[0])
-  errors.gpa = num < 3.0 ? "Saran: Sebaiknya hanya cantumkan IPK jika di atas 3.0." : ""
-}
-
-function formatGPA(val) {
-  const num = parseFloat(val)
-  return isNaN(num) ? val : num.toFixed(2)
-}
-
-function isPeriodValid(startMonth, startYear, endMonth, endYear) {
-  if (!startMonth || !startYear || !endMonth || !endYear) return true
-  const sy = Number(startYear), ey = Number(endYear)
-  if (ey < sy) return false
-  if (ey === sy) return MONTHS.indexOf(endMonth) >= MONTHS.indexOf(startMonth)
-  return true
-}
-
-// ===================== EDUCATION CRUD =====================
-function clearEduErrors() { Object.keys(eduErrors).forEach(k => delete eduErrors[k]) }
-
-function validateEduForm() {
-  clearEduErrors()
-  let valid = true
-  if (!eduForm.degree.trim()) { eduErrors.degree = 'Gelar wajib diisi.'; valid = false }
-  if (!eduForm.major.trim()) { eduErrors.major = 'Jurusan wajib diisi.'; valid = false }
-  if (!eduForm.institution.trim()) { eduErrors.institution = 'Institusi wajib diisi.'; valid = false }
-  if (eduForm.showDate) {
-    if (!eduForm.startMonth) { eduErrors.startMonth = 'Bulan mulai wajib dipilih.'; valid = false }
-    if (!eduForm.startYear) { eduErrors.startYear = 'Tahun mulai wajib dipilih.'; valid = false }
-    if (!eduForm.isCurrent) {
-      if (!eduForm.endMonth) { eduErrors.endMonth = 'Bulan selesai wajib dipilih.'; valid = false }
-      if (!eduForm.endYear) { eduErrors.endYear = 'Tahun selesai wajib dipilih.'; valid = false }
-    }
-  }
-
-  if (!eduForm.gpa.toString().trim()) {
-    eduErrors.gpa = 'IPK wajib diisi.'; valid = false
-  } else {
-    const num = parseFloat(eduForm.gpa)
-    if (isNaN(num) || num < 0 || num > 4) { eduErrors.gpa = 'IPK harus berada pada rentang 0.00 - 4.00.'; valid = false }
-  }
-
-  if (eduForm.showDate && !eduForm.isCurrent && eduForm.startMonth && eduForm.startYear && eduForm.endMonth && eduForm.endYear) {
-    if (!isPeriodValid(eduForm.startMonth, eduForm.startYear, eduForm.endMonth, eduForm.endYear)) {
-      eduErrors.period = 'Periode selesai tidak boleh lebih awal dari periode mulai.'; valid = false
-    }
-  }
-  return valid
-}
-
-function resetEduForm() {
-  eduForm.degree = ''; eduForm.major = ''; eduForm.institution = ''
-  eduForm.startMonth = ''; eduForm.startYear = ''; eduForm.endMonth = ''; eduForm.endYear = ''
-  eduForm.gpa = ''; eduForm.experiences = []
-  eduForm.showDate = true; eduForm.isCurrent = false
-  eduEditIndex.value = -1
-  clearEduErrors(); resetEduExpForm()
-}
-
-function saveEducation() {
-  if (!validateEduForm()) return
-  const entry = {
-    degree: eduForm.degree.trim(), major: eduForm.major.trim(), institution: eduForm.institution.trim(),
-    startMonth: eduForm.showDate ? eduForm.startMonth : '', startYear: eduForm.showDate ? eduForm.startYear : '',
-    endMonth: (eduForm.showDate && !eduForm.isCurrent) ? eduForm.endMonth : '',
-    endYear: (eduForm.showDate && !eduForm.isCurrent) ? eduForm.endYear : '',
-    gpa: eduForm.gpa.toString().trim(),
-    experiences: [],
-    showDate: eduForm.showDate, isCurrent: eduForm.isCurrent
-  }
-  // Always save as single entry (index 0)
-  educations.value = [entry]
-}
-
-function loadEduFormFromSaved() {
-  if (educations.value.length > 0) {
-    const edu = educations.value[0]
-    eduForm.degree = edu.degree; eduForm.major = edu.major; eduForm.institution = edu.institution
-    eduForm.startMonth = edu.startMonth; eduForm.startYear = edu.startYear
-    eduForm.endMonth = edu.endMonth; eduForm.endYear = edu.endYear
-    eduForm.gpa = edu.gpa; eduForm.experiences = []
-    eduForm.showDate = edu.showDate !== undefined ? edu.showDate : true
-    eduForm.isCurrent = edu.isCurrent || false
-    clearEduErrors()
-  }
-}
-
-// ===================== EDUCATION SUB-EXPERIENCE CRUD =====================
-function clearEduExpErrors() { Object.keys(eduExpErrors).forEach(k => delete eduExpErrors[k]) }
-
-function validateEduExpForm() {
-  clearEduExpErrors()
-  const missing = []
-  if (!eduExpForm.title.trim()) missing.push('Nama kegiatan')
-  if (!eduExpForm.role.trim()) missing.push('Posisi/peran')
-  if (!eduExpForm.month) missing.push('Bulan')
-  if (!eduExpForm.year) missing.push('Tahun')
-  if (!eduExpForm.description.trim()) missing.push('Deskripsi')
-  if (missing.length) { eduExpErrors.general = missing.join(', ') + ' wajib diisi.'; return false }
-  return true
-}
-
-function resetEduExpForm() {
-  eduExpForm.title = ''; eduExpForm.role = ''; eduExpForm.month = ''; eduExpForm.year = ''; eduExpForm.description = ''
-  eduExpEditIndex.value = -1; clearEduExpErrors()
-}
-
-function addEduExperience() {
-  if (!validateEduExpForm()) return
-  const entry = {
-    title: eduExpForm.title.trim(), role: eduExpForm.role.trim(),
-    month: eduExpForm.month, year: eduExpForm.year, description: eduExpForm.description.trim()
-  }
-  if (eduExpEditIndex.value >= 0) { eduForm.experiences[eduExpEditIndex.value] = entry }
-  else { eduForm.experiences.push(entry) }
-  resetEduExpForm()
-}
-
-function editEduExperience(idx) {
-  const exp = eduForm.experiences[idx]
-  eduExpForm.title = exp.title; eduExpForm.role = exp.role
-  eduExpForm.month = exp.month; eduExpForm.year = exp.year; eduExpForm.description = exp.description
-  eduExpEditIndex.value = idx; clearEduExpErrors()
-}
-
-function deleteEduExperience(idx) {
-  if (confirm('Hapus pengalaman ini?')) {
-    eduForm.experiences.splice(idx, 1)
-    if (eduExpEditIndex.value === idx) resetEduExpForm()
-    else if (eduExpEditIndex.value > idx) eduExpEditIndex.value--
-  }
-}
-
-function cancelEduExpEdit() { resetEduExpForm() }
-
-// ===================== WORK EXPERIENCE CRUD =====================
-function clearWorkErrors() { Object.keys(workErrors).forEach(k => delete workErrors[k]) }
-
-function validateWorkForm() {
-  clearWorkErrors()
-  let valid = true
-  if (!workForm.company.trim()) { workErrors.company = 'Nama perusahaan wajib diisi.'; valid = false }
-  if (!workForm.position.trim()) { workErrors.position = 'Posisi/jabatan wajib diisi.'; valid = false }
-  if (!workForm.startMonth) { workErrors.startMonth = 'Bulan mulai wajib dipilih.'; valid = false }
-  if (!workForm.startYear) { workErrors.startYear = 'Tahun mulai wajib dipilih.'; valid = false }
-
-  if (!workForm.current) {
-    if (!workForm.endMonth) { workErrors.endMonth = 'Bulan selesai wajib dipilih.'; valid = false }
-    if (!workForm.endYear) { workErrors.endYear = 'Tahun selesai wajib dipilih.'; valid = false }
-    if (workForm.startMonth && workForm.startYear && workForm.endMonth && workForm.endYear) {
-      if (!isPeriodValid(workForm.startMonth, workForm.startYear, workForm.endMonth, workForm.endYear)) {
-        workErrors.period = 'Periode selesai tidak boleh lebih awal dari periode mulai.'; valid = false
-      }
-    }
-  }
-
-  const hasEmpty = workForm.jobDescriptions.some(jd => !jd.trim())
-  if (workForm.jobDescriptions.length === 0 || workForm.jobDescriptions.every(jd => !jd.trim())) {
-    workErrors.jobDescriptions = 'Minimal satu jobdesk wajib diisi.'; valid = false
-  } else if (hasEmpty) {
-    workErrors.jobDescriptions = 'Setiap jobdesk tidak boleh kosong. Hapus yang tidak diperlukan.'; valid = false
-  }
-  return valid
-}
-
-function resetWorkForm() {
-  workForm.company = ''; workForm.position = ''
-  workForm.startMonth = ''; workForm.startYear = ''; workForm.endMonth = ''; workForm.endYear = ''
-  workForm.current = false; workForm.jobDescriptions = ['']
-  workEditIndex.value = -1; clearWorkErrors()
-}
-
-function saveWorkExperience() {
-  if (!validateWorkForm()) return
-  const entry = {
-    company: workForm.company.trim(), position: workForm.position.trim(),
-    startMonth: workForm.startMonth, startYear: workForm.startYear,
-    endMonth: workForm.current ? '' : workForm.endMonth,
-    endYear: workForm.current ? '' : workForm.endYear,
-    current: workForm.current,
-    jobDescriptions: workForm.jobDescriptions.map(jd => jd.trim()).filter(jd => jd)
-  }
-  if (workEditIndex.value >= 0) { workExperiences.value[workEditIndex.value] = entry }
-  else { workExperiences.value.push(entry) }
-  resetWorkForm()
-}
-
-function editWorkExperience(idx) {
-  const work = workExperiences.value[idx]
-  workForm.company = work.company; workForm.position = work.position
-  workForm.startMonth = work.startMonth; workForm.startYear = work.startYear
-  workForm.endMonth = work.endMonth; workForm.endYear = work.endYear
-  workForm.current = work.current
-  workForm.jobDescriptions = [...work.jobDescriptions]
-  if (workForm.jobDescriptions.length === 0) workForm.jobDescriptions = ['']
-  workEditIndex.value = idx; clearWorkErrors()
-}
-
-function deleteWorkExperience(idx) {
-  if (confirm('Apakah Anda yakin ingin menghapus pengalaman kerja ini?')) {
-    workExperiences.value.splice(idx, 1)
-    if (workEditIndex.value === idx) resetWorkForm()
-    else if (workEditIndex.value > idx) workEditIndex.value--
-  }
-}
-
-function cancelWorkEdit() { resetWorkForm() }
-
-function addJobDescription() { workForm.jobDescriptions.push('') }
-function removeJobDescription(idx) { workForm.jobDescriptions.splice(idx, 1) }
-
-// ===================== AI SUGGESTION =====================
-async function getSuggestion(field) {
-  try {
-    const { data } = await axios.post("/api/cv/suggestion", {
-      fieldLabel: field.label, expertise: targetExpertise.value,
-    })
-    suggestions[field.key] = data.suggestion
-  } catch {
-    suggestions[field.key] = `Saran: Buat agar relevan dengan posisi ${targetExpertise.value}.`
-  }
-}
-
-// ===================== ANALYZE CV =====================
-// ===================== CHART CONFIGS FOR BUILDER ANALYSIS =====================
-const builderDoughnutOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  cutout: '75%',
-  plugins: { legend: { display: false }, tooltip: { enabled: false } }
-}
-
-const builderOverallChartData = computed(() => {
+const overallChartData = computed(() => {
   const score = analysisResult.value?.analysis?.overallScore || 0
-  return {
-    labels: ['Score', 'Remaining'],
-    datasets: [{
-      data: [score, 100 - score],
-      backgroundColor: ['#ffffff', 'rgba(255,255,255,0.08)'],
-      borderWidth: 0
-    }]
-  }
+  return { labels: ['Score', 'Remaining'], datasets: [{ data: [score, 100 - score], backgroundColor: ['#ffffff', 'rgba(255,255,255,0.08)'], borderWidth: 0 }] }
 })
 
-const builderAtsChartData = computed(() => {
+const atsChartData = computed(() => {
   const score = analysisResult.value?.ats?.score || 0
   const color = score >= 25 ? '#00a87e' : '#e23b4a'
-  return {
-    labels: ['Score', 'Remaining'],
-    datasets: [{
-      data: [score, 100 - score],
-      backgroundColor: [color, 'rgba(255,255,255,0.08)'],
-      borderWidth: 0
-    }]
-  }
+  return { labels: ['Score', 'Remaining'], datasets: [{ data: [score, 100 - score], backgroundColor: [color, 'rgba(255,255,255,0.08)'], borderWidth: 0 }] }
 })
 
-const builderLineOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: { min: 0, max: 100, ticks: { color: '#8d969e' }, grid: { color: 'rgba(255,255,255,0.06)' } },
-    x: { ticks: { color: '#8d969e' }, grid: { display: false } }
-  },
-  plugins: { legend: { display: false } }
-}
+const lineOptions = { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, ticks: { color: '#8d969e' }, grid: { color: 'rgba(255,255,255,0.06)' } }, x: { ticks: { color: '#8d969e' }, grid: { display: false } } }, plugins: { legend: { display: false } } }
 
-const builderLineChartData = computed(() => {
+const lineChartData = computed(() => {
   const cats = analysisResult.value?.analysis?.categories || {}
-  return {
-    labels: ['Skills', 'Experience', 'Education', 'Projects', 'Certificates', 'Soft Skills'],
-    datasets: [{
-      label: 'Skor Kategori',
-      data: [cats.Skills||0, cats.Experience||0, cats.Education||0, cats.Projects||0, cats.Certificates||0, cats.SoftSkills||0],
-      borderColor: '#ffffff',
-      backgroundColor: 'rgba(90, 90, 90, 0.3)',
-      pointBackgroundColor: '#ffffff',
-      fill: true,
-      tension: 0.4
-    }]
-  }
+  return { labels: ['Skills', 'Experience', 'Education', 'Projects', 'Certificates', 'Soft Skills'], datasets: [{ label: 'Skor Kategori', data: [cats.Skills || 0, cats.Experience || 0, cats.Education || 0, cats.Projects || 0, cats.Certificates || 0, cats.SoftSkills || 0], borderColor: '#ffffff', backgroundColor: 'rgba(90, 90, 90, 0.3)', pointBackgroundColor: '#ffffff', fill: true, tension: 0.4 }] }
 })
 
 async function analyzeBuiltCV() {
-  analyzing.value = true
-  analysisResult.value = null
-  
-  const eduText = educations.value.map(e => {
-    let dateStr = ''
-    if (e.showDate) {
-      dateStr = `, ${e.startMonth} ${e.startYear} - ${e.isCurrent ? 'Sekarang' : e.endMonth + ' ' + e.endYear}`
-    }
-    let t = `${e.degree} ${e.major} di ${e.institution} (IPK: ${e.gpa}/4.00)${dateStr}`
-    if (e.experiences.length) {
-      t += '\nPengalaman: ' + e.experiences.map(x => `${x.role} ${x.title}: ${x.description}`).join('; ')
-    }
-    return t
-  }).join('\n')
-
-  const workText = workExperiences.value.map(w => {
-    let t = `${w.position} di ${w.company}, ${w.startMonth} ${w.startYear} - ${w.current ? 'Sekarang' : w.endMonth + ' ' + w.endYear}`
-    t += '\nJobdesk: ' + w.jobDescriptions.join('; ')
-    return t
-  }).join('\n')
-
-  const cvText = `
-    Name: ${formData.full_name}
-    Contact: ${formData.email} | ${formData.phone} | ${formData.address}
-    LinkedIn: ${formData.linkedin}
-    Summary: ${formData.summary}
-    Education: ${eduText}
-    Work Experience: ${workText}
-    Skills: Technical (${formData.technical_skills}), Soft (${formData.soft_skills})
-    Certifications: ${formData.cert_name} from ${formData.issuer}
-  `
-  
+  analyzing.value = true; analysisResult.value = null
+  const cvText = templateRef.value?.getTextForAnalysis?.() || previewTemplateRef.value?.getTextForAnalysis?.() || ''
   try {
     const form = new FormData()
-    form.append("expertise", targetExpertise.value)
-    const blob = new Blob([cvText], { type: 'text/plain' })
-    form.append("cv", blob, "cv.txt")
-    
-    const { data } = await axios.post("/api/cv/analyze", form)
-    
-    if (data.analysis && typeof data.analysis === "object" && data.analysis.error) {
-        analysisResult.value = data
-        return
-    }
-
-    if (data.analysis && data.analysis.overallScore !== undefined) {
-        analysisResult.value = data
-    } else {
-        analysisResult.value = { analysis: { error: true, message: "Analisis gagal atau kosong." }, ats: { isATS: false, score: 0, matchedSections: [], totalSections: 0 } }
-    }
-  } catch (e) {
-    console.error(e)
-    analysisResult.value = { analysis: { error: true, message: "Gagal memindai CV. Silakan coba lagi." }, ats: { isATS: false, score: 0, matchedSections: [], totalSections: 0 } }
-  } finally {
-    analyzing.value = false
-  }
-}
-
-const keyboardIndex = ref(-1)
-const fontListRef = ref(null)
-
-// Reset navigasi keyboard saat search/filter berubah
-watch([fontSearch, fontCategory], () => {
-  keyboardIndex.value = -1
-  hoveredFont.value = ''
-})
-
-const isKeyboardNav = ref(false)
-let keyNavTimer = null
-
-function markKeyboardNav() {
-  isKeyboardNav.value = true
-  clearTimeout(keyNavTimer)
-  keyNavTimer = setTimeout(() => { isKeyboardNav.value = false }, 300)
-}
-
-function onFontSelectorMouseLeave() {
-  if (!isKeyboardNav.value) {
-    hoveredFont.value = ''
-  }
-}
-
-function onListKeyDown(e) {
-  const total = filteredGoogleFonts.value.length
-  if (total === 0) return
-
-  if (e.key === 'ArrowDown') {
-    e.preventDefault()
-    markKeyboardNav()
-    keyboardIndex.value = keyboardIndex.value < 0 ? 0 : (keyboardIndex.value + 1) % total
-    const font = filteredGoogleFonts.value[keyboardIndex.value]
-    if (font) onFontHover(font.family)
-    scrollToIndex()
-
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault()
-    markKeyboardNav()
-    keyboardIndex.value = keyboardIndex.value < 0 ? total - 1 : (keyboardIndex.value === 0 ? total - 1 : keyboardIndex.value - 1)
-    const font = filteredGoogleFonts.value[keyboardIndex.value]
-    if (font) onFontHover(font.family)
-    scrollToIndex()
-
-  } else if (e.key === 'Enter') {
-    e.preventDefault()
-    if (keyboardIndex.value >= 0) {
-      const font = filteredGoogleFonts.value[keyboardIndex.value]
-      if (font) selectFont(font)
-    }
-  } else if (e.key === 'Escape') {
-    hoveredFont.value = ''
-    keyboardIndex.value = -1
-  }
-}
-
-async function scrollToIndex() {
-  await nextTick()
-  const container = fontListRef.value
-  const buttons = container?.querySelectorAll('button')
-  const el = buttons?.[keyboardIndex.value]
-  el?.scrollIntoView({ block: 'nearest' })
+    form.append('expertise', targetExpertise.value)
+    form.append('cv', new Blob([cvText], { type: 'text/plain' }), 'cv.txt')
+    const { data } = await axios.post('/api/cv/analyze', form)
+    if (data.analysis?.error) { analysisResult.value = data; return }
+    if (data.analysis?.overallScore !== undefined) { analysisResult.value = data }
+    else { analysisResult.value = { analysis: { error: true, message: 'Analisis gagal atau kosong.' }, ats: { isATS: false, score: 0, matchedSections: [], totalSections: 0 } } }
+  } catch { analysisResult.value = { analysis: { error: true, message: 'Gagal memindai CV. Silakan coba lagi.' }, ats: { isATS: false, score: 0, matchedSections: [], totalSections: 0 } } }
+  finally { analyzing.value = false }
 }
 
 function downloadPDF() { window.print() }
+
+// ===== LIFECYCLE =====
+onMounted(async () => {
+  try {
+    const [areaRes] = await Promise.all([axios.get('/api/expertise-areas')])
+    expertiseAreas.value = areaRes.data
+  } catch { }
+  fetchGoogleFonts()
+
+  const savedTemplate = localStorage.getItem('jobfinder_cv_template_v2')
+  if (savedTemplate) selectedTemplate.value = savedTemplate
+  const savedMaxStep = localStorage.getItem('jobfinder_cv_maxStep_v2')
+  if (savedMaxStep) { try { maxStepReached.value = parseInt(savedMaxStep) || 0 } catch { } }
+})
+
+watch(selectedTemplate, val => {
+  localStorage.setItem('jobfinder_cv_template_v2', val)
+  currentStep.value = 0; maxStepReached.value = 0; analysisResult.value = null
+})
+
+watch(maxStepReached, val => localStorage.setItem('jobfinder_cv_maxStep_v2', val.toString()))
 </script>
 
 <style scoped>
@@ -1493,22 +499,10 @@ function downloadPDF() { window.print() }
 
 <style>
 @media print {
-  @page { 
-    margin: 0; 
-    size: A4 portrait;
-  }
-  body { 
-    -webkit-print-color-adjust: exact; 
-    print-color-adjust: exact; 
-  }
-  body * {
-    visibility: hidden;
-  }
-  .print\:block {
-    visibility: visible !important;
-  }
-  .print\:block * {
-    visibility: visible;
-  }
+  @page { margin: 0; size: A4 portrait; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body * { visibility: hidden; }
+  .print\:block { visibility: visible !important; }
+  .print\:block * { visibility: visible; }
 }
 </style>
