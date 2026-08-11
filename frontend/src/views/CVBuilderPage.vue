@@ -14,10 +14,11 @@
         <aside class="w-full md:w-[280px] shrink-0 md:sticky top-[100px] bg-surface-elevated rounded-[20px] py-xl border border-hairline-dark">
           <!-- Target Expertise -->
           <div class="mb-[24px] px-[16px]">
-            <label class="text-[12px] mb-[4px] text-on-dark-mute block font-semibold">Target Keahlian / Bidang</label>
-            <select v-model="targetExpertise" class="w-full text-[14px] bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
-              <option v-for="a in expertiseAreas" :key="a" :value="a" class="bg-surface-elevated text-on-dark">{{ a }}</option>
-            </select>
+            <label class="text-[12px] mb-md text-on-dark-mute block font-semibold">Target Keahlian / Bidang</label>
+            <CustomSelect
+              :options="ExpertiseOptions"
+              v-model="targetExpertise"
+            />
           </div>
 
           <ul class="list-none m-0 p-0 flex md:block overflow-x-auto md:overflow-visible pb-[12px] md:pb-0">
@@ -252,6 +253,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import CustomSelect from '../components/CustomSelect.vue'
 import axios from 'axios'
 import { Icon } from '@iconify/vue'
 import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js'
@@ -325,7 +327,7 @@ const selectedTemplate = ref('modern_ats')
 const currentStep = ref(0)
 const maxStepReached = ref(0)
 const targetExpertise = ref('Software Development')
-const expertiseAreas = ref(['Software Development', 'IT Infrastructure', 'Data Science', 'Graphic Design', 'Marketing', 'Finance', 'HR Management', 'Product Management'])
+const expertiseAreas = ref(['IT Infra', 'Graphic Design', 'Software Development', 'Data Science', 'UI/UX Design', 'Digital Marketing', 'Content Writing', 'Mobile Development', 'DevOps', 'Cyber Security', 'AI / Machine Learning', 'Product Management', 'Others'])
 
 const templateRef = ref(null)
 const previewTemplateRef = ref(null)
@@ -346,6 +348,7 @@ const fontListRef = ref(null)
 const activeTemplateComponent = computed(() => TEMPLATE_COMPONENT_MAP[selectedTemplate.value])
 const activeSteps = computed(() => TEMPLATE_STEPS[selectedTemplate.value] || [])
 const totalSteps = computed(() => 1 + activeSteps.value.length + 1) // 0: template select, 1..N: form, N+1: preview
+const ExpertiseOptions = computed(() => expertiseAreas.value.map(a => ({ value: a, label: a })))
 
 const templateFont = computed(() => {
   if (selectedFont.value) return `'${selectedFont.value}', sans-serif`

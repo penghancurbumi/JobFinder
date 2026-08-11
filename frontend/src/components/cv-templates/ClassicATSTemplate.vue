@@ -3,9 +3,11 @@
   <div v-if="!isPreview">
     <!-- PERSONAL INFO (no photo, classic style) -->
     <div v-if="currentId === 'personal_info'" class="flex flex-col gap-[20px]">
+      
       <div class="p-[16px] rounded-[12px] bg-white/4 border border-hairline-dark mb-[8px]">
         <p class="text-[13px] text-on-dark-mute">Template <strong class="text-white">Classic ATS</strong> menampilkan format akademis formal tanpa foto. Nama dan kontak akan ditampilkan di tengah.</p>
       </div>
+
       <div v-for="f in personalFields" :key="f.key" class="flex flex-col">
         <label class="mb-[8px] font-semibold text-on-dark-mute">{{ f.label }} <span v-if="f.required" class="text-accent-danger font-bold">*</span></label>
         <input v-if="f.key === 'email'" type="email" v-model="formData[f.key]" :placeholder="f.placeholder" @input="validateEmail" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />

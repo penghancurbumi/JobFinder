@@ -9,19 +9,14 @@
         <div class="mb-md gap-sm">
           <label class="mb-sm block text-on-dark font-medium text-lg">Unggah Dokumen CV (PDF)</label>
           <div class="flex gap-md items-center flex-wrap">
-            <input type="file" accept=".pdf" @change="onFileChange" class="flex-1 min-w-[200px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-surface-deep file:text-on-dark hover:file:bg-surface-elevated cursor-pointer" />
+            <input type="file" accept=".pdf" @change="onFileChange" class="flex-1 min-w-[200px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-hairline-dark file:text-sm file:font-medium file:bg-transparent file:text-on-dark hover:file:bg-surface-elevated cursor-pointer" />
             
-            <div class="flex-1 min-w-[200px]">
-              <select v-model="targetExpertise" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
-                <option class="bg-surface-elevated text-on-dark" value="Pilih Bidang Keahlian">Pilih Bidang Keahlian</option>
-                <option class="bg-surface-elevated text-on-dark" value="Software Engineer">Software Engineer</option>
-                <option class="bg-surface-elevated text-on-dark" value="Data Scientist">Data Scientist</option>
-                <option class="bg-surface-elevated text-on-dark" value="Product Manager">Product Manager</option>
-                <option class="bg-surface-elevated text-on-dark" value="UI/UX Designer">UI/UX Designer</option>
-                <option class="bg-surface-elevated text-on-dark" value="Digital Marketing">Digital Marketing</option>
-                <option class="bg-surface-elevated text-on-dark" value="General">General / Belum Yakin</option>
-              </select>
-            </div>
+              <CustomSelect
+                label="Pilih Bidang Keahlian"
+                :options="ExpertiseOptions"
+                v-model="targetExpertise"
+                class="flex-1 min-w-[200px]"
+              />
 
             <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[24px] h-[48px] text-[14px] md:text-[16px] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed" @click="analyze" :disabled="analyzing || !file">
               {{ analyzing ? 'Menganalisis...' : 'Analisis Dokumen' }}
@@ -137,10 +132,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue"
+import { ref, computed, onMounted } from "vue"
 import axios from "axios"
 import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js'
 import { Line, Doughnut } from 'vue-chartjs'
+import CustomSelect from "../components/CustomSelect.vue"
 import { useHead } from "@vueuse/head"
 
 useHead({
@@ -154,11 +150,28 @@ useHead({
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale, LinearScale, ArcElement)
 
+// Expertise areas diambil dari API agar selalu sinkron dengan backend
+const expertiseAreas = ref([])
+const ExpertiseOptions = computed(() => [
+  { value: '', label: 'Pilih Bidang Keahlian' },
+  ...expertiseAreas.value.map(a => ({ value: a, label: a }))
+])
 
 const file = ref(null)
-const targetExpertise = ref("Pilih Bidang Keahlian")
+const targetExpertise = ref('')
 const analyzing = ref(false)
 const result = ref(null)
+
+const FALLBACK_AREAS = ['IT Infra', 'Graphic Design', 'Software Development', 'Data Science', 'UI/UX Design', 'Digital Marketing', 'Content Writing', 'Mobile Development', 'DevOps', 'Cyber Security', 'AI / Machine Learning', 'Product Management', 'Others']
+
+onMounted(async () => {
+  try {
+    const { data } = await axios.get('/api/expertise-areas')
+    expertiseAreas.value = data
+  } catch {
+    expertiseAreas.value = FALLBACK_AREAS
+  }
+})
 
 function onFileChange(e) {
   file.value = e.target.files[0]

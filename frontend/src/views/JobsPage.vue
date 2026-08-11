@@ -18,18 +18,18 @@
             <input type="text" v-model="locationQuery" placeholder="Kota, lokasi, atau Remote..." class="w-full bg-surface-elevated border border-hairline-dark rounded-sm h-[44px] pl-[44px] pr-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone text-sm transition-all" />
           </div>
 
-          <div class="flex flex-col gap-[6px] w-full md:w-auto shrink-0">
-            <button @click="requestScrape" class="w-full inline-flex items-center justify-center font-medium rounded-sm transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[24px] h-[44px] text-[14px] gap-[8px]" :disabled="backgroundRunning">
-              <svg v-if="backgroundRunning" class="animate-[spin_1s_linear_infinite]" viewBox="0 0 24 24" width="16" height="16">
-                <circle class="animate-[dash_1.5s_ease-in-out_infinite] [stroke-dasharray:60] [stroke-dashoffset:60]" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
-              </svg>
-              {{ backgroundRunning ? 'Menyegarkan...' : 'Perbarui Data' }}
-            </button>
-            <span class="text-[12px] text-stone text-center md:text-left">
-              Data: {{ dataStatus.total != null ? dataStatus.total.toLocaleString('id-ID') : '...' }} lowongan • diperbarui {{ lastUpdatedText }}
-            </span>
-          </div>
+          <button @click="requestScrape" class="w-full md:w-auto shrink-0 inline-flex items-center justify-center font-medium rounded-sm transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[24px] h-[44px] text-[14px] gap-[8px]" :disabled="backgroundRunning">
+            <svg v-if="backgroundRunning" class="animate-[spin_1s_linear_infinite]" viewBox="0 0 24 24" width="16" height="16">
+              <circle class="animate-[dash_1.5s_ease-in-out_infinite] [stroke-dasharray:60] [stroke-dashoffset:60]" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
+            </svg>
+            {{ backgroundRunning ? 'Menyegarkan...' : 'Perbarui Data' }}
+          </button>
         </div>
+        <!-- Status text sekarang di bawah baris input, bukan di dalam kolom button -->
+        <span class="text-[12px] text-stone mt-[8px] block">
+          Data: {{ dataStatus.total != null ? dataStatus.total.toLocaleString('id-ID') : '...' }} lowongan • diperbarui {{ lastUpdatedText }}
+        </span>
+
       </div>
 
       <div v-if="statusMsg" class="mb-xl bg-surface-elevated rounded-md p-lg border border-hairline-dark">
