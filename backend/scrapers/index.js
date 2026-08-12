@@ -1,7 +1,7 @@
 import { spawn } from "child_process"
 import fs from "fs/promises"
 import path from "path"
-import { runQuery, deleteByUrls, deleteExpiredJobs, findDuplicate } from "../db.js"
+import { runQuery, deleteByUrls, deleteExpiredJobs, findDuplicate, deleteDuplicateJobs, deleteBadQualityJobs, isValidJobText } from "../db.js"
 
 const SCRAPY_PROJECT_DIR = path.join(process.cwd(), "scrapping-job")
 const EXPORTS_DIR = path.join(SCRAPY_PROJECT_DIR, "exports", "json")
@@ -40,6 +40,13 @@ export async function insertScrapedFiles(jobTypeFilter) {
         
         for (const item of scrapedItems) {
           const lastSeenAt = new Date().toISOString()
+
+          // Reject unclear listings before they reach the DB: URL-as-title,
+          // placeholder text, or non-Latin scripts (Chinese/Japanese/Thai/...)
+          if (!isValidJobText(item.title, item.company_name, item.location)) {
+            console.log(`Skipped unclear job: ${String(item.title || "").slice(0, 60)}`)
+            continue
+          }
 
           // Skip re-listings that already exist under a different URL, but keep
           // their lastSeenAt fresh so they aren't pruned as "not seen".
@@ -139,13 +146,19 @@ export async function deleteNotFoundJobs() {
 }
 
 // Remove jobs that are no longer on the source platforms: 404-detected,
-// past the age cap, or absent from recent scrape cycles.
+// past the age cap, absent from recent scrape cycles, exact duplicates,
+// or of unclear quality (URL-as-title, non-Latin scripts).
 export async function runCleanup() {
   const removedNotFound = await deleteNotFoundJobs()
   const removedExpired = await deleteExpiredJobs(EXPIRED_OPTIONS)
-  const total = removedNotFound + removedExpired.age + removedExpired.notSeen
-  console.log(`Cleanup done: ${removedNotFound} not-found, ${removedExpired.age} age-expired, ${removedExpired.notSeen} not-seen (total ${total})`)
-  return { removedNotFound, ...removedExpired, total }
+  const removedDupes = await deleteDuplicateJobs()
+  const removedBad = await deleteBadQualityJobs()
+  const total = removedNotFound + removedExpired.age + removedExpired.notSeen + removedDupes + removedBad
+  console.log(
+    `Cleanup done: ${removedNotFound} not-found, ${removedExpired.age} age-expired, ` +
+    `${removedExpired.notSeen} not-seen, ${removedDupes} duplicates, ${removedBad} unclear-quality (total ${total})`
+  )
+  return { removedNotFound, ...removedExpired, duplicates: removedDupes, unclear: removedBad, total }
 }
 
 // Run a single category scrape, streaming per-spider progress events as they happen.

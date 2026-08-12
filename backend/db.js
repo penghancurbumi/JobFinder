@@ -196,4 +196,56 @@ export async function deleteExpiredJobs({
   return { age: ageRes.changes, notSeen: notSeenRes.changes }
 }
 
+// ---- Data-quality cleanup ----
+// Remove rows that are exact duplicates (same title+company+location+posted
+// date+salary+deadline) keeping the most recently seen row of each group, and
+// rows whose title/company/location are obviously garbage (URL-as-title,
+// non-Latin scripts like Chinese/Japanese/Thai that don't belong on an
+// Indonesian job board). These checks also run at scrape time (see
+// scrapers/index.js) so bad data is rejected before it ever reaches the DB.
+
+// Non-Latin script ranges we consider "unclear" for an Indonesian job site:
+// CJK, Cyrillic, Arabic, Devanagari, Thai, Lao, Tibetan, Myanmar, Hangul Jamo.
+export const NON_LATIN_RE =
+  /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af\uf900-\ufaff\u0400-\u04ff\u0600-\u06ff\u0900-\u097f\u0e00-\u0e7f\u0f00-\u0fff\u1000-\u109f\u1100-\u11ff]/
+
+export const URL_RE = /^https?:\/\/[^\s]+$/i
+
+export function isValidJobText(title, company, location) {
+  const t = String(title || "").trim()
+  const c = String(company || "").trim()
+  const l = String(location || "").trim()
+  if (!t || t.length < 3) return false
+  if (URL_RE.test(t) || URL_RE.test(c)) return false
+  return !NON_LATIN_RE.test(`${t} ${c} ${l}`)
+}
+
+export async function deleteDuplicateJobs() {
+  const res = await runQuery(
+    `DELETE FROM jobs WHERE id NOT IN (
+       SELECT id FROM (
+         SELECT id,
+           ROW_NUMBER() OVER (
+             PARTITION BY lower(trim(title)), lower(trim(company)), lower(trim(location)),
+                          COALESCE(postedDate, ''), COALESCE(salary, ''), COALESCE(deadlineDate, '')
+             ORDER BY lastSeenAt DESC, id ASC
+           ) AS rn
+         FROM jobs
+       ) WHERE rn = 1
+     )`
+  )
+  return res.changes
+}
+
+export async function deleteBadQualityJobs() {
+  const rows = await fetchAll("SELECT id, title, company, location FROM jobs")
+  const badIds = rows
+    .filter((r) => !isValidJobText(r.title, r.company, r.location))
+    .map((r) => r.id)
+  if (!badIds.length) return 0
+  const placeholders = badIds.map(() => "?").join(",")
+  const res = await runQuery(`DELETE FROM jobs WHERE id IN (${placeholders})`, badIds)
+  return res.changes
+}
+
 export default db
