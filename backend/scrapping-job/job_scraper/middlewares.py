@@ -6,6 +6,7 @@ from scrapy import Request, Spider, signals
 from scrapy.http import Response
 
 from job_scraper.logger import get_logger
+from job_scraper.services.closed_detector import has_closed_content
 
 logger = get_logger("middlewares")
 
@@ -171,7 +172,9 @@ class NotFoundCollectorMiddleware:
     def __init__(self) -> None:
         export_dir = os.getenv("EXPORT_DIR", "exports")
         self._file = os.path.join(export_dir, "json", "not_found.txt")
+        self._closed_file = os.path.join(export_dir, "json", "closed.txt")
         self._urls: set[str] = set()
+        self._closed: set[str] = set()
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -182,19 +185,25 @@ class NotFoundCollectorMiddleware:
     def process_response(self, request: Request, response: Response, spider: Spider) -> Response:
         if response.status in (404, 410):
             self._urls.add(request.url)
+        elif request.meta.get("is_detail") and has_closed_content(response.text, spider.name):
+            self._closed.add(request.url)
         return response
 
     def spider_closed(self, spider: Spider) -> None:
-        if not self._urls:
+        self._write_urls(self._file, self._urls, "not-found", spider)
+        self._write_urls(self._closed_file, self._closed, "closed-content", spider)
+
+    def _write_urls(self, filepath: str, urls: set[str], label: str, spider: Spider) -> None:
+        if not urls:
             return
         try:
-            os.makedirs(os.path.dirname(self._file), exist_ok=True)
-            with open(self._file, "a", encoding="utf-8") as f:
-                for url in sorted(self._urls):
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            with open(filepath, "a", encoding="utf-8") as f:
+                for url in sorted(urls):
                     f.write(url + "\n")
             logger.info(
-                "NotFoundCollectorMiddleware: wrote %d not-found URL(s) for %s",
-                len(self._urls), spider.name,
+                "NotFoundCollectorMiddleware: wrote %d %s URL(s) for %s",
+                len(urls), label, spider.name,
             )
         except Exception as e:
-            logger.error("NotFoundCollectorMiddleware: failed to write not-found file: %s", e)
+            logger.error("NotFoundCollectorMiddleware: failed to write %s file: %s", label, e)

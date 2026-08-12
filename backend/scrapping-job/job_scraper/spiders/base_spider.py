@@ -71,6 +71,7 @@ class BaseSpider(scrapy.Spider):
             playwright=True,
             playwright_page_goto_kwargs={"wait_until": "domcontentloaded", "timeout": 30000},
             playwright_page_methods=[PageMethod("wait_for_timeout", 2000)],
+            is_detail=True,
         )
         if meta:
             req_meta.update(meta)

@@ -221,3 +221,44 @@ DEFAULT_HEADERS: dict[str, str] = {
 MAX_PAGES_PER_RUN: int = 100
 MAX_RETRIES: int = 3
 DEFAULT_DELAY: float = 1.0
+
+# Phrases (matched case-insensitively on plain page text) that indicate a job
+# detail page is no longer accepting applications even though HTTP is 200.
+CLOSED_MARKERS: dict[str, list[str]] = {
+    "general": [
+        "lowongan telah ditutup",
+        "lowongan ini telah ditutup",
+        "lowongan telah ditutup oleh",
+        "lowongan ditutup",
+        "lowongan telah berakhir",
+        "lowongan ini telah berakhir",
+        "tidak menerima lamaran",
+        "posisi telah ditutup",
+        "lowongan ini tidak tersedia",
+        "position closed",
+        "this position has been closed",
+        "this position is closed",
+        "job closed",
+        "this job is closed",
+        "this job has been closed",
+        "no longer accepting applications",
+        "is no longer accepting applications",
+        "not accepting applications",
+        "no longer available",
+        "position is no longer available",
+        "this position is no longer available",
+        "job is no longer available",
+        "this job is no longer available",
+        "vacancy closed",
+        "this vacancy has been filled",
+        "application closed",
+        "jobClosedHeader",
+    ],
+    "jobstreet": [
+        "this job is no longer accepting applications",
+    ],
+    "linkedin": [
+        "this position is no longer available",
+        "no longer accepting applications",
+    ],
+}
