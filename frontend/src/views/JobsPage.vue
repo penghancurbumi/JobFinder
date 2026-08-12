@@ -3,7 +3,7 @@
     <div class="w-full mx-auto px-[32px] md:px-[72px]">
       <div class="mb-xl pb-lg border-b border-hairline-dark">
         <div class="flex flex-col mb-lg">
-          <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Eksplorasi</span>
+          <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-xs">Eksplorasi</span>
           <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark mb-0">Daftar Pekerjaan Yang Tersedia</h1>
         </div>
 
@@ -73,6 +73,13 @@
             </label>
           </div>
 
+          <div class="mt-xl flex flex-col">
+            <label class="flex items-center gap-[8px] font-normal text-[13px] normal-case cursor-pointer text-on-dark-mute">
+              <input type="checkbox" v-model="showClosed" class="w-[12px] h-[12px] min-h-[12px] cursor-pointer" />
+              Tampilkan lowongan ditutup{{ closedCount ? ` (${closedCount})` : '' }}
+            </label>
+          </div>
+
         </aside>
 
         <!-- Main Content -->
@@ -104,6 +111,7 @@
               v-for="job in jobs" 
               :key="job.title + job.company + job.id" 
               class="bg-surface-elevated rounded-md p-lg flex flex-col justify-between h-full border border-hairline-dark hover:border-white/20 transition-all duration-200 shadow-sm"
+              :class="{ 'opacity-60': job.isClosed }"
             >
               <!-- Top & Middle Info -->
               <div class="flex flex-col gap-sm">
@@ -116,6 +124,9 @@
                     {{ job.title }}
                   </h3>
                   <div class="flex gap-[6px] shrink-0 flex-wrap items-center">
+                    <span v-if="job.isClosed" class="bg-accent-danger/15 text-accent-danger border border-accent-danger/40 rounded-full px-[12px] py-[4px] text-[12px] font-semibold">
+                      Ditutup
+                    </span>
                     <span class="bg-surface-deep text-on-dark-mute border border-hairline-dark rounded-full px-[12px] py-[4px] text-[12px] font-medium">
                       {{ job.jobType ? (job.jobType.charAt(0).toUpperCase() + job.jobType.slice(1)) : 'Full-time' }}
                     </span>
@@ -305,6 +316,8 @@ const educationOptions = [
 
 
 const hasSalary = ref(false)
+const showClosed = ref(false)
+const closedCount = ref(0)
 const sortBy = ref("newest")
 
 const expandedJobs = ref({})
@@ -424,6 +437,7 @@ function applyJobsPayload(data) {
   jobs.value = data.jobs || []
   total.value = data.total || 0
   totalPages.value = data.totalPages || 0
+  closedCount.value = data.closedCount || 0
   page.value = data.page || 1
   jobTotal.value = data.total || 0
   loading.value = false
@@ -441,6 +455,7 @@ async function fetchPage(p, append = false) {
     experience: experienceLevel.value,
     education: educationlevel.value,
     hasSalary: hasSalary.value ? 'true' : 'false',
+    showClosed: showClosed.value ? 'true' : 'false',
     page: String(p),
     limit: String(limit)
   })
@@ -452,6 +467,7 @@ async function fetchPage(p, append = false) {
       else jobs.value = data.jobs || []
       total.value = data.total || 0
       totalPages.value = data.totalPages || 0
+      closedCount.value = data.closedCount || 0
       page.value = p
     }
   } catch { /* socket will be fallback */ }
@@ -491,7 +507,7 @@ const visiblePages = computed(() => {
 })
 
 let searchTimeout;
-watch([activeTipe, searchQuery, locationQuery, experienceLevel, educationlevel, hasSalary, sortBy], () => {
+watch([activeTipe, searchQuery, locationQuery, experienceLevel, educationlevel, hasSalary, sortBy, showClosed], () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
     fetchPage(1, false)
@@ -506,6 +522,8 @@ function resetFilters() {
   experienceLevel.value = "all"
   educationlevel.value = "all"
   hasSalary.value = false
+  showClosed.value = false
+  closedCount.value = 0
 }
 
 function requestScrape() {
