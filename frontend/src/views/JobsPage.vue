@@ -22,37 +22,18 @@
             <svg v-if="backgroundRunning" class="animate-[spin_1s_linear_infinite]" viewBox="0 0 24 24" width="16" height="16">
               <circle class="animate-[dash_1.5s_ease-in-out_infinite] [stroke-dasharray:60] [stroke-dashoffset:60]" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
             </svg>
-            {{ backgroundRunning ? 'Menyegarkan...' : 'Perbarui Data' }}
+            {{ buttonLabel }}
           </button>
         </div>
-        <!-- Status text sekarang di bawah baris input, bukan di dalam kolom button -->
+
         <span class="text-[12px] text-stone mt-[8px] block">
-          Data: {{ dataStatus.total != null ? dataStatus.total.toLocaleString('id-ID') : '...' }} lowongan • diperbarui {{ lastUpdatedText }}
+          Total data {{ jobTotal.toLocaleString('id-ID') }} jobs • {{ (status.total_jobs_scraped || 0).toLocaleString('id-ID') }} data job ditambahkan
         </span>
 
       </div>
 
       <div v-if="statusMsg" class="mb-xl bg-surface-elevated rounded-md p-lg border border-hairline-dark">
         <span class="text-sm font-medium" :class="statusType === 'error' ? 'text-accent-danger' : 'text-accent-teal'">{{ statusMsg }}</span>
-      </div>
-
-      <!-- Live background refresh progress (subtle — user can keep browsing) -->
-      <div v-if="backgroundRunning" class="mb-xl bg-surface-elevated rounded-md p-lg border border-hairline-dark">
-        <div class="flex items-center gap-sm mb-sm">
-          <svg class="animate-[spin_1s_linear_infinite]" viewBox="0 0 24 24" width="16" height="16">
-            <circle class="animate-[dash_1.5s_ease-in-out_infinite] [stroke-dasharray:60] [stroke-dashoffset:60]" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
-          </svg>
-          <span class="text-sm font-medium capitalize">Menyegarkan data di background: {{ currentPlatform || '...' }} ({{ platformIndex }}/{{ platforms.length }})</span>
-          <span class="ml-auto font-mono text-[12px] text-stone">{{ scrapeElapsed }}s</span>
-        </div>
-        <div class="flex items-center gap-sm flex-wrap">
-          <span class="text-[12px] text-stone">Kamu tetap bisa browsing — data akan terbarui otomatis.</span>
-          <span v-if="lastAdded" class="text-[12px] text-accent-teal">{{ lastAdded }} job baru ditambahkan</span>
-        </div>
-
-        <div v-if="scrapeLog.length" class="mt-sm max-h-[110px] overflow-y-auto font-mono text-[11px] text-stone space-y-[2px]">
-          <div v-for="(l, i) in scrapeLog" :key="i">{{ l }}</div>
-        </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] items-start gap-lg">
@@ -266,7 +247,8 @@ useHead({
 const jobs = ref([])
 const loading = ref(true)
 const backgroundRunning = ref(false)
-const dataStatus = ref({})
+const status = ref({})
+const jobTotal = ref(0)
 const statusMsg = ref("")
 const statusType = ref("ok")
 const page = ref(1)
@@ -275,13 +257,6 @@ const total = ref(0)
 const totalPages = ref(0)
 const loadingMore = ref(false)
 
-const platforms = ['glints', 'jobstreet', 'kalibrr', 'kitalulus', 'linkedin', 'pintarnya', 'techinasia']
-const currentPlatform = ref("")
-const platformIndex = ref(0)
-const lastAdded = ref(0)
-const scrapeLog = ref([])
-const scrapeElapsed = ref(0)
-let scrapeTimer = null
 let statusTimer = null
 
 // Filters
@@ -364,7 +339,7 @@ function formatPostedDate(raw) {
 }
 
 const lastUpdatedText = computed(() => {
-  const iso = dataStatus.value.lastUpdatedAt
+  const iso = status.value.last_run_at
   if (!iso) return "belum pernah"
   const diff = Date.now() - new Date(iso).getTime()
   const min = Math.floor(diff / 60000)
@@ -375,10 +350,19 @@ const lastUpdatedText = computed(() => {
   return `${Math.floor(h / 24)} hari lalu`
 })
 
+function cap(s) {
+  return s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : ""
+}
+
+const buttonLabel = computed(() => {
+  if (backgroundRunning.value) return `Memperbarui Data...`
+  return `Perbarui Data`
+})
+
 async function refreshStatus() {
   try {
     const res = await fetch("http://localhost:3000/api/status")
-    if (res.ok) dataStatus.value = await res.json()
+    if (res.ok) status.value = await res.json()
   } catch { /* ignore */ }
 }
 
@@ -401,55 +385,26 @@ onMounted(async () => {
   })
   
   socket.on("scrape-status", (data) => {
-    if (data.status === "fresh") {
-      setStatusMsg(data.message || "Data sudah terbaru", "ok")
-      return
-    }
-    if (data.status === "error") {
-      setStatusMsg(data.message || "Terjadi kesalahan saat memperbarui", "error")
-      backgroundRunning.value = false
-      clearInterval(scrapeTimer)
-      scrapeTimer = null
-      return
-    }
-    if (data.status === "background") {
-      if (data.message) setStatusMsg(data.message, "ok")
+    if (data.status === "started" || data.status === "running") {
       backgroundRunning.value = true
-      scrapeElapsed.value = 0
-      scrapeLog.value = []
-      currentPlatform.value = ""
-      platformIndex.value = 0
-      lastAdded.value = 0
-      if (!scrapeTimer) scrapeTimer = setInterval(() => scrapeElapsed.value++, 1000)
+      if (data.message) setStatusMsg(data.message, "ok")
+      return
+    }
+    if (data.status === "completed") {
+      backgroundRunning.value = false
+      if (data.message) setStatusMsg(data.message, "ok")
+      refreshStatus()
+      return
+    }
+    if (data.status === "failed") {
+      backgroundRunning.value = false
+      setStatusMsg(data.message || "Scraping gagal", "error")
+      refreshStatus()
       return
     }
     if (data.status === "idle") {
       backgroundRunning.value = false
-      clearInterval(scrapeTimer)
-      scrapeTimer = null
-      if (data.total != null || data.lastUpdated) {
-        dataStatus.value = {
-          ...dataStatus.value,
-          total: data.total != null ? data.total : dataStatus.value.total,
-          lastUpdatedAt: data.lastUpdated || dataStatus.value.lastUpdatedAt,
-        }
-      }
       refreshStatus()
-    }
-  })
-
-  socket.on("scrape-progress", (evt) => {
-    if (evt.status === "done") {
-      lastAdded.value = evt.added || 0
-    }
-    if (evt.status === "platform-start") {
-      currentPlatform.value = evt.platform
-      platformIndex.value = evt.index
-      lastAdded.value = 0
-    }
-    if (evt.message) {
-      scrapeLog.value.push(`${new Date().toLocaleTimeString('id-ID', { hour12: false })} ${evt.message}`)
-      if (scrapeLog.value.length > 12) scrapeLog.value.shift()
     }
   })
 
@@ -459,8 +414,6 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  clearInterval(scrapeTimer)
-  scrapeTimer = null
   clearTimeout(statusTimer)
   statusTimer = null
   if (socket) socket.disconnect()
@@ -472,6 +425,7 @@ function applyJobsPayload(data) {
   total.value = data.total || 0
   totalPages.value = data.totalPages || 0
   page.value = data.page || 1
+  jobTotal.value = data.total || 0
   loading.value = false
   loadingMore.value = false
 }

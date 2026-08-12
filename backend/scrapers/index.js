@@ -181,7 +181,6 @@ function runCategory(cmd, category, onProgress) {
       console.error(`Scrape timeout for category ${category}, killing process`)
       try { child.kill() } catch { /* ignore */ }
     }, CATEGORY_TIMEOUT_MS)
-
     const doneSpiders = new Set()
     let buf = ""
 
@@ -229,12 +228,12 @@ function runCategory(cmd, category, onProgress) {
     child.on("error", (err) => {
       console.error(`Scrape error for ${category}:`, err.message)
       clearTimeout(timer)
-      resolve()
+      resolve({ ok: false, error: err.message, code: null })
     })
-    child.on("close", () => {
+    child.on("close", (code) => {
       clearTimeout(timer)
       if (buf.trim()) buf.split(/\r?\n/).forEach(processLine)
-      resolve()
+      resolve({ ok: code === 0, error: code === 0 ? "" : `scrapy keluar dengan kode ${code}`, code })
     })
   })
 }
@@ -246,13 +245,17 @@ export async function scrapeOnePlatform(platform, index, total, onProgress) {
   console.log(`Scraping platform: ${platform} (${index}/${total})...`)
 
   const cmd = `python -m scrapy crawl ${platform} -a max_pages=${MAX_PAGES}`
-  await runCategory(cmd, platform, (evt) => {
+  const run = await runCategory(cmd, platform, (evt) => {
     if (evt.spider) {
       onProgress?.({ status: "platform-spider", platform, spider: evt.spider, done: evt.status === "done", items: evt.items, message: evt.message })
     } else {
       onProgress?.(evt)
     }
   })
+  if (!run.ok) {
+    throw new Error(run.error || `Scraping ${platform} gagal`)
+  }
+
 
   console.log(`Importing exports for ${platform}...`)
   const added = await insertScrapedFiles("all")

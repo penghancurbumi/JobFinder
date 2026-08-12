@@ -68,6 +68,27 @@ const db = new sqlite3.Database(dbPath, (err) => {
     `, (err) => {
       if (err) console.error('Error creating chat_sessions table:', err.message)
     })
+
+    // Persistent round-robin pointer for per-platform scraping. The next
+    // platform to scrape is stored here so it survives restarts and is never
+    // decided by the frontend. Seeded to start at jobstreet.
+    db.run(`
+      CREATE TABLE IF NOT EXISTS scraping_state (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        current_platform TEXT NOT NULL DEFAULT 'jobstreet',
+        last_platform TEXT,
+        status TEXT NOT NULL DEFAULT 'idle',
+        last_run_at TEXT,
+        total_jobs_scraped INTEGER DEFAULT 0,
+        error_message TEXT
+      )
+    `, (err) => {
+      if (err) console.error('Error creating scraping_state table:', err.message)
+    })
+    db.run(
+      `INSERT OR IGNORE INTO scraping_state (id, current_platform, status) VALUES (1, 'jobstreet', 'idle')`,
+      () => {}
+    )
   }
 })
 
@@ -140,6 +161,33 @@ export async function getDataStatus() {
     lastUpdatedAt: lastSeenRow?.max || null,
     staleCount: staleRow?.c || 0,
   }
+}
+
+// ---- Scraping state (persistent round-robin pointer) ----
+export function getScrapingState() {
+  return fetchOne("SELECT * FROM scraping_state WHERE id = 1")
+}
+
+export async function updateScrapingState(fields) {
+  const allowed = [
+    "current_platform",
+    "last_platform",
+    "status",
+    "last_run_at",
+    "total_jobs_scraped",
+    "error_message",
+  ]
+  const set = []
+  const params = []
+  for (const key of allowed) {
+    if (key in fields) {
+      set.push(`${key} = ?`)
+      params.push(fields[key])
+    }
+  }
+  if (!set.length) return
+  params.push(1)
+  await runQuery(`UPDATE scraping_state SET ${set.join(", ")} WHERE id = ?`, params)
 }
 
 

@@ -7,13 +7,13 @@ const require = createRequire(import.meta.url)
 const { PDFParse } = require("pdf-parse")
 import { createServer } from "http"
 import { Server } from "socket.io"
-import { runFullCycle, runCleanup } from "./scrapers/index.js"
+import { scrapeOnePlatform, runCleanup, PLATFORMS } from "./scrapers/index.js"
 import { analyzeCV } from "./cvAnalyzer.js"
 import { getBuilderSections, getSuggestion } from "./cvBuilder.js"
 import { chat } from "./chatbot.js"
 import { runBot } from "./telegramBot.js"
 import { EXPERTISE_AREAS } from "./constants.js"
-import { fetchAll, fetchOne, runQuery, getJobsCache, loadJobsCache, refreshJobsCache, getDataStatus } from "./db.js"
+import { fetchAll, fetchOne, runQuery, getJobsCache, loadJobsCache, refreshJobsCache, getScrapingState, updateScrapingState } from "./db.js"
 
 const app = express()
 const httpServer = createServer(app)
@@ -27,44 +27,67 @@ const PORT = process.env.PORT || 3000
 app.use(cors())
 app.use(express.json())
 
-// ---- Data freshness & on-demand refresh ----
-// Scraping NEVER runs automatically. It only runs when the user presses
-// "Perbarui Data" (request-scrape below). The button is a status check +
-// trigger: if the dataset is stale it starts a background refresh; if it is
-// still fresh it just reports "Data sudah terbaru". This keeps the dataset
-// from growing unbounded — refresh happens only on explicit user action.
-const FORCE_CYCLE_MS = 48 * 60 * 60 * 1000 // max age between full cycles
+// ---- Per-platform round-robin scraping (persistent state) ----
+// Each "Perbarui Data" press scrapes ONE platform, cycling through PLATFORMS
+// in order (jobstreet → glints → kalibrr → techinasia → linkedin → kitalulus
+// → pintarnya → jobstreet → ...). The next platform is stored persistently in
+// scraping_state so it survives restarts and is never decided by the frontend.
+// On failure the same platform is retried on the next press.
+let isScraping = false
 
-let cycleRunning = false
-let lastCycleAt = 0
+// Starts one platform scrape in the background and returns immediately.
+// Guards against concurrent runs (in-memory flag + persistent "running" state).
+async function startScrape() {
+  if (isScraping) {
+    return { status: "running", message: "Update data sedang berlangsung." }
+  }
+  const state = await getScrapingState()
+  if (state?.status === "running") {
+    return { status: "running", message: "Update data sedang berlangsung." }
+  }
 
-function isDataStale(status) {
-  if (!status) return true
-  if (status.total === 0) return true
-  if (status.staleCount > 0) return true
-  if (lastCycleAt > 0 && Date.now() - lastCycleAt > FORCE_CYCLE_MS) return true
-  return false
+  const platform = state?.current_platform || PLATFORMS[0]
+  const idx = PLATFORMS.indexOf(platform)
+  isScraping = true
+  const now = new Date().toISOString()
+  await updateScrapingState({ status: "running", current_platform: platform, last_run_at: now, error_message: "" })
+  io.emit("scrape-status", { status: "started", platform, message: `Scraping ${platform} sedang diproses.` })
+
+  performScrape(platform, idx)
+    .catch(async (e) => {
+      console.error(`Scraping ${platform} failed:`, e.message)
+      await updateScrapingState({ status: "failed", error_message: e.message, last_run_at: new Date().toISOString() })
+      io.emit("scrape-status", { status: "failed", platform, message: `Scraping ${platform} gagal: ${e.message}` })
+    })
+    .finally(() => {
+      isScraping = false
+    })
+
+  return { status: "started", platform, message: `Scraping ${platform} sedang diproses.` }
 }
 
-async function runBackgroundCycle() {
-  if (cycleRunning) return
-  cycleRunning = true
-  io.emit("scrape-status", { status: "background", message: "Menyegarkan data di background…" })
-  try {
-    await runFullCycle((evt) => io.emit("scrape-progress", evt))
-    await refreshJobsCache()
-    lastCycleAt = Date.now()
-    const result = await getFilteredJobs("", "all", "all", "newest", "", "", false, 1, 200)
-    io.emit("jobs-updated", result)
-    const status = await getDataStatus()
-    io.emit("scrape-status", { status: "idle", lastUpdated: status.lastUpdatedAt, total: status.total })
-    console.log("Background refresh cycle completed")
-  } catch (e) {
-    console.error("Background refresh failed:", e.message)
-    io.emit("scrape-status", { status: "error", message: e.message })
-  } finally {
-    cycleRunning = false
-  }
+async function performScrape(platform, idx) {
+  const result = await scrapeOnePlatform(platform, idx + 1, PLATFORMS.length, (evt) => io.emit("scrape-progress", evt))
+  await refreshJobsCache()
+  const next = PLATFORMS[(idx + 1) % PLATFORMS.length]
+  await updateScrapingState({
+    status: "completed",
+    current_platform: next,
+    last_platform: platform,
+    total_jobs_scraped: result.added,
+    last_run_at: new Date().toISOString(),
+    error_message: "",
+  })
+  const jobsPayload = await getFilteredJobs("", "all", "all", "newest", "", "", false, 1, 200)
+  io.emit("jobs-updated", jobsPayload)
+  io.emit("scrape-status", {
+    status: "completed",
+    platform,
+    total_scraped: result.added,
+    next_platform: next,
+    message: `Data ${platform} berhasil diperbarui.`,
+  })
+  console.log(`Platform ${platform} selesai. Next: ${next} (${result.added} diproses)`)
 }
 
 async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy = "newest", location = "", experience = "", hasSalary = false, education = "all", page = 1, limit = 200) {
@@ -167,32 +190,21 @@ async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy
 io.on("connection", async (socket) => {
   console.log("Client connected via WebSocket")
   try {
-    const status = await getDataStatus()
+    const state = await getScrapingState()
     socket.emit("scrape-status", {
-      status: cycleRunning ? "background" : "idle",
-      lastUpdated: status.lastUpdatedAt,
-      total: status.total,
-      stale: isDataStale(status),
+      status: isScraping || state?.status === "running" ? "running" : "idle",
+      platform: state?.current_platform || PLATFORMS[0],
+      last_run_at: state?.last_run_at,
+      total_jobs_scraped: state?.total_jobs_scraped,
     })
   } catch { /* ignore */ }
   const result = await getFilteredJobs()
   socket.emit("jobs-updated", result)
   
   socket.on("request-scrape", async () => {
-    if (cycleRunning) {
-      socket.emit("scrape-status", { status: "background", message: "Refresh sedang berjalan di background" })
-      return
-    }
-    try {
-      const status = await getDataStatus()
-      if (isDataStale(status)) {
-        socket.emit("scrape-status", { status: "background", message: "Data basi — refresh dimulai di background" })
-        runBackgroundCycle()
-      } else {
-        socket.emit("scrape-status", { status: "fresh", message: "Data sudah terbaru" })
-      }
-    } catch (e) {
-      socket.emit("scrape-status", { status: "error", message: e.message })
+    const resp = await startScrape()
+    if (resp.status === "running") {
+      socket.emit("scrape-status", { status: "running", message: resp.message })
     }
   })
 
@@ -202,8 +214,8 @@ io.on("connection", async (socket) => {
   })
 })
 
-// No auto-scraping: a refresh cycle runs only when the user presses
-// "Perbarui Data" ("request-scrape") and the data is stale.
+// No auto-scraping: each "Perbarui Data" press scrapes exactly one platform,
+// cycling through PLATFORMS via the persistent scraping_state pointer.
 
 // Remove expired jobs daily (and once at startup) so data doesn't pile up.
 async function runScheduledCleanup() {
@@ -265,8 +277,18 @@ app.get("/api/jobs", async (req, res) => {
 
 app.get("/api/status", async (req, res) => {
   try {
-    const status = await getDataStatus()
-    res.json({ ...status, stale: isDataStale(status), cycleRunning })
+    const state = await getScrapingState()
+    const platform = state?.current_platform || PLATFORMS[0]
+    const nextIdx = (PLATFORMS.indexOf(platform) + 1) % PLATFORMS.length
+    res.json({
+      platform,
+      status: isScraping || state?.status === "running" ? "running" : (state?.status || "idle"),
+      last_platform: state?.last_platform || null,
+      last_run_at: state?.last_run_at || null,
+      total_jobs_scraped: state?.total_jobs_scraped || 0,
+      next_platform: PLATFORMS[nextIdx],
+      error_message: state?.error_message || null,
+    })
   } catch (e) {
     res.status(500).json({ error: e.message })
   }
