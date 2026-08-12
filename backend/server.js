@@ -27,14 +27,13 @@ const PORT = process.env.PORT || 3000
 app.use(cors())
 app.use(express.json())
 
-// ---- Data freshness & background refresh ----
-// "Perbarui Data" is now a status check + trigger: it never blocks the UI.
-// Real scraping runs in the background, only when the dataset is stale (some
-// job not re-seen within 24h) or as a forced safety cycle every 48h.
-const STALE_HOURS = 24
-const STALE_CHECK_MS = 3 * 60 * 60 * 1000 // check for stale data every ~3h
+// ---- Data freshness & on-demand refresh ----
+// Scraping NEVER runs automatically. It only runs when the user presses
+// "Perbarui Data" (request-scrape below). The button is a status check +
+// trigger: if the dataset is stale it starts a background refresh; if it is
+// still fresh it just reports "Data sudah terbaru". This keeps the dataset
+// from growing unbounded — refresh happens only on explicit user action.
 const FORCE_CYCLE_MS = 48 * 60 * 60 * 1000 // max age between full cycles
-const CYCLE_START_DELAY_MS = 15 * 1000 // wait before first background check
 
 let cycleRunning = false
 let lastCycleAt = 0
@@ -67,21 +66,6 @@ async function runBackgroundCycle() {
     cycleRunning = false
   }
 }
-
-async function checkStaleAndRefresh() {
-  try {
-    const status = await getDataStatus()
-    if (isDataStale(status)) {
-      console.log("Stale data detected, starting background refresh cycle")
-      runBackgroundCycle()
-    }
-  } catch (e) {
-    console.error("Stale check failed:", e.message)
-  }
-}
-
-setInterval(checkStaleAndRefresh, STALE_CHECK_MS)
-setTimeout(checkStaleAndRefresh, CYCLE_START_DELAY_MS)
 
 async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy = "newest", location = "", experience = "", hasSalary = false, education = "all", page = 1, limit = 200) {
   page = Math.max(parseInt(page, 10) || 1, 1)
@@ -218,8 +202,8 @@ io.on("connection", async (socket) => {
   })
 })
 
-// No blocking scrape: refreshing is triggered by the background stale-data
-// scheduler above, or on-demand by "request-scrape" when the data is stale.
+// No auto-scraping: a refresh cycle runs only when the user presses
+// "Perbarui Data" ("request-scrape") and the data is stale.
 
 // Remove expired jobs daily (and once at startup) so data doesn't pile up.
 async function runScheduledCleanup() {

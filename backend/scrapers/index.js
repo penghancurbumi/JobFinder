@@ -252,7 +252,7 @@ export async function scrapeOnePlatform(platform, index, total, onProgress) {
 export { PLATFORMS }
 
 // Run one full refresh pass across all platforms, one at a time, with a short
-// politeness delay between them. Used by the background stale-data scheduler
+// politeness delay between them. Used by the on-demand "Perbarui Data" trigger
 // so the whole dataset gets freshened without hammering the source sites.
 export async function runFullCycle(onProgress) {
   const results = []
