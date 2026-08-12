@@ -48,12 +48,15 @@ const db = new sqlite3.Database(dbPath, (err) => {
     db.run("ALTER TABLE jobs ADD COLUMN lastSeenAt TEXT", () => {})
     db.run("UPDATE jobs SET lastSeenAt = ? WHERE lastSeenAt IS NULL", [new Date().toISOString()], () => {})
 
-    // Closed-listing markers: jobs closed by the provider are flagged, not deleted
-    // (migration for existing DBs).
-    db.run("ALTER TABLE jobs ADD COLUMN isClosed INTEGER DEFAULT 0", () => {})
-    db.run("ALTER TABLE jobs ADD COLUMN closedAt TEXT", () => {})
-    db.run("UPDATE jobs SET isClosed = 0 WHERE isClosed IS NULL", () => {})
-    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_closed ON jobs(isClosed)", () => {})
+    // Remove the discontinued closed-listing markers (isClosed/closedAt) from
+    // databases created during the "mark-closed" iteration. The index must be
+    // dropped first, otherwise ALTER TABLE ... DROP COLUMN fails. Errors are
+    // ignored: on a fresh DB the columns never existed.
+    db.run("DROP INDEX IF EXISTS idx_jobs_closed", () => {
+      db.run("ALTER TABLE jobs DROP COLUMN isClosed", () => {
+        db.run("ALTER TABLE jobs DROP COLUMN closedAt", () => {})
+      })
+    })
 
     // Indexes for the most common filters/ordering
     db.run("CREATE INDEX IF NOT EXISTS idx_jobs_posted ON jobs(postedDate DESC, id DESC)", (err) => {
@@ -209,19 +212,6 @@ export async function deleteByUrls(urls) {
   if (!urls || !urls.length) return 0
   const placeholders = urls.map(() => "?").join(",")
   const res = await runQuery(`DELETE FROM jobs WHERE url IN (${placeholders})`, urls)
-  return res.changes
-}
-
-// Flag jobs whose detail pages are gone or show a "closed" marker. Used by
-// markClosedJobs() in scrapers/index.js (replaces the old delete behaviour).
-export async function markClosedUrls(urls) {
-  if (!urls || !urls.length) return 0
-  const now = new Date().toISOString()
-  const placeholders = urls.map(() => "?").join(",")
-  const res = await runQuery(
-    `UPDATE jobs SET isClosed = 1, closedAt = ? WHERE url IN (${placeholders}) AND isClosed = 0`,
-    [now, ...urls]
-  )
   return res.changes
 }
 
