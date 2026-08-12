@@ -90,7 +90,7 @@ async function performScrape(platform, idx) {
   console.log(`Platform ${platform} selesai. Next: ${next} (${result.added} diproses)`)
 }
 
-async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy = "newest", location = "", experience = "", hasSalary = false, education = "all", page = 1, limit = 200, showClosed = false) {
+async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy = "newest", location = "", experience = "", hasSalary = false, education = "all", page = 1, limit = 200) {
   page = Math.max(parseInt(page, 10) || 1, 1)
   limit = Math.min(Math.max(parseInt(limit, 10) || 200, 1), 500)
   const offset = (page - 1) * limit
@@ -171,26 +171,20 @@ async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy
     return true
   })
 
-  const closedCount = jobs.filter((j) => j.isClosed).length
-  if (!showClosed) {
-    jobs = jobs.filter((j) => !j.isClosed)
-  }
-
-  const closedRank = (j) => (j.isClosed ? 1 : 0)
   const cmpAsc = (a, b) => (a > b ? 1 : a < b ? -1 : 0)
   if (sortBy === "az") {
-    jobs.sort((a, b) => closedRank(a) - closedRank(b) || cmpAsc(a.title || "", b.title || ""))
+    jobs.sort((a, b) => cmpAsc(a.title || "", b.title || ""))
   } else if (sortBy === "za") {
-    jobs.sort((a, b) => closedRank(a) - closedRank(b) || cmpAsc(b.title || "", a.title || ""))
+    jobs.sort((a, b) => cmpAsc(b.title || "", a.title || ""))
   } else if (sortBy === "oldest") {
-    jobs.sort((a, b) => closedRank(a) - closedRank(b) || cmpAsc(a.postedDate || "", b.postedDate || "") || (a.id - b.id))
+    jobs.sort((a, b) => cmpAsc(a.postedDate || "", b.postedDate || "") || (a.id - b.id))
   } else {
-    jobs.sort((a, b) => closedRank(a) - closedRank(b) || cmpAsc(b.postedDate || "", a.postedDate || "") || (b.id - a.id))
+    jobs.sort((a, b) => cmpAsc(b.postedDate || "", a.postedDate || "") || (b.id - a.id))
   }
 
   const total = jobs.length
   const pageJobs = jobs.slice(offset, offset + limit)
-  return { jobs: pageJobs, total, page, limit, totalPages: Math.ceil(total / limit), closedCount }
+  return { jobs: pageJobs, total, page, limit, totalPages: Math.ceil(total / limit) }
 }
 
 io.on("connection", async (socket) => {
@@ -214,8 +208,8 @@ io.on("connection", async (socket) => {
     }
   })
 
-  socket.on("filter-jobs", async ({ search, bidang, tipe, sortBy, location, experience, hasSalary, education, page, limit, showClosed }) => {
-    const result = await getFilteredJobs(search, bidang, tipe, sortBy, location, experience, hasSalary, education, page, limit, showClosed)
+  socket.on("filter-jobs", async ({ search, bidang, tipe, sortBy, location, experience, hasSalary, education, page, limit }) => {
+    const result = await getFilteredJobs(search, bidang, tipe, sortBy, location, experience, hasSalary, education, page, limit)
     socket.emit("jobs-updated", result)
   })
 })
@@ -265,7 +259,7 @@ app.get("/api/google-fonts", async (req, res) => {
 app.get("/api/expertise-areas", (req, res) => res.json(EXPERTISE_AREAS))
 
 app.get("/api/jobs", async (req, res) => {
-  const { search, bidang, tipe, sortBy, location, experience, hasSalary, education, page, limit, showClosed } = req.query
+  const { search, bidang, tipe, sortBy, location, experience, hasSalary, education, page, limit } = req.query
   const result = await getFilteredJobs(
     search,
     bidang,
@@ -276,8 +270,7 @@ app.get("/api/jobs", async (req, res) => {
     hasSalary === 'true' || hasSalary === true,
     education,
     page,
-    limit,
-    showClosed === 'true' || showClosed === true
+    limit
   )
   res.json(result)
 })
