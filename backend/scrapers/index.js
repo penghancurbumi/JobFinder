@@ -1,12 +1,13 @@
 import { spawn } from "child_process"
 import fs from "fs/promises"
 import path from "path"
-import { runQuery, deleteByUrls, deleteExpiredJobs, findDuplicate, deleteDuplicateJobs, deleteBadQualityJobs, isValidJobText } from "../db.js"
+import { runQuery, deleteByUrls, deleteExpiredJobs, findDuplicate, deleteDuplicateJobs, deleteBadQualityJobs, isValidJobText, markClosedUrls } from "../db.js"
 
 const SCRAPY_PROJECT_DIR = path.join(process.cwd(), "scrapping-job")
 const EXPORTS_DIR = path.join(SCRAPY_PROJECT_DIR, "exports", "json")
 const ARCHIVE_DIR = path.join(EXPORTS_DIR, "archive")
 const NOT_FOUND_FILE = path.join(EXPORTS_DIR, "not_found.txt")
+const CLOSED_FILE = path.join(EXPORTS_DIR, "closed.txt")
 
 // Real Python interpreter. The `python` on PATH is the Windows Store alias stub
 // that cannot launch from a hidden/background process (shell:false).
@@ -61,7 +62,7 @@ export async function insertScrapedFiles(jobTypeFilter) {
             ? await findDuplicate(item.title, item.company_name, item.location)
             : null
           if (dup) {
-            await runQuery("UPDATE jobs SET lastSeenAt = ? WHERE id = ?", [lastSeenAt, dup.id])
+            await runQuery("UPDATE jobs SET lastSeenAt = ?, isClosed = 0, closedAt = NULL WHERE id = ?", [lastSeenAt, dup.id])
             skipped++
             continue
           }
@@ -90,7 +91,9 @@ export async function insertScrapedFiles(jobTypeFilter) {
               description = CASE WHEN excluded.description != '' THEN excluded.description ELSE description END,
               salary = CASE WHEN excluded.salary != '' THEN excluded.salary ELSE salary END,
               postedDate = excluded.postedDate,
-              lastSeenAt = excluded.lastSeenAt
+              lastSeenAt = excluded.lastSeenAt,
+              isClosed = 0,
+              closedAt = NULL
           `
           const params = [
             item.title || "Unknown Title",
@@ -128,37 +131,40 @@ export async function insertScrapedFiles(jobTypeFilter) {
   return count
 }
 
-// Delete jobs whose detail pages returned 404/410 during scraping.
-// The Scrapy NotFoundCollectorMiddleware appends expired URLs to not_found.txt.
-export async function deleteNotFoundJobs() {
-  try {
-    const content = await fs.readFile(NOT_FOUND_FILE, "utf-8")
-    const urls = [...new Set(content.split(/\r?\n/).map(l => l.trim()).filter(Boolean))]
-    if (!urls.length) return 0
-    const removed = await deleteByUrls(urls)
-    await fs.unlink(NOT_FOUND_FILE)
-    console.log(`Not-found cleanup: ${removed} expired job(s) removed (${urls.length} URL checked)`)
-    return removed
-  } catch (e) {
-    if (e.code !== "ENOENT") console.error("Error reading not_found file:", e.message)
-    return 0
+// Flag jobs whose detail pages returned 404/410 or showed closed content
+// instead of deleting them. The Scrapy NotFoundCollectorMiddleware appends
+// 404 URLs to not_found.txt and content-closed URLs to closed.txt.
+export async function markClosedJobs() {
+  const urls = new Set()
+  for (const file of [NOT_FOUND_FILE, CLOSED_FILE]) {
+    try {
+      const content = await fs.readFile(file, "utf-8")
+      content.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).forEach((u) => urls.add(u))
+      await fs.unlink(file)
+    } catch (e) {
+      if (e.code !== "ENOENT") console.error(`Error reading ${file}:`, e.message)
+    }
   }
+  if (!urls.size) return 0
+  const marked = await markClosedUrls([...urls])
+  if (marked) console.log(`Closed cleanup: ${marked} job(s) marked closed (${urls.size} URL checked)`)
+  return marked
 }
 
-// Remove jobs that are no longer on the source platforms: 404-detected,
-// past the age cap, absent from recent scrape cycles, exact duplicates,
-// or of unclear quality (URL-as-title, non-Latin scripts).
+// Flag jobs that are no longer on the source platforms (404/closed) and remove
+// jobs past the age cap, absent from recent scrape cycles, exact duplicates, or
+// of unclear quality (URL-as-title, non-Latin scripts).
 export async function runCleanup() {
-  const removedNotFound = await deleteNotFoundJobs()
+  const closedMarked = await markClosedJobs()
   const removedExpired = await deleteExpiredJobs(EXPIRED_OPTIONS)
   const removedDupes = await deleteDuplicateJobs()
   const removedBad = await deleteBadQualityJobs()
-  const total = removedNotFound + removedExpired.age + removedExpired.notSeen + removedDupes + removedBad
+  const total = closedMarked + removedExpired.age + removedExpired.notSeen + removedDupes + removedBad
   console.log(
-    `Cleanup done: ${removedNotFound} not-found, ${removedExpired.age} age-expired, ` +
+    `Cleanup done: ${closedMarked} closed-marked, ${removedExpired.age} age-expired, ` +
     `${removedExpired.notSeen} not-seen, ${removedDupes} duplicates, ${removedBad} unclear-quality (total ${total})`
   )
-  return { removedNotFound, ...removedExpired, duplicates: removedDupes, unclear: removedBad, total }
+  return { closedMarked, ...removedExpired, duplicates: removedDupes, unclear: removedBad, total }
 }
 
 // Run a single category scrape, streaming per-spider progress events as they happen.
