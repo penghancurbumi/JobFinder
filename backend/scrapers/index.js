@@ -1,7 +1,7 @@
 import { spawn } from "child_process"
 import fs from "fs/promises"
 import path from "path"
-import { runQuery, deleteByUrls, deleteExpiredJobs, findDuplicate, deleteDuplicateJobs, deleteBadQualityJobs, isValidJobText, markClosedUrls } from "../db.js"
+import { runQuery, deleteByUrls, deleteExpiredJobs, findDuplicate, deleteDuplicateJobs, deleteBadQualityJobs, isValidJobText } from "../db.js"
 
 const SCRAPY_PROJECT_DIR = path.join(process.cwd(), "scrapping-job")
 const EXPORTS_DIR = path.join(SCRAPY_PROJECT_DIR, "exports", "json")
@@ -62,7 +62,7 @@ export async function insertScrapedFiles(jobTypeFilter) {
             ? await findDuplicate(item.title, item.company_name, item.location)
             : null
           if (dup) {
-            await runQuery("UPDATE jobs SET lastSeenAt = ?, isClosed = 0, closedAt = NULL WHERE id = ?", [lastSeenAt, dup.id])
+            await runQuery("UPDATE jobs SET lastSeenAt = ? WHERE id = ?", [lastSeenAt, dup.id])
             skipped++
             continue
           }
@@ -91,9 +91,7 @@ export async function insertScrapedFiles(jobTypeFilter) {
               description = CASE WHEN excluded.description != '' THEN excluded.description ELSE description END,
               salary = CASE WHEN excluded.salary != '' THEN excluded.salary ELSE salary END,
               postedDate = excluded.postedDate,
-              lastSeenAt = excluded.lastSeenAt,
-              isClosed = 0,
-              closedAt = NULL
+              lastSeenAt = excluded.lastSeenAt
           `
           const params = [
             item.title || "Unknown Title",
@@ -131,10 +129,10 @@ export async function insertScrapedFiles(jobTypeFilter) {
   return count
 }
 
-// Flag jobs whose detail pages returned 404/410 or showed closed content
-// instead of deleting them. The Scrapy NotFoundCollectorMiddleware appends
-// 404 URLs to not_found.txt and content-closed URLs to closed.txt.
-export async function markClosedJobs() {
+// Delete jobs whose detail pages returned 404/410 or showed closed content.
+// The Scrapy NotFoundCollectorMiddleware appends 404 URLs to not_found.txt and
+// content-closed URLs to closed.txt; both lists are turned into deletions.
+export async function deleteClosedJobs() {
   const urls = new Set()
   for (const file of [NOT_FOUND_FILE, CLOSED_FILE]) {
     try {
@@ -146,25 +144,25 @@ export async function markClosedJobs() {
     }
   }
   if (!urls.size) return 0
-  const marked = await markClosedUrls([...urls])
-  if (marked) console.log(`Closed cleanup: ${marked} job(s) marked closed (${urls.size} URL checked)`)
-  return marked
+  const removed = await deleteByUrls([...urls])
+  if (removed) console.log(`Closed/not-found cleanup: ${removed} job(s) removed (${urls.size} URL checked)`)
+  return removed
 }
 
 // Flag jobs that are no longer on the source platforms (404/closed) and remove
 // jobs past the age cap, absent from recent scrape cycles, exact duplicates, or
 // of unclear quality (URL-as-title, non-Latin scripts).
 export async function runCleanup() {
-  const closedMarked = await markClosedJobs()
+  const removedClosed = await deleteClosedJobs()
   const removedExpired = await deleteExpiredJobs(EXPIRED_OPTIONS)
   const removedDupes = await deleteDuplicateJobs()
   const removedBad = await deleteBadQualityJobs()
-  const total = closedMarked + removedExpired.age + removedExpired.notSeen + removedDupes + removedBad
+  const total = removedClosed + removedExpired.age + removedExpired.notSeen + removedDupes + removedBad
   console.log(
-    `Cleanup done: ${closedMarked} closed-marked, ${removedExpired.age} age-expired, ` +
+    `Cleanup done: ${removedClosed} closed/not-found removed, ${removedExpired.age} age-expired, ` +
     `${removedExpired.notSeen} not-seen, ${removedDupes} duplicates, ${removedBad} unclear-quality (total ${total})`
   )
-  return { closedMarked, ...removedExpired, duplicates: removedDupes, unclear: removedBad, total }
+  return { removedClosed, ...removedExpired, duplicates: removedDupes, unclear: removedBad, total }
 }
 
 // Run a single category scrape, streaming per-spider progress events as they happen.
