@@ -31,7 +31,8 @@
     >
       <div 
         v-if="isOpen" 
-        class="absolute z-[100] mt-2 w-full rounded-[12px] bg-surface-elevated border border-hairline-dark shadow-xl overflow-hidden"
+        class="absolute z-[100] w-full rounded-[12px] bg-surface-elevated border border-hairline-dark shadow-xl overflow-hidden"
+        :class="openUpward ? 'bottom-[calc(100%+8px)]' : 'top-[calc(100%+8px)]'"
       >
         <ul class="max-h-60 overflow-auto py-1 custom-scrollbar">
           <li 
@@ -77,6 +78,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const isOpen = ref(false)
+const openUpward = ref(false)
 const selectContainer = ref(null)
 
 const selectedLabel = computed(() => {
@@ -84,7 +86,14 @@ const selectedLabel = computed(() => {
   return selected ? selected.label : props.placeholder
 })
 
+const DROPDOWN_HEIGHT = 256 // max-h-60 = 15rem ≈ 240px + padding buffer
+
 const toggleDropdown = () => {
+  if (!isOpen.value && selectContainer.value) {
+    const rect = selectContainer.value.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - rect.bottom
+    openUpward.value = spaceBelow < DROPDOWN_HEIGHT && rect.top > DROPDOWN_HEIGHT
+  }
   isOpen.value = !isOpen.value
 }
 

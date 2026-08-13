@@ -65,6 +65,11 @@
             <CustomSelect v-model="sortBy" :options="sortOptions" placeholder="Terbaru" />
           </div>
 
+          <div class="mb-xl flex flex-col">
+            <label class="block text-on-dark-mute mb-sm font-medium text-sm">Platform</label>
+            <CustomSelect v-model="platform" :options="platformOptions" placeholder="Semua Platform" />
+          </div>
+
           <div class="mt-xl flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-medium text-sm">Rentang Gaji</label>
             <label class="flex items-center gap-[8px] font-normal text-[13px] normal-case cursor-pointer text-on-dark-mute">
@@ -265,6 +270,7 @@ const searchQuery = ref("")
 const locationQuery = ref("")
 const experienceLevel = ref("all")
 const educationlevel = ref("all")
+const platform = ref("all")
 
 const tipeOptions = [
   { value: 'all', label: 'Semua Tipe' },
@@ -303,6 +309,16 @@ const educationOptions = [
   { value: 'sma', label: 'SMA / SMK Sederajat' }
 ]
 
+const platformOptions = [
+  { value: 'all', label: 'Semua Platform' },
+  { value: 'kalibrr', label: 'Kalibrr' },
+  { value: 'jobstreet', label: 'JobStreet' },
+  { value: 'linkedin', label: 'LinkedIn' },
+  { value: 'glints', label: 'Glints' },
+  { value: 'pintarnya', label: 'Pintarnya' },
+  { value: 'kitalulus', label: 'Kitalulus' },
+  { value: 'techinasia', label: 'Techinasia' },
+]
 
 const hasSalary = ref(false)
 const sortBy = ref("newest")
@@ -440,6 +456,7 @@ async function fetchPage(p, append = false) {
     location: locationQuery.value,
     experience: experienceLevel.value,
     education: educationlevel.value,
+    platform: platform.value,
     hasSalary: hasSalary.value ? 'true' : 'false',
     page: String(p),
     limit: String(limit)
@@ -491,7 +508,7 @@ const visiblePages = computed(() => {
 })
 
 let searchTimeout;
-watch([activeTipe, searchQuery, locationQuery, experienceLevel, educationlevel, hasSalary, sortBy], () => {
+watch([activeTipe, searchQuery, locationQuery, experienceLevel, educationlevel, hasSalary, sortBy, platform], () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
     fetchPage(1, false)
@@ -505,6 +522,7 @@ function resetFilters() {
   locationQuery.value = ""
   experienceLevel.value = "all"
   educationlevel.value = "all"
+  platform.value = "all"
   hasSalary.value = false
 }
 

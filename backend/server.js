@@ -90,7 +90,7 @@ async function performScrape(platform, idx) {
   console.log(`Platform ${platform} selesai. Next: ${next} (${result.added} diproses)`)
 }
 
-async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy = "newest", location = "", experience = "", hasSalary = false, education = "all", page = 1, limit = 200) {
+async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy = "newest", location = "", experience = "", hasSalary = false, education = "all", platform = "all", page = 1, limit = 200) {
   page = Math.max(parseInt(page, 10) || 1, 1)
   limit = Math.min(Math.max(parseInt(limit, 10) || 200, 1), 500)
   const offset = (page - 1) * limit
@@ -166,6 +166,10 @@ async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy
       } else if (education === 'sma' || education === 'smk') {
         if (!text.includes("sma") && !text.includes("smk") && !text.includes("sederajat") && !text.includes("slta")) return false
       }
+    }
+
+    if (platform && platform !== 'all') {
+      if (lower(j.source) !== lower(platform)) return false
     }
 
     return true
@@ -259,7 +263,7 @@ app.get("/api/google-fonts", async (req, res) => {
 app.get("/api/expertise-areas", (req, res) => res.json(EXPERTISE_AREAS))
 
 app.get("/api/jobs", async (req, res) => {
-  const { search, bidang, tipe, sortBy, location, experience, hasSalary, education, page, limit } = req.query
+  const { search, bidang, tipe, sortBy, location, experience, hasSalary, education, platform, page, limit } = req.query
   const result = await getFilteredJobs(
     search,
     bidang,
@@ -269,6 +273,7 @@ app.get("/api/jobs", async (req, res) => {
     experience,
     hasSalary === 'true' || hasSalary === true,
     education,
+    platform,
     page,
     limit
   )
