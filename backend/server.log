@@ -1,3 +1,6 @@
 Connected to SQLite database.
-Loaded 2980 jobs into memory cache
+Loaded 1903 jobs into memory cache
 Backend running on http://localhost:3000
+Client connected via WebSocket
+Cleanup done: 0 not-found, 0 age-expired, 0 not-seen, 0 duplicates, 1 unclear-quality (total 1)
+Scheduled cleanup removed: 1 job(s)

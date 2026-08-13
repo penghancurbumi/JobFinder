@@ -16,3 +16,4 @@ Task 2: complete (commits cf64047..097e669, review clean; Minor backlog: [T2] ko
 Task 3: complete (commits 097e669..99cdb3c, review clean; all call sites verified no showClosed residue)
 Task 4: complete (commits 99cdb3c..5781832, review clean; Minor backlog: [T4] indentasi </aside> berubah 2->10 spasi, kosmetik)
 Task 5: complete (this commit; syntax OK, unittest 5/5 OK, scrape sim shows removedClosed no closedMarked, API has no closedCount + showClosed inert, grep 3 benign hits in db.js drop-migration + kitalulus.py source-field; temp script removed)
+Task 5: complete (commits 5781832..871e826, review clean; Minor backlog: [T5] heading report bilang '2 hit benign' tapi 3, no trailing newline, BOM di progress.md)

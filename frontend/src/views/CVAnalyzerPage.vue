@@ -9,7 +9,7 @@
         <div class="mb-md gap-sm">
           <label class="mb-sm block text-on-dark font-medium text-lg">Unggah Dokumen CV (PDF)</label>
           <div class="flex gap-md items-center flex-wrap">
-            <input type="file" accept=".pdf" @change="onFileChange" class="flex-1 min-w-[200px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-hairline-dark file:text-sm file:font-medium file:bg-transparent file:text-on-dark hover:file:bg-surface-elevated cursor-pointer" />
+            <input type="file" accept=".pdf" @change="onFileChange" class="flex-1 min-w-[200px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-hairline-dark file:border file:text-sm file:font-medium file:bg-transparent file:text-on-dark hover:file:bg-surface-elevated cursor-pointer" />
             
               <CustomSelect
                 label="Pilih Bidang Keahlian"
