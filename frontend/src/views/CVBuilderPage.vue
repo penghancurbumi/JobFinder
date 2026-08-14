@@ -88,7 +88,7 @@
 
             <!-- Font Selector -->
             <div class="mt-[32px] pt-[24px] border-t border-hairline-dark">
-              <label class="block text-[14px] font-semibold text-on-dark-mute mb-[12px]">Font CV (opsional)</label>
+              <label class="block text-[14px] font-semibold text-on-dark-mute mb-[12px]">Font CV</label>
               <div class="relative flex-1 mb-[12px]">
                 <Icon icon="mdi:magnify" class="absolute left-[12px] top-1/2 -translate-y-1/2 text-stone text-[18px] pointer-events-none" />
                 <input v-model="fontSearch" type="text" placeholder="Cari font..." class="w-full bg-transparent border border-hairline-dark rounded-[10px] h-[40px] pl-[36px] pr-[12px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
@@ -114,6 +114,7 @@
                   <div class="w-[16px] h-[16px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors" :class="selectedFont === f.family ? 'border-white' : 'border-stone'">
                     <div v-if="selectedFont === f.family" class="w-[8px] h-[8px] rounded-full bg-white"></div>
                   </div>
+
                   <!-- Font name rendered in its own typeface -->
                   <span
                     class="text-[15px] transition-colors"
@@ -124,7 +125,7 @@
                 </button>
                 <div v-if="filteredGoogleFonts.length === 0" class="text-center text-stone text-[13px] py-[24px]">Tidak ada font ditemukan.</div>
               </div>
-              <p class="text-[12px] text-stone mt-[10px]">{{ googleFonts.length.toLocaleString() }} font tersedia. Font dimuat otomatis saat di-hover.</p>
+              <p class="text-[12px] text-stone mt-[10px]">{{ googleFonts.length.toLocaleString() }} font tersedia </p>
             </div>
           </div>
 

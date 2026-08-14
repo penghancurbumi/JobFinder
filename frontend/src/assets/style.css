@@ -5,7 +5,35 @@
 @layer base {
   body {
     @apply bg-canvas-dark text-on-dark font-sans leading-normal antialiased;
+    /* Firefox */
+    scrollbar-color: #3a3d40 #16181a;
+    scrollbar-width: thin;
   }
+}
+
+/* Global themed scrollbar (Webkit / Chromium) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #16181a; /* surface-elevated */
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3a3d40; /* charcoal */
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5c5e60; /* ash */
+}
+
+::-webkit-scrollbar-corner {
+  background: #16181a;
 }
 
 @layer utilities {
