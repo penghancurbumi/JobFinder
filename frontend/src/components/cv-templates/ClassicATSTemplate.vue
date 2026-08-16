@@ -3,11 +3,9 @@
   <div v-if="!isPreview">
     <!-- PERSONAL INFO (no photo, classic style) -->
     <div v-if="currentId === 'personal_info'" class="flex flex-col gap-[20px]">
-      
       <div class="p-[16px] rounded-[12px] bg-white/4 border border-hairline-dark mb-[8px]">
         <p class="text-[13px] text-on-dark-mute">Template <strong class="text-white">Classic ATS</strong> menampilkan format akademis formal tanpa foto. Nama dan kontak akan ditampilkan di tengah.</p>
       </div>
-
       <div v-for="f in personalFields" :key="f.key" class="flex flex-col">
         <label class="mb-[8px] font-semibold text-on-dark-mute">{{ f.label }} <span v-if="f.required" class="text-accent-danger font-bold">*</span></label>
         <input v-if="f.key === 'email'" type="email" v-model="formData[f.key]" :placeholder="f.placeholder" @input="validateEmail" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
@@ -202,14 +200,13 @@
       <!-- Centered Header -->
       <div class="text-center mb-[6px]">
         <h1 class="text-[24px] font-bold uppercase tracking-[3px] mb-[6px]">{{ formData.full_name || '[Nama Anda]' }}</h1>
-        <div class="text-[11px] text-gray-600">
+        <div class="text-[15px] text-gray-600">
           <span v-if="formData.email && !errors.email">{{ formData.email }}</span>
           <span v-if="formData.phone"> &nbsp;|&nbsp; {{ formData.phone }}</span>
           <span v-if="formData.address"> &nbsp;|&nbsp; {{ formData.address }}</span>
           <span v-if="formData.linkedin && !errors.linkedin"> &nbsp;|&nbsp; {{ formData.linkedin }}</span>
         </div>
       </div>
-      <div class="h-[3px] bg-black mt-[14px] mb-[18px]"></div>
 
       <!-- Objective -->
       <div v-if="formData.objective" class="mb-[20px]">
@@ -430,15 +427,30 @@ function getTextForAnalysis() {
 
 const hasPreviewData = computed(() => !!(formData.full_name || formData.objective || educations.value.length || workExperiences.value.length || formData.skills))
 
-onMounted(() => {
+function loadFromStorage() {
   try {
     const d = localStorage.getItem(`cv_${STORE}_data`)
     if (d) Object.assign(formData, JSON.parse(d))
     const e = localStorage.getItem(`cv_${STORE}_edu`)
-    if (e) { educations.value = JSON.parse(e); if (educations.value.length) { const edu = educations.value[0]; Object.assign(eduForm, { degree: edu.degree, major: edu.major, institution: edu.institution, startYear: edu.startYear, endYear: edu.endYear, gpa: edu.gpa, honors: edu.honors || '' }) } }
+    if (e) {
+      educations.value = JSON.parse(e)
+      if (educations.value.length) {
+        const edu = educations.value[0]
+        Object.assign(eduForm, { degree: edu.degree, major: edu.major, institution: edu.institution, startYear: edu.startYear, endYear: edu.endYear, gpa: edu.gpa, honors: edu.honors || '' })
+      }
+    }
     const w = localStorage.getItem(`cv_${STORE}_work`)
     if (w) workExperiences.value = JSON.parse(w)
   } catch {}
+}
+
+onMounted(() => {
+  loadFromStorage()
+})
+
+// Saat prop isPreview berubah jadi true (navigasi ke step preview), reload data
+watch(() => props.isPreview, (val) => {
+  if (val) loadFromStorage()
 })
 
 watch(formData, v => localStorage.setItem(`cv_${STORE}_data`, JSON.stringify(v)), { deep: true })

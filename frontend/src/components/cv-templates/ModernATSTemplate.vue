@@ -23,6 +23,7 @@
         <label class="mb-[8px] font-semibold text-on-dark-mute">{{ f.label }} <span v-if="f.required" class="text-accent-danger font-bold">*</span></label>
         <input v-if="f.key === 'email'" type="email" v-model="formData[f.key]" :placeholder="f.placeholder" @input="validateEmail" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
         <input v-else-if="f.key === 'linkedin'" type="url" v-model="formData[f.key]" :placeholder="f.placeholder" @input="validateLinkedIn" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
+        <input v-else-if="f.key === 'github'" type="url" v-model="formData[f.key]" :placeholder="f.placeholder" @input="validateGitHub" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
         <input v-else v-model="formData[f.key]" :placeholder="f.placeholder" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
         <span class="text-[12px] text-stone mt-[6px]">{{ f.hint }}</span>
         <div v-if="errors[f.key]" class="text-accent-danger text-[12px] mt-[4px]">{{ errors[f.key] }}</div>
@@ -47,10 +48,6 @@
     <!-- EDUCATION -->
     <div v-else-if="currentId === 'education'">
       <div class="flex flex-col gap-[16px]">
-        <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Gelar <span class="text-accent-danger font-bold">*</span></label>
-          <input v-model="eduForm.degree" placeholder="Contoh: S1" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
-          <div v-if="eduErrors.degree" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.degree }}</div>
-        </div>
         <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Jurusan <span class="text-accent-danger font-bold">*</span></label>
           <input v-model="eduForm.major" placeholder="Contoh: Teknik Informatika" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           <div v-if="eduErrors.major" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.major }}</div>
@@ -58,6 +55,9 @@
         <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Institusi / Universitas <span class="text-accent-danger font-bold">*</span></label>
           <input v-model="eduForm.institution" placeholder="Contoh: Universitas Indonesia" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           <div v-if="eduErrors.institution" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.institution }}</div>
+        </div>
+        <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Lokasi Institusi</label>
+          <input v-model="eduForm.location" placeholder="Contoh: Jakarta, Indonesia" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
         </div>
         <label class="flex items-center gap-[8px] cursor-pointer">
           <input type="checkbox" v-model="eduForm.showDate" class="w-[15px] h-[15px] rounded accent-white" />
@@ -105,6 +105,24 @@
           <span class="text-[12px] text-stone mt-[6px]">Format desimal, skala 0.00 – 4.00</span>
           <div v-if="eduErrors.gpa" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.gpa }}</div>
         </div>
+        <!-- Pengalaman Perkuliahan -->
+        <div class="border-t border-hairline-dark pt-[16px]">
+          <h5 class="text-[14px] font-semibold text-on-dark mb-[12px]">Pengalaman Perkuliahan <span class="text-stone text-[12px] font-normal">(opsional)</span></h5>
+          <div class="flex flex-col gap-[8px]">
+            <div v-for="(act, actIdx) in eduForm.activities" :key="'act-'+actIdx" class="flex gap-[8px] items-start">
+              <span class="text-on-dark-mute text-[14px] mt-[12px] shrink-0">{{ actIdx + 1 }}.</span>
+              <textarea v-model="eduForm.activities[actIdx]" :placeholder="'Contoh: Ketua BEM, Asisten Dosen, Lomba Hackathon...'" rows="2" class="flex-1 h-[72px] bg-transparent border border-hairline-dark rounded-[12px] p-[12px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
+              <button v-if="eduForm.activities.length > 1" @click="eduForm.activities.splice(actIdx, 1)" class="shrink-0 mt-[8px] text-accent-danger text-[16px] w-[32px] h-[32px] rounded-full border border-accent-danger/30 flex items-center justify-center hover:bg-accent-danger/10 transition-colors">✕</button>
+            </div>
+          </div>
+          <button @click="eduForm.activities.push('')" class="mt-[12px] text-[13px] px-[16px] py-[6px] rounded-full border border-hairline-dark text-on-dark hover:bg-surface-elevated transition-colors">+ Tambah Pengalaman</button>
+        </div>
+        <!-- Relevant Coursework -->
+        <div class="border-t border-hairline-dark pt-[16px]">
+          <h5 class="text-[14px] font-semibold text-on-dark mb-[4px]">Relevant Coursework <span class="text-stone text-[12px] font-normal">(opsional)</span></h5>
+          <span class="text-[12px] text-stone mb-[8px] block">Pisahkan dengan koma. Contoh: Algoritma, Machine Learning, Basis Data</span>
+          <textarea v-model="eduForm.coursework" placeholder="Algoritma & Pemrograman, Kecerdasan Buatan, Jaringan Komputer..." rows="2" class="w-full bg-transparent border border-hairline-dark rounded-[12px] p-[12px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
+        </div>
       </div>
     </div>
 
@@ -127,12 +145,16 @@
           </div>
         </div>
       </div>
+
       <div class="border border-hairline-dark rounded-[16px] p-[20px]">
         <h4 class="text-[16px] font-semibold text-on-dark mb-[20px]">{{ workEditIndex >= 0 ? 'Edit Pengalaman' : 'Tambah Pengalaman Baru' }}</h4>
         <div class="flex flex-col gap-[16px]">
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Nama Perusahaan <span class="text-accent-danger font-bold">*</span></label>
+          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Nama Perusahaan / Organisasi <span class="text-accent-danger font-bold">*</span></label>
             <input v-model="workForm.company" placeholder="Contoh: PT ABC" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
             <div v-if="workErrors.company" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.company }}</div>
+          </div>
+          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Lokasi</label>
+            <input v-model="workForm.location" placeholder="Contoh: Jakarta, Indonesia" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           </div>
           <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Posisi/Jabatan <span class="text-accent-danger font-bold">*</span></label>
             <input v-model="workForm.position" placeholder="Contoh: Frontend Developer" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
@@ -231,82 +253,91 @@
   </div>
 
   <!-- ===== PREVIEW MODE — Modern ATS: clean single-column ===== -->
-  <div v-else class="bg-white text-black p-[48px] leading-[1.6]" :style="{ fontFamily: templateFont }">
+  <div v-else class="bg-white text-black p-[25px] leading-[1.3]" :style="{ fontFamily: templateFont }">
     <!-- Header -->
-    <div class="mb-[24px]" :class="useProfilePicture ? 'flex items-center gap-[24px]' : 'text-center'">
-      <div v-if="useProfilePicture" class="w-[90px] h-[100px] overflow-hidden shrink-0 rounded-sm">
+    <div :class="useProfilePicture ? 'flex items-start gap-[24px]' : 'text-center'">
+      <div v-if="useProfilePicture" class="w-[90px] h-[100px] overflow-hidden shrink-0">
         <img v-if="profilePictureUrl" :src="profilePictureUrl" class="w-full h-full object-cover" />
         <Icon v-else icon="iconamoon:profile-fill" class="w-full h-full text-gray-400" />
       </div>
+
       <div :class="useProfilePicture ? 'flex-1' : ''">
-        <h1 class="text-[26px] font-bold uppercase tracking-[2px] mb-[4px]">{{ formData.full_name || '[Nama Anda]' }}</h1>
-        <div class="text-[11px] text-gray-500 flex flex-wrap gap-x-[6px]" :class="useProfilePicture ? '' : 'justify-center'">
-          <span v-if="formData.email && !errors.email">{{ formData.email }}</span>
-          <span v-if="formData.email && !errors.email && formData.phone">·</span>
-          <span v-if="formData.phone">{{ formData.phone }}</span>
-          <span v-if="formData.address">· {{ formData.address }}</span>
-          <span v-if="formData.linkedin && !errors.linkedin">· {{ formData.linkedin }}</span>
+        <h1 class="text-[30px] font-bold uppercase tracking-[2px] mb-0 leading-none">{{ formData.full_name || '[Nama Anda]' }}</h1>
+        <div class="text-[12px] text-gray-500 flex flex-wrap gap-x-[2px]" :class="useProfilePicture ? '' : 'justify-center'">
+          <span v-if="formData.phone">{{ formData.phone }} |</span>
+          <span v-if="formData.email && !errors.email">{{ formData.email }} |</span>
+          <span v-if="formData.linkedin && !errors.linkedin">{{ formData.linkedin }} |</span>
+          <span v-if="formData.github && !errors.github">{{ formData.github }} |</span>
+          <span v-if="formData.address"> {{ formData.address }}</span>
         </div>
+        <p class="text-[12px] text-justify leading-[1.3] mt-[4px]">{{ formData.summary }}</p>
       </div>
     </div>
 
-    <!-- Divider accent -->
-    <div class="h-[3px] bg-black mb-[20px]"></div>
-
-    <!-- Summary -->
-    <div v-if="formData.summary" class="mb-[18px]">
-      <h2 class="text-[11px] uppercase font-bold tracking-[2px] mb-[8px] text-gray-700">Ringkasan Profesional</h2>
-      <div class="h-px bg-gray-300 mb-[10px]"></div>
-      <p class="text-[12px] text-justify leading-[1.7]">{{ formData.summary }}</p>
-    </div>
-
     <!-- Education -->
-    <div v-if="educations.length > 0" class="mb-[18px]">
-      <h2 class="text-[11px] uppercase font-bold tracking-[2px] mb-[8px] text-gray-700">Pendidikan</h2>
-      <div class="h-px bg-gray-300 mb-[10px]"></div>
-      <div v-for="(edu, i) in educations" :key="i" class="mb-[12px]">
+    <div v-if="educations.length > 0" class="mt-[8px]">
+      <h2 class="text-[15px] font-bold tracking-[1px] mb-[8px] text-black border-b border-black">Pendidikan</h2>
+      <div v-for="(edu, i) in educations" :key="i" class="mb-[4px]">
         <div class="flex justify-between items-start">
           <div>
-            <div class="text-[12px] font-bold">{{ edu.degree }} – {{ edu.major }}</div>
-            <div class="text-[12px] text-gray-600">{{ edu.institution }} &nbsp;|&nbsp; IPK: {{ formatGPA(edu.gpa) }}/4.00</div>
+            <div class="text-[12px] font-bold text-black">{{ edu.institution }}<span v-if="edu.location" class="text-gray-500 font-normal"> - {{ edu.location }}</span></div>
+            <div class="text-[12px] italic text-black">{{ edu.major }} &nbsp;: {{ formatGPA(edu.gpa) }}/4.00</div>
           </div>
-          <div v-if="edu.showDate" class="text-[11px] text-gray-500 shrink-0 text-right">
+          <div v-if="edu.showDate" class="text-[12px] text-black shrink-0 text-right">
             {{ edu.startMonth }} {{ edu.startYear }} – {{ edu.isCurrent ? 'Sekarang' : edu.endMonth + ' ' + edu.endYear }}
           </div>
         </div>
+        <ul v-if="edu.activities && edu.activities.filter(a => a.trim()).length" class="mt-[2px] pl-[16px] list-disc">
+          <li v-for="(act, ai) in edu.activities.filter(a => a.trim())" :key="ai" class="text-[11px] mb-0 leading-[1.3] text-black">{{ act }}</li>
+          <li v-if="edu.coursework" class="text-[12px] text-black">Mata Kuliah Relevan: {{ edu.coursework }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Organizational Experience -->
+    <div v-if="workExperiences.length > 0" class="mt-[8px] mb-[10px]">
+      <h2 class="text-[15px] font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Pengalaman Organisasi</h2>
+      <div v-for="(work, i) in workExperiences" :key="i" class="mb-[6px]">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-[12px] font-bold text-black">{{ work.company }}<span v-if="work.location" class="text-gray-500 font-normal"> - {{ work.location }}</span></div>
+            <div class="text-[12px] italic text-black">{{ work.position }}</div>
+          </div>
+          <div class="text-[12px] text-black shrink-0 text-right">{{ work.startMonth }} {{ work.startYear }} – {{ work.current ? 'Sekarang' : work.endMonth + ' ' + work.endYear }}</div>
+        </div>
+        <ul class="mt-[2px] pl-[16px] list-disc">
+          <li v-for="(jd, ji) in work.jobDescriptions.filter(j => j.trim())" :key="ji" class="text-[12px] mb-0 leading-[1.3]">{{ jd }}</li>
+        </ul>
       </div>
     </div>
 
     <!-- Work Experience -->
-    <div v-if="workExperiences.length > 0" class="mb-[18px]">
-      <h2 class="text-[11px] uppercase font-bold tracking-[2px] mb-[8px] text-gray-700">Pengalaman Kerja</h2>
-      <div class="h-px bg-gray-300 mb-[10px]"></div>
-      <div v-for="(work, i) in workExperiences" :key="i" class="mb-[14px]">
+    <div v-if="workExperiences.length > 0" class="mt-[8px] mb-[10px]">
+      <h2 class="text-[15px] uppercase font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Pengalaman Kerja</h2>
+      <div v-for="(work, i) in workExperiences" :key="i" class="mb-[6px]">
         <div class="flex justify-between items-start">
           <div>
-            <div class="text-[12px] font-bold">{{ work.position }}</div>
-            <div class="text-[12px] text-gray-600 italic">{{ work.company }}</div>
+            <div class="text-[12px] text-black font-bold">{{ work.company }}<span v-if="work.location" class="text-gray-500 font-normal"> - {{ work.location }}</span></div>
+            <div class="text-[12px] font-bold italic text-gray-600">{{ work.position }}</div>
           </div>
           <div class="text-[11px] text-gray-500 shrink-0 text-right">{{ work.startMonth }} {{ work.startYear }} – {{ work.current ? 'Sekarang' : work.endMonth + ' ' + work.endYear }}</div>
         </div>
-        <ul class="mt-[4px] pl-[18px] list-disc">
-          <li v-for="(jd, ji) in work.jobDescriptions.filter(j => j.trim())" :key="ji" class="text-[12px] mb-[2px] leading-[1.6]">{{ jd }}</li>
+        <ul class="mt-[2px] pl-[16px] list-disc">
+          <li v-for="(jd, ji) in work.jobDescriptions.filter(j => j.trim())" :key="ji" class="text-[12px] mb-0 leading-[1.3]">{{ jd }}</li>
         </ul>
       </div>
     </div>
 
     <!-- Skills -->
-    <div v-if="formData.technical_skills || formData.soft_skills" class="mb-[18px]">
-      <h2 class="text-[11px] uppercase font-bold tracking-[2px] mb-[8px] text-gray-700">Keahlian</h2>
-      <div class="h-px bg-gray-300 mb-[10px]"></div>
+    <div v-if="formData.technical_skills || formData.soft_skills" class="mt-[8px] mb-[10px]">
+      <h2 class="text-[15px] uppercase font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Keahlian</h2>
       <p v-if="formData.technical_skills" class="text-[12px] mb-[4px]"><strong>Teknis:</strong> {{ formData.technical_skills }}</p>
       <p v-if="formData.soft_skills" class="text-[12px]"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
     </div>
 
     <!-- Certifications -->
-    <div v-if="formData.cert_name" class="mb-[18px]">
-      <h2 class="text-[11px] uppercase font-bold tracking-[2px] mb-[8px] text-gray-700">Sertifikasi</h2>
-      <div class="h-px bg-gray-300 mb-[10px]"></div>
+    <div v-if="formData.cert_name" class="mt-[8px] mb-[10px]">
+      <h2 class="text-[15px] uppercase font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Sertifikasi</h2>
       <div class="flex justify-between text-[12px]">
         <span class="font-semibold">{{ formData.cert_name }}</span>
         <span class="text-gray-500">{{ formData.issuer }}</span>
@@ -342,8 +373,8 @@ const steps = [
 const currentId = computed(() => steps[props.stepIndex]?.id)
 
 // ===== FORM DATA =====
-const formData = reactive({ full_name: '', email: '', phone: '', address: '', linkedin: '', summary: '', technical_skills: '', soft_skills: '', cert_name: '', issuer: '' })
-const errors = reactive({ email: '', linkedin: '' })
+const formData = reactive({ full_name: '', email: '', phone: '', address: '', linkedin: '', github: '', summary: '', technical_skills: '', soft_skills: '', cert_name: '', issuer: '' })
+const errors = reactive({ email: '', linkedin: '', github: '' })
 const suggestions = reactive({})
 const useProfilePicture = ref(false)
 const profilePictureUrl = ref('')
@@ -355,6 +386,7 @@ const personalFields = [
   { key: 'phone', label: 'Nomor Telepon', placeholder: 'Contoh: +628123456789', hint: 'Sertakan kode negara', required: true },
   { key: 'address', label: 'Alamat', placeholder: 'Contoh: Jakarta, Indonesia', hint: 'Kota dan negara saja', required: false },
   { key: 'linkedin', label: 'URL LinkedIn', placeholder: 'Contoh: linkedin.com/in/budisantoso', hint: 'Pastikan profil publik', required: true },
+  { key: 'github', label: 'URL GitHub', placeholder: 'Contoh: github.com/budisantoso', hint: 'Opsional', required: false },
 ]
 
 function validateEmail() {
@@ -366,9 +398,24 @@ function validateLinkedIn() {
   errors.linkedin = v && !/linkedin\.com\/(in|pub|profile)/i.test(v) ? 'Harus berformat linkedin.com/in/...' : ''
 }
 
+function validateGitHub() {
+  const v = formData.github
+  errors.github = v && !/^(https?:\/\/)?(www\.)?github\.com\/[a-zA-Z0-9_-]+/.test(v) ? 'Harus berformat github.com/username' : ''
+}
+
 function onProfilePictureChange(e) {
   const file = e.target.files[0]
-  profilePictureUrl.value = file ? URL.createObjectURL(file) : ''
+  if (!file) {
+    profilePictureUrl.value = ''
+    localStorage.removeItem(`cv_${STORE}_photo`)
+    return
+  }
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    profilePictureUrl.value = ev.target.result
+    localStorage.setItem(`cv_${STORE}_photo`, ev.target.result)
+  }
+  reader.readAsDataURL(file)
 }
 
 async function requestSuggestion(key, label) {
@@ -377,7 +424,7 @@ async function requestSuggestion(key, label) {
 
 // ===== EDUCATION =====
 const educations = ref([])
-const eduForm = reactive({ degree: '', major: '', institution: '', startMonth: '', startYear: '', endMonth: '', endYear: '', gpa: '', showDate: true, isCurrent: false })
+const eduForm = reactive({ major: '', institution: '', location: '', startMonth: '', startYear: '', endMonth: '', endYear: '', gpa: '', showDate: true, isCurrent: false, activities: [''], coursework: '' })
 const eduErrors = reactive({})
 
 function clearEduErrors() { Object.keys(eduErrors).forEach(k => delete eduErrors[k]) }
@@ -385,7 +432,6 @@ function clearEduErrors() { Object.keys(eduErrors).forEach(k => delete eduErrors
 function validateEduForm() {
   clearEduErrors()
   let ok = true
-  if (!eduForm.degree.trim()) { eduErrors.degree = 'Gelar wajib diisi.'; ok = false }
   if (!eduForm.major.trim()) { eduErrors.major = 'Jurusan wajib diisi.'; ok = false }
   if (!eduForm.institution.trim()) { eduErrors.institution = 'Institusi wajib diisi.'; ok = false }
   if (eduForm.showDate) {
@@ -406,13 +452,13 @@ function validateEduForm() {
 
 function saveEdu() {
   if (!validateEduForm()) return
-  educations.value = [{ degree: eduForm.degree.trim(), major: eduForm.major.trim(), institution: eduForm.institution.trim(), startMonth: eduForm.showDate ? eduForm.startMonth : '', startYear: eduForm.showDate ? eduForm.startYear : '', endMonth: (eduForm.showDate && !eduForm.isCurrent) ? eduForm.endMonth : '', endYear: (eduForm.showDate && !eduForm.isCurrent) ? eduForm.endYear : '', gpa: eduForm.gpa.toString().trim(), showDate: eduForm.showDate, isCurrent: eduForm.isCurrent }]
+  educations.value = [{ major: eduForm.major.trim(), institution: eduForm.institution.trim(), location: eduForm.location.trim(), startMonth: eduForm.showDate ? eduForm.startMonth : '', startYear: eduForm.showDate ? eduForm.startYear : '', endMonth: (eduForm.showDate && !eduForm.isCurrent) ? eduForm.endMonth : '', endYear: (eduForm.showDate && !eduForm.isCurrent) ? eduForm.endYear : '', gpa: eduForm.gpa.toString().trim(), showDate: eduForm.showDate, isCurrent: eduForm.isCurrent, activities: eduForm.activities.map(a => a.trim()).filter(a => a), coursework: eduForm.coursework.trim() }]
 }
 
 // ===== WORK EXPERIENCE =====
 const workExperiences = ref([])
 const workEditIndex = ref(-1)
-const workForm = reactive({ company: '', position: '', startMonth: '', startYear: '', endMonth: '', endYear: '', current: false, jobDescriptions: [''] })
+const workForm = reactive({ company: '', location: '', position: '', startMonth: '', startYear: '', endMonth: '', endYear: '', current: false, jobDescriptions: [''] })
 const workErrors = reactive({})
 
 function clearWorkErrors() { Object.keys(workErrors).forEach(k => delete workErrors[k]) }
@@ -437,7 +483,7 @@ function validateWorkForm() {
 
 function saveWork() {
   if (!validateWorkForm()) return
-  const entry = { company: workForm.company.trim(), position: workForm.position.trim(), startMonth: workForm.startMonth, startYear: workForm.startYear, endMonth: workForm.current ? '' : workForm.endMonth, endYear: workForm.current ? '' : workForm.endYear, current: workForm.current, jobDescriptions: workForm.jobDescriptions.map(j => j.trim()).filter(j => j) }
+  const entry = { company: workForm.company.trim(), location: workForm.location.trim(), position: workForm.position.trim(), startMonth: workForm.startMonth, startYear: workForm.startYear, endMonth: workForm.current ? '' : workForm.endMonth, endYear: workForm.current ? '' : workForm.endYear, current: workForm.current, jobDescriptions: workForm.jobDescriptions.map(j => j.trim()).filter(j => j) }
   if (workEditIndex.value >= 0) workExperiences.value[workEditIndex.value] = entry
   else workExperiences.value.push(entry)
   resetWork()
@@ -445,7 +491,7 @@ function saveWork() {
 
 function editWork(idx) {
   const w = workExperiences.value[idx]
-  Object.assign(workForm, { company: w.company, position: w.position, startMonth: w.startMonth, startYear: w.startYear, endMonth: w.endMonth, endYear: w.endYear, current: w.current, jobDescriptions: [...w.jobDescriptions] })
+  Object.assign(workForm, { company: w.company, location: w.location || '', position: w.position, startMonth: w.startMonth, startYear: w.startYear, endMonth: w.endMonth, endYear: w.endYear, current: w.current, jobDescriptions: [...w.jobDescriptions] })
   if (!workForm.jobDescriptions.length) workForm.jobDescriptions = ['']
   workEditIndex.value = idx; clearWorkErrors()
 }
@@ -459,7 +505,7 @@ function deleteWork(idx) {
 }
 
 function resetWork() {
-  Object.assign(workForm, { company: '', position: '', startMonth: '', startYear: '', endMonth: '', endYear: '', current: false, jobDescriptions: [''] })
+  Object.assign(workForm, { company: '', location: '', position: '', startMonth: '', startYear: '', endMonth: '', endYear: '', current: false, jobDescriptions: [''] })
   workEditIndex.value = -1; clearWorkErrors()
 }
 
@@ -473,7 +519,7 @@ function validate(stepIdx) {
   }
   if (id === 'summary') return !!formData.summary.trim()
   if (id === 'education') {
-    if (eduForm.degree.trim() && eduForm.major.trim() && eduForm.institution.trim()) saveEdu()
+    if (eduForm.major.trim() && eduForm.institution.trim()) saveEdu()
     return educations.value.length > 0
   }
   if (id === 'experience') return workExperiences.value.length > 0
@@ -484,7 +530,7 @@ function validate(stepIdx) {
 
 // ===== TEXT FOR ANALYSIS =====
 function getTextForAnalysis() {
-  const eduText = educations.value.map(e => `${e.degree} ${e.major} di ${e.institution} (IPK: ${e.gpa})`).join('\n')
+  const eduText = educations.value.map(e => `${e.major} di ${e.institution}${e.location ? ', ' + e.location : ''} (IPK: ${e.gpa})`).join('\n')
   const workText = workExperiences.value.map(w => `${w.position} di ${w.company}\nJobdesk: ${w.jobDescriptions.join('; ')}`).join('\n')
   return `Name: ${formData.full_name}\nEmail: ${formData.email} | Phone: ${formData.phone} | Address: ${formData.address}\nLinkedIn: ${formData.linkedin}\nSummary: ${formData.summary}\nEducation: ${eduText}\nWork Experience: ${workText}\nTechnical Skills: ${formData.technical_skills}\nSoft Skills: ${formData.soft_skills}\nCertifications: ${formData.cert_name} from ${formData.issuer}`
 }
@@ -498,15 +544,20 @@ onMounted(() => {
     const d = localStorage.getItem(`cv_${STORE}_data`)
     if (d) Object.assign(formData, JSON.parse(d))
     const e = localStorage.getItem(`cv_${STORE}_edu`)
-    if (e) { educations.value = JSON.parse(e); if (educations.value.length) { const edu = educations.value[0]; Object.assign(eduForm, { degree: edu.degree, major: edu.major, institution: edu.institution, startMonth: edu.startMonth, startYear: edu.startYear, endMonth: edu.endMonth, endYear: edu.endYear, gpa: edu.gpa, showDate: edu.showDate !== undefined ? edu.showDate : true, isCurrent: edu.isCurrent || false }) } }
+    if (e) { educations.value = JSON.parse(e); if (educations.value.length) { const edu = educations.value[0]; Object.assign(eduForm, { major: edu.major, institution: edu.institution, location: edu.location || '', startMonth: edu.startMonth, startYear: edu.startYear, endMonth: edu.endMonth, endYear: edu.endYear, gpa: edu.gpa, showDate: edu.showDate !== undefined ? edu.showDate : true, isCurrent: edu.isCurrent || false, activities: edu.activities && edu.activities.length ? edu.activities : [''], coursework: edu.coursework || '' }) } }
     const w = localStorage.getItem(`cv_${STORE}_work`)
     if (w) workExperiences.value = JSON.parse(w)
+    const photo = localStorage.getItem(`cv_${STORE}_photo`)
+    if (photo) { profilePictureUrl.value = photo; useProfilePicture.value = true }
+    const usePic = localStorage.getItem(`cv_${STORE}_usePhoto`)
+    if (usePic !== null) useProfilePicture.value = usePic === 'true'
   } catch {}
 })
 
 watch(formData, v => localStorage.setItem(`cv_${STORE}_data`, JSON.stringify(v)), { deep: true })
 watch(educations, v => localStorage.setItem(`cv_${STORE}_edu`, JSON.stringify(v)), { deep: true })
 watch(workExperiences, v => localStorage.setItem(`cv_${STORE}_work`, JSON.stringify(v)), { deep: true })
+watch(useProfilePicture, v => localStorage.setItem(`cv_${STORE}_usePhoto`, String(v)))
 
 defineExpose({ steps, validate, getTextForAnalysis, hasPreviewData })
 </script>

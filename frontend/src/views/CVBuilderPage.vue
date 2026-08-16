@@ -107,6 +107,25 @@
               </div>
 
               <div v-else ref="fontListRef" class="h-[280px] overflow-y-auto rounded-[12px] border border-hairline-dark divide-y divide-hairline-dark" tabindex="0" @wheel.stop>
+                <!-- System Fonts Section -->
+                <div v-if="filteredSystemFonts.length > 0">
+                  <div class="px-[14px] py-[6px] text-[10px] font-bold uppercase tracking-widest text-stone bg-white/3 sticky top-0">System Fonts</div>
+                  <button v-for="f in filteredSystemFonts" :key="'sys-' + f.family" type="button"
+                    @click="selectFont(f)"
+                    class="w-full flex items-center gap-[10px] px-[14px] py-[10px] transition-colors hover:bg-white/5 text-left"
+                    :class="selectedFont === f.family ? 'bg-white/8' : ''">
+                    <div class="w-[16px] h-[16px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors" :class="selectedFont === f.family ? 'border-white' : 'border-stone'">
+                      <div v-if="selectedFont === f.family" class="w-[8px] h-[8px] rounded-full bg-white"></div>
+                    </div>
+                    <span class="text-[15px] transition-colors" :class="selectedFont === f.family ? 'text-on-dark' : 'text-on-dark-mute'" :style="{ fontFamily: `'${f.family}', ${f.category}` }">{{ f.family }}</span>
+                    <span class="text-[11px] text-stone capitalize ml-[2px]">{{ f.category }}</span>
+                  </button>
+                </div>
+
+                <!-- Google Fonts Section -->
+                <div v-if="filteredGoogleFonts.length > 0 && !fontSearch.trim()">
+                  <div class="px-[14px] py-[6px] text-[10px] font-bold uppercase tracking-widest text-stone bg-white/3 sticky top-0">Google Fonts</div>
+                </div>
                 <button v-for="f in filteredGoogleFonts" :key="f.family" type="button"
                   @click="selectFont(f)" @mouseenter="onFontHover(f.family)"
                   class="w-full flex items-center gap-[10px] px-[14px] py-[10px] transition-colors hover:bg-white/5 text-left"
@@ -123,8 +142,9 @@
                   >{{ f.family }}</span>
                   <span class="text-[11px] text-stone capitalize ml-[2px]">{{ f.category }}</span>
                 </button>
-                <div v-if="filteredGoogleFonts.length === 0" class="text-center text-stone text-[13px] py-[24px]">Tidak ada font ditemukan.</div>
+                <div v-if="filteredGoogleFonts.length === 0 && filteredSystemFonts.length === 0" class="text-center text-stone text-[13px] py-[24px]">Tidak ada font ditemukan.</div>
               </div>
+
               <p class="text-[12px] text-stone mt-[10px]">{{ googleFonts.length.toLocaleString() }} font tersedia </p>
             </div>
           </div>
@@ -210,12 +230,14 @@
               <component
                 :is="activeTemplateComponent"
                 ref="previewTemplateRef"
+                :key="`preview-${currentStep}`"
                 :step-index="0"
                 :is-preview="true"
                 :template-font="templateFont"
                 :target-expertise="targetExpertise"
               />
             </div>
+
             <div v-if="!hasPreviewData" class="text-stone text-center p-[40px] italic border border-dashed border-hairline-dark rounded-[20px]">
               Mulai isi data Anda pada tahapan sebelumnya untuk melihat pratinjau.
             </div>
@@ -345,6 +367,19 @@ const fontSearch = ref('')
 const loadedFonts = ref([])
 const fontListRef = ref(null)
 
+// System fonts (tidak perlu di-load dari Google Fonts)
+const SYSTEM_FONTS = [
+  { family: 'Times New Roman', category: 'serif', system: true },
+  { family: 'Georgia', category: 'serif', system: true },
+  { family: 'Garamond', category: 'serif', system: true },
+  { family: 'Arial', category: 'sans-serif', system: true },
+  { family: 'Helvetica', category: 'sans-serif', system: true },
+  { family: 'Calibri', category: 'sans-serif', system: true },
+  { family: 'Verdana', category: 'sans-serif', system: true },
+  { family: 'Tahoma', category: 'sans-serif', system: true },
+  { family: 'Courier New', category: 'monospace', system: true },
+]
+
 // ===== COMPUTED =====
 const activeTemplateComponent = computed(() => TEMPLATE_COMPONENT_MAP[selectedTemplate.value])
 const activeSteps = computed(() => TEMPLATE_STEPS[selectedTemplate.value] || [])
@@ -358,6 +393,12 @@ const templateFont = computed(() => {
 
 const hasPreviewData = computed(() => {
   return templateRef.value?.hasPreviewData || previewTemplateRef.value?.hasPreviewData || false
+})
+
+const filteredSystemFonts = computed(() => {
+  if (!fontSearch.value.trim()) return SYSTEM_FONTS
+  const q = fontSearch.value.trim().toLowerCase()
+  return SYSTEM_FONTS.filter(f => f.family.toLowerCase().includes(q))
 })
 
 const filteredGoogleFonts = computed(() => {
@@ -399,8 +440,9 @@ function onFontHover(family) {
 
 async function selectFont(f) {
   selectedFont.value = f.family; selectedFontName.value = f.family; hoveredFont.value = ''
-  await loadFont(f.family)
+  if (!f.system) await loadFont(f.family)
 }
+
 
 // ===== NAVIGATION =====
 function isStepValid(stepIndex) {
