@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen pt-[88px] bg-canvas-dark text-on-dark font-sans">
-    <div class="w-full mx-auto px-[32px] md:px-[72px]">
+  <div class="cv-builder-root min-h-screen pt-[88px] bg-canvas-dark text-on-dark font-sans print:p-0 print:m-0 print:bg-white print:min-h-0">
+    <div class="w-full mx-auto px-[32px] md:px-[72px] print:hidden">
       <div class="print:hidden mb-xl">
         <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-sm block">Sistem Pembangun Dokumen ATS</span>
         <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark">Pembuat CV</h1>
@@ -170,8 +170,9 @@
                 <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[13px] px-[16px] h-[32px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed" @click="analyzeBuiltCV" :disabled="analyzing">
                   {{ analyzing ? 'Memindai...' : 'Scan ATS Score' }}
                 </button>
-                <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[13px] px-[16px] h-[32px] bg-on-dark text-ink hover:bg-white/90" @click="downloadPDF">
-                  Unduh PDF
+                <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[13px] px-[16px] h-[32px] bg-on-dark text-ink hover:bg-white/90 disabled:opacity-60 disabled:cursor-not-allowed" @click="downloadPDF" :disabled="pdfLoading">
+                  <span v-if="pdfLoading" class="flex items-center gap-[6px]"><svg class="animate-spin w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="40 20"/></svg>Membuat PDF...</span>
+                  <span v-else>Unduh PDF</span>
                 </button>
               </div>
             </div>
@@ -220,22 +221,26 @@
 
                 <div v-if="analysisResult.analysis?.recommendations?.length" class="bg-surface-elevated rounded-[20px] p-xxl border-l-3 border-primary mb-xl">
                   <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Rekomendasi AI</span>
-                  <ul class="pl-[20px] mt-md text-[14px] list-disc"><li v-for="(rec, i) in analysisResult.analysis.recommendations" :key="i" class="mb-[12px] text-on-dark-mute">{{ rec }}</li></ul>
+                <ul class="pl-[20px] mt-md text-[14px] list-disc"><li v-for="(rec, i) in analysisResult.analysis.recommendations" :key="i" class="mb-[12px] text-on-dark-mute">{{ rec }}</li></ul>
                 </div>
               </template>
             </div>
 
-            <!-- CV Preview via template component -->
-            <div class="rounded-[20px] overflow-hidden shadow-2xl max-w-[800px] mx-auto">
-              <component
-                :is="activeTemplateComponent"
-                ref="previewTemplateRef"
-                :key="`preview-${currentStep}`"
-                :step-index="0"
-                :is-preview="true"
-                :template-font="templateFont"
-                :target-expertise="targetExpertise"
-              />
+            <!-- CV Preview via template component (scaled to fit screen) -->
+            <div class="px-2 md:px-0">
+              <div class="cv-preview-wrapper" ref="previewWrapper">
+                <div class="cv-preview-scaler" ref="previewScaler">
+                  <component
+                    :is="activeTemplateComponent"
+                    ref="previewTemplateRef"
+                    :key="`preview-${currentStep}`"
+                    :step-index="0"
+                    :is-preview="true"
+                    :template-font="templateFont"
+                    :target-expertise="targetExpertise"
+                  />
+                </div>
+              </div>
             </div>
 
             <div v-if="!hasPreviewData" class="text-stone text-center p-[40px] italic border border-dashed border-hairline-dark rounded-[20px]">
@@ -261,8 +266,8 @@
       </div>
     </div>
 
-    <!-- Print container -->
-    <div class="hidden print:block absolute left-0 top-0 w-full m-0 p-0 border-none shadow-none rounded-none bg-white">
+    <!-- Print container: hidden in browser, shown only when printing -->
+    <div class="cv-print-container" ref="printContainer" style="display:none;">
       <component
         :is="activeTemplateComponent"
         :step-index="0"
@@ -275,7 +280,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import CustomSelect from '../components/CustomSelect.vue'
 import axios from 'axios'
 import { Icon } from '@iconify/vue'
@@ -325,8 +330,8 @@ const TEMPLATE_STEPS = {
     { id: 'education', title: 'Pendidikan' },
     { id: 'organization', title: 'Pengalaman Organisasi' },
     { id: 'experience', title: 'Pengalaman Kerja' },
-    { id: 'skills', title: 'Keahlian' },
-    { id: 'certifications', title: 'Sertifikasi' },
+    { id: 'projects', title: 'Proyek' },
+    { id: 'certifications', title: 'Keahlian & Sertifikasi' },
   ],
   classic_ats: [
     { id: 'personal_info', title: 'Informasi Pribadi' },
@@ -515,9 +520,81 @@ async function analyzeBuiltCV() {
   finally { analyzing.value = false }
 }
 
-function downloadPDF() { window.print() }
+const pdfLoading = ref(false)
 
-// ===== LIFECYCLE =====
+async function downloadPDF() {
+  if (pdfLoading.value) return
+  pdfLoading.value = true
+
+  // Tampilkan container print, render konten
+  if (printContainer.value) printContainer.value.style.display = 'block'
+
+  await nextTick()
+
+  try {
+    const html2pdf = (await import('html2pdf.js')).default
+    const element = printContainer.value
+    const filename = 'CV-' + (element?.querySelector('h1')?.textContent?.trim().replace(/\s+/g, '-') || 'JobFinder') + '.pdf'
+
+    await html2pdf()
+      .set({
+        margin: [10, 10, 10, 10],
+        filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          letterRendering: true,
+          backgroundColor: '#ffffff'
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      })
+      .from(element)
+      .save()
+  } catch (e) {
+    console.error('PDF generation failed:', e)
+    alert('Gagal membuat PDF. Silakan coba lagi.')
+  } finally {
+    if (printContainer.value) printContainer.value.style.display = 'none'
+    pdfLoading.value = false
+  }
+}
+
+const printContainer = ref(null)
+const previewWrapper = ref(null)
+const previewScaler = ref(null)
+
+// ===== PREVIEW SCALE =====
+const A4_WIDTH = 794  // px lebar A4 pada 96dpi
+const A4_HEIGHT = 1123 // px tinggi A4 pada 96dpi
+let resizeObserver = null
+
+function scalePreview() {
+  const wrapper = previewWrapper.value
+  const scaler = previewScaler.value
+  if (!wrapper || !scaler) return
+
+  // Reset transform dulu agar pengukuran scrollHeight akurat
+  scaler.style.transform = 'none'
+  scaler.style.width = A4_WIDTH + 'px'
+  scaler.style.minHeight = A4_HEIGHT + 'px'
+
+  // Ukur tinggi aktual konten (dalam kondisi unscaled)
+  const contentHeight = Math.max(A4_HEIGHT, scaler.scrollHeight)
+
+  // Hitung skala berdasarkan lebar wrapper
+  const wrapperWidth = wrapper.clientWidth
+  const scale = Math.min(1, wrapperWidth / A4_WIDTH)
+
+  // Terapkan transform
+  scaler.style.transform = `scale(${scale})`
+  scaler.style.transformOrigin = 'top left'
+
+  // Set tinggi wrapper agar pas menampung konten yang sudah discale
+  wrapper.style.height = (contentHeight * scale) + 'px'
+}
+
 onMounted(async () => {
   try {
     const [areaRes] = await Promise.all([axios.get('/api/expertise-areas')])
@@ -529,6 +606,17 @@ onMounted(async () => {
   if (savedTemplate) selectedTemplate.value = savedTemplate
   const savedMaxStep = localStorage.getItem('jobfinder_cv_maxStep_v2')
   if (savedMaxStep) { try { maxStepReached.value = parseInt(savedMaxStep) || 0 } catch { } }
+
+  await nextTick()
+  if (previewWrapper.value) {
+    resizeObserver = new ResizeObserver(() => scalePreview())
+    resizeObserver.observe(previewWrapper.value)
+    scalePreview()
+  }
+})
+
+onBeforeUnmount(() => {
+  if (resizeObserver) resizeObserver.disconnect()
 })
 
 watch(selectedTemplate, val => {
@@ -537,19 +625,43 @@ watch(selectedTemplate, val => {
 })
 
 watch(maxStepReached, val => localStorage.setItem('jobfinder_cv_maxStep_v2', val.toString()))
+
+watch(currentStep, async () => {
+  await nextTick()
+  scalePreview()
+})
 </script>
 
 <style scoped>
 .animate-fade-in { animation: fadeIn 0.5s ease-out; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-</style>
 
-<style>
-@media print {
-  @page { margin: 0; size: A4 portrait; }
-  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body * { visibility: hidden; }
-  .print\:block { visibility: visible !important; }
-  .print\:block * { visibility: visible; }
+/* CV Preview Scaling — A4 @ 96dpi: 794×1123px */
+.cv-preview-wrapper {
+  width: 100%;
+  max-width: 794px;
+  margin: 0 auto;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3);
+  position: relative;
+  background: #ffffff;
+}
+
+.cv-preview-scaler {
+  display: block;
+  width: 794px;
+  min-height: 1123px;
+  will-change: transform;
+  transform-origin: top left;
+  background: #ffffff;
+}
+
+/* Mobile: beri ruang agar tidak mentok ke tepi layar */
+@media (max-width: 768px) {
+  .cv-preview-wrapper {
+    border-radius: 2px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
 }
 </style>

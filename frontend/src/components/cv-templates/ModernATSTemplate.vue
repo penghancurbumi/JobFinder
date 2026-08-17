@@ -310,9 +310,90 @@
       </div>
     </div>
 
-    <!-- SKILLS -->
-    <div v-else-if="currentId === 'skills'" class="flex flex-col gap-[20px]">
-      <div class="flex flex-col">
+    <!-- PROJECTS -->
+    <div v-else-if="currentId === 'projects'">
+      <div v-if="projects.length > 0" class="mb-[24px]">
+        <span class="text-[13px] font-semibold text-stone uppercase tracking-[1px] mb-[12px] block">Proyek Tersimpan ({{ projects.length }})</span>
+        <div v-for="(proj, idx) in projects" :key="'proj-'+idx" class="border border-hairline-dark rounded-[12px] p-[16px] mb-[12px]">
+          <div class="flex justify-between items-start gap-[12px]">
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-on-dark text-[14px]">{{ proj.name }}</div>
+              <div v-if="proj.role" class="text-[14px] text-on-dark-mute">{{ proj.role }}</div>
+              <div v-if="proj.tech" class="text-[12px] text-stone mt-[2px]"><span class="text-on-dark-mute font-medium">Teknologi:</span> {{ proj.tech }}</div>
+              <div v-if="proj.link" class="text-[12px] text-accent-cyan mt-[2px] truncate">{{ proj.link }}</div>
+              <div v-if="proj.startMonth || proj.startYear" class="text-[13px] text-stone mt-[2px]">{{ proj.startMonth }} {{ proj.startYear }} <span v-if="proj.endMonth || proj.endYear || proj.current">– {{ proj.current ? 'Sekarang' : proj.endMonth + ' ' + proj.endYear }}</span></div>
+              <p v-if="proj.description" class="text-[12px] text-on-dark-mute mt-[4px] line-clamp-2">{{ proj.description }}</p>
+            </div>
+            <div class="flex gap-[8px] shrink-0">
+              <button @click="editProject(idx)" class="text-[13px] px-[12px] py-[4px] rounded-full border border-hairline-dark text-on-dark-mute hover:bg-surface-elevated transition-colors">Edit</button>
+              <button @click="deleteProject(idx)" class="text-[13px] px-[12px] py-[4px] rounded-full border border-accent-danger/30 text-accent-danger hover:bg-accent-danger/10 transition-colors">Hapus</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="border border-hairline-dark rounded-[16px] p-[20px]">
+        <h4 class="text-[16px] font-semibold text-on-dark mb-[20px]">{{ projectEditIndex >= 0 ? 'Edit Proyek' : 'Tambah Proyek Baru' }}</h4>
+        
+        <div class="flex flex-col gap-[16px]">
+          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Nama Proyek <span class="text-accent-danger font-bold">*</span></label>
+            <input v-model="projectForm.name" placeholder="Contoh: Aplikasi Manajemen Inventaris Toko" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
+            <div v-if="projectErrors.name" class="text-accent-danger text-[12px] mt-[4px]">{{ projectErrors.name }}</div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-[12px]">
+            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Mulai</label>
+              <select v-model="projectForm.startMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
+                <option value="" class="bg-surface-elevated">-- Pilih Bulan (Opsional) --</option>
+                <option v-for="m in MONTHS" :key="m" :value="m" class="bg-surface-elevated">{{ m }}</option>
+              </select>
+            </div>
+            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Mulai</label>
+              <select v-model="projectForm.startYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
+                <option value="" class="bg-surface-elevated">-- Pilih Tahun (Opsional) --</option>
+                <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
+              </select>
+            </div>
+          </div>
+
+          <label class="flex items-center gap-[8px] cursor-pointer">
+            <input type="checkbox" v-model="projectForm.current" class="w-[15px] h-[15px] rounded accent-white" />
+            <span class="text-[14px] text-on-dark-mute">Proyek masih berlangsung</span>
+          </label>
+
+          <div v-if="!projectForm.current" class="grid grid-cols-2 gap-[12px]">
+            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Selesai</label>
+              <select v-model="projectForm.endMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
+                <option value="" class="bg-surface-elevated">-- Pilih Bulan (Opsional) --</option>
+                <option v-for="m in MONTHS" :key="m" :value="m" class="bg-surface-elevated">{{ m }}</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Selesai</label>
+              <select v-model="projectForm.endYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
+                <option value="" class="bg-surface-elevated">-- Pilih Tahun (Opsional) --</option>
+                <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
+              </select>
+            </div>
+          </div>
+          <div v-if="projectErrors.period" class="text-accent-danger text-[12px]">{{ projectErrors.period }}</div>
+          <div class="flex flex-col">
+            <label class="mb-[8px] font-semibold text-on-dark-mute">Deskripsi Proyek & Kontribusi <span class="text-accent-danger font-bold">*</span></label>
+            <textarea v-model="projectForm.description" placeholder="Contoh: Mengembangkan sistem manajemen inventaris berbasis web dengan fitur pemindaian barcode real-time dan laporan otomatis." rows="3" class="w-full bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
+            <div v-if="projectErrors.description" class="text-accent-danger text-[12px] mt-[4px]">{{ projectErrors.description }}</div>
+          </div>
+        </div>
+
+        <div class="flex gap-[12px] mt-[24px] pt-[16px] border-t border-hairline-dark">
+          <button @click="saveProject" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90">{{ projectEditIndex >= 0 ? 'Simpan Perubahan' : 'Simpan Proyek' }}</button>
+          <button v-if="projectEditIndex >= 0" @click="resetProject" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Batal</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Certifications, Technical Skills and Soft Skill -->
+    <div v-else-if="currentId === 'certifications'" class="flex flex-col gap-[20px]">
+       <div class="flex flex-col">
         <label class="mb-[8px] font-semibold text-on-dark-mute">Keahlian Teknis <span class="text-accent-danger font-bold">*</span>
           <button class="bg-transparent border-none text-white cursor-pointer text-[12px] ml-[12px] px-[8px] py-[2px] rounded-full hover:bg-white/10" @click.prevent="requestSuggestion('technical_skills', 'Keahlian Teknis')">💡 AI Suggestion</button>
         </label>
@@ -320,6 +401,7 @@
         <span class="text-[12px] text-stone mt-[6px]">Pisahkan dengan koma. Sebutkan yang relevan dengan posisi yang dilamar.</span>
         <div v-if="suggestions.technical_skills" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px]"><span class="font-semibold text-white">Saran AI:</span> {{ suggestions.technical_skills }}</div>
       </div>
+
       <div class="flex flex-col">
         <label class="mb-[8px] font-semibold text-on-dark-mute">Soft Skills <span class="text-accent-danger font-bold">*</span>
           <button class="bg-transparent border-none text-white cursor-pointer text-[12px] ml-[12px] px-[8px] py-[2px] rounded-full hover:bg-white/10" @click.prevent="requestSuggestion('soft_skills', 'Soft Skills')">💡 AI Suggestion</button>
@@ -328,25 +410,17 @@
         <span class="text-[12px] text-stone mt-[6px]">Buktikan dengan contoh di pengalaman kerja.</span>
         <div v-if="suggestions.soft_skills" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px]"><span class="font-semibold text-white">Saran AI:</span> {{ suggestions.soft_skills }}</div>
       </div>
-    </div>
 
-    <!-- CERTIFICATIONS -->
-    <div v-else-if="currentId === 'certifications'" class="flex flex-col gap-[20px]">
       <div class="flex flex-col">
-        <label class="mb-[8px] font-semibold text-on-dark-mute">Nama Sertifikasi</label>
-        <input v-model="formData.cert_name" placeholder="Contoh: AWS Certified Developer" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
+        <label class="mb-[8px] font-semibold text-on-dark-mute">Sertifikasi</label>
+        <textarea v-model="formData.cert_name" placeholder="Contoh: AWS Certified Developer" rows="3" class="w-full bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
         <span class="text-[12px] text-stone mt-[6px]">Cantumkan nama lengkap sertifikasi</span>
-      </div>
-      <div class="flex flex-col">
-        <label class="mb-[8px] font-semibold text-on-dark-mute">Penerbit</label>
-        <input v-model="formData.issuer" placeholder="Contoh: Amazon Web Services" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
-        <span class="text-[12px] text-stone mt-[6px]">Gunakan nama lembaga resmi</span>
       </div>
     </div>
   </div>
 
   <!-- ===== PREVIEW MODE — Modern ATS: clean single-column ===== -->
-  <div v-else class="bg-white text-black p-[25px] leading-[1.3]" :style="{ fontFamily: templateFont }">
+  <div v-else class="bg-white text-black p-[25px] leading-[1.3] w-[794px] min-h-[1123px]" :style="{ fontFamily: templateFont }">
     <!-- Header -->
     <div :class="useProfilePicture ? 'flex items-start gap-[24px]' : 'text-center'">
       <div v-if="useProfilePicture" class="w-[90px] h-[100px] overflow-hidden shrink-0">
@@ -421,20 +495,29 @@
       </div>
     </div>
 
-    <!-- Skills, Awards, and Competitions -->
-    <div v-if="formData.technical_skills || formData.soft_skills" class="mt-[8px] mb-[10px]">
+    <!-- Skills, Awards, and Competitions (Combined) -->
+    <div v-if="projects.length > 0 || formData.technical_skills || formData.soft_skills || formData.cert_name" class="mt-[8px] mb-[10px]">
       <h2 class="text-[15px] font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Kemampuan, Penghargaan, dan Kompetisi</h2>
-      <p v-if="formData.technical_skills" class="text-[12px] mb-[4px]"><strong>Teknis:</strong> {{ formData.technical_skills }}</p>
-      <p v-if="formData.soft_skills" class="text-[12px]"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
-    </div>
-
-    <!-- Certifications -->
-    <div v-if="formData.cert_name" class="mt-[8px] mb-[10px]">
-      <h2 class="text-[15px] font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Sertifikasi</h2>
-      <div class="flex justify-between text-[12px]">
-        <span class="font-semibold">{{ formData.cert_name }}</span>
-        <span class="text-gray-500">{{ formData.issuer }}</span>
+      
+      <!-- Projects (Posisi Paling Atas) -->
+      <div v-if="projects.length > 0" class="mb-[15px]">
+        <span class="text-[12px] font-bold mb-[5px] block">Project :</span>
+        <div v-for="(proj, i) in projects" :key="i" class="mb-[6px]">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="text-[12px] text-black font-bold">{{ proj.name }}</div>
+            </div>
+          </div>
+          <p v-if="proj.description" class="text-[12px] text-justify leading-[1.3] mt-[2px] mb-0 text-black">{{ proj.description }}</p>
+        </div>
       </div>
+
+      <!-- Skills -->
+      <p v-if="formData.technical_skills" class="text-[12px] mb-[4px]"><strong>Teknis:</strong> {{ formData.technical_skills }}</p>
+      <p v-if="formData.soft_skills" class="text-[12px] mb-[4px]"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
+
+      <!-- Certifications -->
+      <p v-if="formData.cert_name" class="text-[12px] mt-[4px]"><strong>Sertifikasi:</strong> {{ formData.cert_name }}</p>
     </div>
   </div>
 </template>
@@ -460,8 +543,8 @@ const steps = [
   { id: 'education', title: 'Pendidikan' },
   { id: 'organization', title: 'Pengalaman Organisasi' },
   { id: 'experience', title: 'Pengalaman Kerja' },
-  { id: 'skills', title: 'Keahlian' },
-  { id: 'certifications', title: 'Sertifikasi' },
+  { id: 'projects', title: 'Proyek' },
+  { id: 'certifications', title: 'Keahlian & Sertifikasi' },
 ]
 
 const currentId = computed(() => steps[props.stepIndex]?.id)
@@ -656,6 +739,73 @@ function resetOrganization() {
   OrganizationEditIndex.value = -1; clearOrganizationErrors()
 }
 
+// ===== PROJECTS =====
+const projects = ref([])
+const projectEditIndex = ref(-1)
+const projectForm = reactive({ name: '', role: '', tech: '', startMonth: '', startYear: '', endMonth: '', endYear: '', current: false, description: '' })
+const projectErrors = reactive({})
+
+function clearProjectErrors() { Object.keys(projectErrors).forEach(k => delete projectErrors[k]) }
+
+function validateProjectForm() {
+  clearProjectErrors(); let ok = true
+  if (!projectForm.name.trim()) { projectErrors.name = 'Nama proyek wajib diisi.'; ok = false }
+  if (!projectForm.current) {
+    if (projectForm.startMonth && projectForm.startYear && projectForm.endMonth && projectForm.endYear) {
+      if (!isPeriodValid(projectForm.startMonth, projectForm.startYear, projectForm.endMonth, projectForm.endYear)) { projectErrors.period = 'Periode selesai tidak boleh lebih awal.'; ok = false }
+    }
+  }
+  if (!projectForm.description.trim()) { projectErrors.description = 'Deskripsi proyek wajib diisi.'; ok = false }
+  return ok
+}
+
+function saveProject() {
+  if (!validateProjectForm()) return
+  const entry = {
+    name: projectForm.name.trim(),
+    role: projectForm.role.trim(),
+    tech: projectForm.tech.trim(),
+    startMonth: projectForm.startMonth,
+    startYear: projectForm.startYear,
+    endMonth: projectForm.current ? '' : projectForm.endMonth,
+    endYear: projectForm.current ? '' : projectForm.endYear,
+    current: projectForm.current,
+    description: projectForm.description.trim()
+  }
+  if (projectEditIndex.value >= 0) projects.value[projectEditIndex.value] = entry
+  else projects.value.push(entry)
+  resetProject()
+}
+
+function editProject(idx) {
+  const p = projects.value[idx]
+  Object.assign(projectForm, {
+    name: p.name,
+    role: p.role || '',
+    tech: p.tech || '',
+    startMonth: p.startMonth || '',
+    startYear: p.startYear || '',
+    endMonth: p.endMonth || '',
+    endYear: p.endYear || '',
+    current: p.current || false,
+    description: p.description || (Array.isArray(p.descriptions) ? p.descriptions.join('. ') : '')
+  })
+  projectEditIndex.value = idx; clearProjectErrors()
+}
+
+function deleteProject(idx) {
+  if (confirm('Hapus proyek ini?')) {
+    projects.value.splice(idx, 1)
+    if (projectEditIndex.value === idx) resetProject()
+    else if (projectEditIndex.value > idx) projectEditIndex.value--
+  }
+}
+
+function resetProject() {
+  Object.assign(projectForm, { name: '', role: '', tech: '', startMonth: '', startYear: '', endMonth: '', endYear: '', current: false, description: '' })
+  projectEditIndex.value = -1; clearProjectErrors()
+}
+
 // ===== VALIDATION for wizard =====
 function validate(stepIdx) {
   const id = steps[stepIdx]?.id
@@ -671,8 +821,8 @@ function validate(stepIdx) {
   }
   if (id === 'organization') return true
   if (id === 'experience') return workExperiences.value.length > 0
-  if (id === 'skills') return !!formData.technical_skills.trim() && !!formData.soft_skills.trim()
-  if (id === 'certifications') return true
+  if (id === 'projects') return true
+  if (id === 'certifications') return !!formData.technical_skills.trim() && !!formData.soft_skills.trim()
   return true
 }
 
@@ -681,11 +831,12 @@ function getTextForAnalysis() {
   const eduText = educations.value.map(e => `${e.major} di ${e.institution}${e.location ? ', ' + e.location : ''} (IPK: ${e.gpa})`).join('\n')
   const orgText = OrganizationExperiences.value.map(o => `${o.position} di ${o.company}\nJobdesk: ${o.jobDescriptions.join('; ')}`).join('\n')
   const workText = workExperiences.value.map(w => `${w.position} di ${w.company}\nJobdesk: ${w.jobDescriptions.join('; ')}`).join('\n')
-  return `Name: ${formData.full_name}\nEmail: ${formData.email} | Phone: ${formData.phone} | Address: ${formData.address}\nLinkedIn: ${formData.linkedin}\nSummary: ${formData.summary}\nEducation: ${eduText}\nOrganizational Experience: ${orgText}\nWork Experience: ${workText}\nTechnical Skills: ${formData.technical_skills}\nSoft Skills: ${formData.soft_skills}\nCertifications: ${formData.cert_name} from ${formData.issuer}`
+  const projText = projects.value.map(p => `${p.name}${p.role ? ' (' + p.role + ')' : ''}${p.tech ? ' [Tech: ' + p.tech + ']' : ''}\nDeskripsi: ${p.description || ''}`).join('\n')
+  return `Name: ${formData.full_name}\nEmail: ${formData.email} | Phone: ${formData.phone} | Address: ${formData.address}\nLinkedIn: ${formData.linkedin}\nSummary: ${formData.summary}\nEducation: ${eduText}\nOrganizational Experience: ${orgText}\nWork Experience: ${workText}\nProjects: ${projText}\nTechnical Skills: ${formData.technical_skills}\nSoft Skills: ${formData.soft_skills}\nCertifications: ${formData.cert_name} from ${formData.issuer}`
 }
 
 // ===== COMPUTED =====
-const hasPreviewData = computed(() => !!(formData.full_name || formData.summary || educations.value.length || OrganizationExperiences.value.length || workExperiences.value.length || formData.technical_skills))
+const hasPreviewData = computed(() => !!(formData.full_name || formData.summary || educations.value.length || OrganizationExperiences.value.length || workExperiences.value.length || projects.value.length || formData.technical_skills))
 
 // ===== LOCALSTORAGE =====
 onMounted(() => {
@@ -698,6 +849,8 @@ onMounted(() => {
     if (org) OrganizationExperiences.value = JSON.parse(org)
     const w = localStorage.getItem(`cv_${STORE}_work`)
     if (w) workExperiences.value = JSON.parse(w)
+    const proj = localStorage.getItem(`cv_${STORE}_proj`)
+    if (proj) projects.value = JSON.parse(proj)
     const photo = localStorage.getItem(`cv_${STORE}_photo`)
     if (photo) { profilePictureUrl.value = photo; useProfilePicture.value = true }
     const usePic = localStorage.getItem(`cv_${STORE}_usePhoto`)
@@ -709,6 +862,7 @@ watch(formData, v => localStorage.setItem(`cv_${STORE}_data`, JSON.stringify(v))
 watch(educations, v => localStorage.setItem(`cv_${STORE}_edu`, JSON.stringify(v)), { deep: true })
 watch(OrganizationExperiences, v => localStorage.setItem(`cv_${STORE}_org`, JSON.stringify(v)), { deep: true })
 watch(workExperiences, v => localStorage.setItem(`cv_${STORE}_work`, JSON.stringify(v)), { deep: true })
+watch(projects, v => localStorage.setItem(`cv_${STORE}_proj`, JSON.stringify(v)), { deep: true })
 watch(useProfilePicture, v => localStorage.setItem(`cv_${STORE}_usePhoto`, String(v)))
 
 defineExpose({ steps, validate, getTextForAnalysis, hasPreviewData })
