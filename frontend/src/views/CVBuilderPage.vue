@@ -323,6 +323,7 @@ const TEMPLATE_STEPS = {
     { id: 'personal_info', title: 'Informasi Pribadi' },
     { id: 'summary', title: 'Ringkasan Profesional' },
     { id: 'education', title: 'Pendidikan' },
+    { id: 'organization', title: 'Pengalaman Organisasi' },
     { id: 'experience', title: 'Pengalaman Kerja' },
     { id: 'skills', title: 'Keahlian' },
     { id: 'certifications', title: 'Sertifikasi' },

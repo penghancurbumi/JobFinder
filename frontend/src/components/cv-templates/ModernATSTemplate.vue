@@ -105,6 +105,7 @@
           <span class="text-[12px] text-stone mt-[6px]">Format desimal, skala 0.00 – 4.00</span>
           <div v-if="eduErrors.gpa" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.gpa }}</div>
         </div>
+
         <!-- Pengalaman Perkuliahan -->
         <div class="border-t border-hairline-dark pt-[16px]">
           <h5 class="text-[14px] font-semibold text-on-dark mb-[12px]">Pengalaman Perkuliahan <span class="text-stone text-[12px] font-normal">(opsional)</span></h5>
@@ -117,6 +118,7 @@
           </div>
           <button @click="eduForm.activities.push('')" class="mt-[12px] text-[13px] px-[16px] py-[6px] rounded-full border border-hairline-dark text-on-dark hover:bg-surface-elevated transition-colors">+ Tambah Pengalaman</button>
         </div>
+        
         <!-- Relevant Coursework -->
         <div class="border-t border-hairline-dark pt-[16px]">
           <h5 class="text-[14px] font-semibold text-on-dark mb-[4px]">Relevant Coursework <span class="text-stone text-[12px] font-normal">(opsional)</span></h5>
@@ -126,7 +128,98 @@
       </div>
     </div>
 
-    <!-- EXPERIENCE -->
+    <!-- Organizational Experience -->
+    <div v-else-if="currentId === 'organization'">
+      <div v-if="OrganizationExperiences.length > 0" class="mb-[24px]">
+        <span class="text-[13px] font-semibold text-stone uppercase tracking-[1px] mb-[12px] block">Pengalaman Tersimpan ({{ OrganizationExperiences.length }})</span>
+        <div v-for="(Organization, idx) in OrganizationExperiences" :key="'Organization-'+idx" class="border border-hairline-dark rounded-[12px] p-[16px] mb-[12px]">
+          <div class="flex justify-between items-start gap-[12px]">
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-on-dark text-[14px]">{{  Organization.position }}</div>
+              <div class="text-[14px] text-on-dark-mute">{{ Organization.company }}</div>
+              <div class="text-[13px] text-stone">{{  Organization.startMonth }} {{  Organization.startYear }} – {{  Organization.current ? 'Sekarang' :  Organization.endMonth + ' ' +  Organization.endYear }}</div>
+              <div class="text-[12px] text-stone mt-[4px]">{{  Organization.jobDescriptions.filter(j => j.trim()).length }} jobdesk</div>
+            </div>
+            <div class="flex gap-[8px] shrink-0">
+              <button @click="editOrganization(idx)" class="text-[13px] px-[12px] py-[4px] rounded-full border border-hairline-dark text-on-dark-mute hover:bg-surface-elevated transition-colors">Edit</button>
+              <button @click="deleteOrganization(idx)" class="text-[13px] px-[12px] py-[4px] rounded-full border border-accent-danger/30 text-accent-danger hover:bg-accent-danger/10 transition-colors">Hapus</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="border border-hairline-dark rounded-[16px] p-[20px]">
+        <h4 class="text-[16px] font-semibold text-on-dark mb-[20px]">{{ OrganizationEditIndex >= 0 ? 'Edit Pengalaman' : 'Tambah Pengalaman Baru' }}</h4>
+        <div class="flex flex-col gap-[16px]">
+          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Nama Perusahaan / Organisasi <span class="text-accent-danger font-bold">*</span></label>
+            <input v-model="OrganizationForm.company" placeholder="Contoh: Himpunan ABC" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
+            <div v-if="OrganizationErrors.company" class="text-accent-danger text-[12px] mt-[4px]">{{ OrganizationErrors.company }}</div>
+          </div>
+          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Lokasi</label>
+            <input v-model="OrganizationForm.location" placeholder="Contoh: Jakarta, Indonesia" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
+          </div>
+          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Posisi/Jabatan <span class="text-accent-danger font-bold">*</span></label>
+            <input v-model="OrganizationForm.position" placeholder="Contoh: Ketua Organisasi" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
+            <div v-if="OrganizationErrors.position" class="text-accent-danger text-[12px] mt-[4px]">{{ OrganizationErrors.position }}</div>
+          </div>
+          <div class="grid grid-cols-2 gap-[12px]">
+            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Mulai <span class="text-accent-danger font-bold">*</span></label>
+              <select v-model="OrganizationForm.startMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
+                <option value="" disabled class="bg-surface-elevated">-- Pilih Bulan --</option>
+                <option v-for="m in MONTHS" :key="m" :value="m" class="bg-surface-elevated">{{ m }}</option>
+              </select>
+              <div v-if="OrganizationErrors.startMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ OrganizationErrors.startMonth }}</div>
+            </div>
+            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Mulai <span class="text-accent-danger font-bold">*</span></label>
+              <select v-model="OrganizationForm.startYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
+                <option value="" disabled class="bg-surface-elevated">-- Pilih Tahun --</option>
+                <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
+              </select>
+              <div v-if="OrganizationErrors.startYear" class="text-accent-danger text-[12px] mt-[4px]">{{ OrganizationErrors.startYear }}</div>
+            </div>
+          </div>
+          <label class="flex items-center gap-[8px] cursor-pointer">
+            <input type="checkbox" v-model="OrganizationForm.current" class="w-[15px] h-[15px] rounded accent-white" />
+            <span class="text-[14px] text-on-dark-mute">Saya masih bekerja di sini</span>
+          </label>
+          <div v-if="!OrganizationForm.current" class="grid grid-cols-2 gap-[12px]">
+            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Selesai <span class="text-accent-danger font-bold">*</span></label>
+              <select v-model="OrganizationForm.endMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
+                <option value="" disabled class="bg-surface-elevated">-- Pilih Bulan --</option>
+                <option v-for="m in MONTHS" :key="m" :value="m" class="bg-surface-elevated">{{ m }}</option>
+              </select>
+              <div v-if="OrganizationErrors.endMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ OrganizationErrors.endMonth }}</div>
+            </div>
+            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Selesai <span class="text-accent-danger font-bold">*</span></label>
+              <select v-model="OrganizationForm.endYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
+                <option value="" disabled class="bg-surface-elevated">-- Pilih Tahun --</option>
+                <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
+              </select>
+              <div v-if="OrganizationErrors.endYear" class="text-accent-danger text-[12px] mt-[4px]">{{ OrganizationErrors.endYear }}</div>
+            </div>
+          </div>
+          <div v-if="OrganizationErrors.period" class="text-accent-danger text-[12px]">{{ OrganizationErrors.period }}</div>
+          <div class="border-t border-hairline-dark pt-[16px]">
+            <h5 class="text-[14px] font-semibold text-on-dark mb-[12px]">Jobdesk / Deskripsi Pekerjaan <span class="text-accent-danger font-bold">*</span></h5>
+            <div class="flex flex-col gap-[8px]">
+              <div v-for="(jd, jdIdx) in OrganizationForm.jobDescriptions" :key="'jd-'+jdIdx" class="flex gap-[8px] items-start">
+                <span class="text-on-dark-mute text-[14px] mt-[12px] shrink-0">{{ jdIdx + 1 }}.</span>
+                <textarea v-model="OrganizationForm.jobDescriptions[jdIdx]" :placeholder="'Deskripsi pekerjaan #' + (jdIdx + 1)" rows="2" class="flex-1 h-40 bg-transparent border border-hairline-dark rounded-[12px] p-[12px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
+                <button v-if="OrganizationForm.jobDescriptions.length > 1" @click="OrganizationForm.jobDescriptions.splice(jdIdx, 1)" class="shrink-0 mt-[8px] text-accent-danger text-[16px] w-[32px] h-[32px] rounded-full border border-accent-danger/30 flex items-center justify-center hover:bg-accent-danger/10 transition-colors">✕</button>
+              </div>
+            </div>
+            <div v-if="OrganizationErrors.jobDescriptions" class="text-accent-danger text-[12px] mt-[4px]">{{ OrganizationErrors.jobDescriptions }}</div>
+            <button @click="OrganizationForm.jobDescriptions.push('')" class="mt-[12px] text-[13px] px-[16px] py-[6px] rounded-full border border-hairline-dark text-on-dark hover:bg-surface-elevated transition-colors">+ Tambah Jobdesk</button>
+          </div>
+        </div>
+        <div class="flex gap-[12px] mt-[24px] pt-[16px] border-t border-hairline-dark">
+          <button @click="saveOrganization" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90">{{ OrganizationEditIndex >= 0 ? 'Simpan Perubahan' : 'Simpan Pengalaman' }}</button>
+          <button v-if="OrganizationEditIndex >= 0" @click="resetOrganization" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Batal</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Work EXPERIENCE -->
     <div v-else-if="currentId === 'experience'">
       <div v-if="workExperiences.length > 0" class="mb-[24px]">
         <span class="text-[13px] font-semibold text-stone uppercase tracking-[1px] mb-[12px] block">Pengalaman Tersimpan ({{ workExperiences.length }})</span>
@@ -149,7 +242,7 @@
       <div class="border border-hairline-dark rounded-[16px] p-[20px]">
         <h4 class="text-[16px] font-semibold text-on-dark mb-[20px]">{{ workEditIndex >= 0 ? 'Edit Pengalaman' : 'Tambah Pengalaman Baru' }}</h4>
         <div class="flex flex-col gap-[16px]">
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Nama Perusahaan / Organisasi <span class="text-accent-danger font-bold">*</span></label>
+          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Nama Perusahaan<span class="text-accent-danger font-bold">*</span></label>
             <input v-model="workForm.company" placeholder="Contoh: PT ABC" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
             <div v-if="workErrors.company" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.company }}</div>
           </div>
@@ -280,7 +373,7 @@
       <div v-for="(edu, i) in educations" :key="i" class="mb-[4px]">
         <div class="flex justify-between items-start">
           <div>
-            <div class="text-[12px] font-bold text-black">{{ edu.institution }}<span v-if="edu.location" class="text-gray-500 font-normal"> - {{ edu.location }}</span></div>
+            <div class="text-[12px] font-bold text-black">{{ edu.institution }}<span v-if="edu.location" class="text-gray-500 font-bold"> - {{ edu.location }}</span></div>
             <div class="text-[12px] italic text-black">{{ edu.major }} &nbsp;: {{ formatGPA(edu.gpa) }}/4.00</div>
           </div>
           <div v-if="edu.showDate" class="text-[12px] text-black shrink-0 text-right">
@@ -295,12 +388,29 @@
     </div>
 
     <!-- Organizational Experience -->
-    <div v-if="workExperiences.length > 0" class="mt-[8px] mb-[10px]">
+    <div v-if="OrganizationExperiences.length > 0" class="mt-[8px] mb-[10px]">
       <h2 class="text-[15px] font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Pengalaman Organisasi</h2>
+      <div v-for="(org, i) in OrganizationExperiences" :key="i" class="mb-[6px]">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-[12px] font-bold text-black">{{ org.company }}<span v-if="org.location" class="text-gray-500 font-bold"> - {{ org.location }}</span></div>
+            <div class="text-[12px] italic text-black">{{ org.position }}</div>
+          </div>
+          <div class="text-[12px] text-black shrink-0 text-right">{{ org.startMonth }} {{ org.startYear }} – {{ org.current ? 'Sekarang' : org.endMonth + ' ' + org.endYear }}</div>
+        </div>
+        <ul class="mt-[2px] pl-[16px] list-disc">
+          <li v-for="(jd, ji) in org.jobDescriptions.filter(j => j.trim())" :key="ji" class="text-[12px] mb-0 leading-[1.3]">{{ jd }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Work Experience -->
+    <div v-if="workExperiences.length > 0" class="mt-[8px] mb-[10px]">
+      <h2 class="text-[15px] font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Pengalaman Kerja</h2>
       <div v-for="(work, i) in workExperiences" :key="i" class="mb-[6px]">
         <div class="flex justify-between items-start">
           <div>
-            <div class="text-[12px] font-bold text-black">{{ work.company }}<span v-if="work.location" class="text-gray-500 font-normal"> - {{ work.location }}</span></div>
+            <div class="text-[12px] text-black font-bold">{{ work.company }}<span v-if="work.location" class="text-gray-500 font-bold"> - {{ work.location }}</span></div>
             <div class="text-[12px] italic text-black">{{ work.position }}</div>
           </div>
           <div class="text-[12px] text-black shrink-0 text-right">{{ work.startMonth }} {{ work.startYear }} – {{ work.current ? 'Sekarang' : work.endMonth + ' ' + work.endYear }}</div>
@@ -311,33 +421,16 @@
       </div>
     </div>
 
-    <!-- Work Experience -->
-    <div v-if="workExperiences.length > 0" class="mt-[8px] mb-[10px]">
-      <h2 class="text-[15px] uppercase font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Pengalaman Kerja</h2>
-      <div v-for="(work, i) in workExperiences" :key="i" class="mb-[6px]">
-        <div class="flex justify-between items-start">
-          <div>
-            <div class="text-[12px] text-black font-bold">{{ work.company }}<span v-if="work.location" class="text-gray-500 font-normal"> - {{ work.location }}</span></div>
-            <div class="text-[12px] font-bold italic text-gray-600">{{ work.position }}</div>
-          </div>
-          <div class="text-[11px] text-gray-500 shrink-0 text-right">{{ work.startMonth }} {{ work.startYear }} – {{ work.current ? 'Sekarang' : work.endMonth + ' ' + work.endYear }}</div>
-        </div>
-        <ul class="mt-[2px] pl-[16px] list-disc">
-          <li v-for="(jd, ji) in work.jobDescriptions.filter(j => j.trim())" :key="ji" class="text-[12px] mb-0 leading-[1.3]">{{ jd }}</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Skills -->
+    <!-- Skills, Awards, and Competitions -->
     <div v-if="formData.technical_skills || formData.soft_skills" class="mt-[8px] mb-[10px]">
-      <h2 class="text-[15px] uppercase font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Keahlian</h2>
+      <h2 class="text-[15px] font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Kemampuan, Penghargaan, dan Kompetisi</h2>
       <p v-if="formData.technical_skills" class="text-[12px] mb-[4px]"><strong>Teknis:</strong> {{ formData.technical_skills }}</p>
       <p v-if="formData.soft_skills" class="text-[12px]"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
     </div>
 
     <!-- Certifications -->
     <div v-if="formData.cert_name" class="mt-[8px] mb-[10px]">
-      <h2 class="text-[15px] uppercase font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Sertifikasi</h2>
+      <h2 class="text-[15px] font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Sertifikasi</h2>
       <div class="flex justify-between text-[12px]">
         <span class="font-semibold">{{ formData.cert_name }}</span>
         <span class="text-gray-500">{{ formData.issuer }}</span>
@@ -365,6 +458,7 @@ const steps = [
   { id: 'personal_info', title: 'Informasi Pribadi' },
   { id: 'summary', title: 'Ringkasan Profesional' },
   { id: 'education', title: 'Pendidikan' },
+  { id: 'organization', title: 'Pengalaman Organisasi' },
   { id: 'experience', title: 'Pengalaman Kerja' },
   { id: 'skills', title: 'Keahlian' },
   { id: 'certifications', title: 'Sertifikasi' },
@@ -509,6 +603,59 @@ function resetWork() {
   workEditIndex.value = -1; clearWorkErrors()
 }
 
+// ===== Organizational EXPERIENCE =====
+const OrganizationExperiences = ref([])
+const OrganizationEditIndex = ref(-1)
+const OrganizationForm = reactive({ company: '', location: '', position: '', startMonth: '', startYear: '', endMonth: '', endYear: '', current: false, jobDescriptions: [''] })
+const OrganizationErrors = reactive({})
+
+function clearOrganizationErrors() { Object.keys(OrganizationErrors).forEach(k => delete OrganizationErrors[k]) }
+
+function validateOrganizationForm() {
+  clearOrganizationErrors(); let ok = true
+  if (!OrganizationForm.company.trim()) { OrganizationErrors.company = 'Nama perusahaan wajib diisi.'; ok = false }
+  if (!OrganizationForm.position.trim()) { OrganizationErrors.position = 'Posisi/jabatan wajib diisi.'; ok = false }
+  if (!OrganizationForm.startMonth) { OrganizationErrors.startMonth = 'Bulan mulai wajib dipilih.'; ok = false }
+  if (!OrganizationForm.startYear) { OrganizationErrors.startYear = 'Tahun mulai wajib dipilih.'; ok = false }
+  if (!OrganizationForm.current) {
+    if (!OrganizationForm.endMonth) { OrganizationErrors.endMonth = 'Bulan selesai wajib dipilih.'; ok = false }
+    if (!OrganizationForm.endYear) { OrganizationErrors.endYear = 'Tahun selesai wajib dipilih.'; ok = false }
+    if (OrganizationForm.startMonth && OrganizationForm.startYear && OrganizationForm.endMonth && OrganizationForm.endYear) {
+      if (!isPeriodValid(OrganizationForm.startMonth, OrganizationForm.startYear, OrganizationForm.endMonth, OrganizationForm.endYear)) { OrganizationErrors.period = 'Periode selesai tidak boleh lebih awal.'; ok = false }
+    }
+  }
+  if (OrganizationForm.jobDescriptions.length === 0 || OrganizationForm.jobDescriptions.every(j => !j.trim())) { OrganizationErrors.jobDescriptions = 'Minimal satu jobdesk wajib diisi.'; ok = false }
+  else if (OrganizationForm.jobDescriptions.some(j => !j.trim())) { OrganizationErrors.jobDescriptions = 'Setiap jobdesk tidak boleh kosong.'; ok = false }  return ok
+}
+
+function saveOrganization() {
+  if (!validateOrganizationForm()) return
+  const entry = { company: OrganizationForm.company.trim(), location: OrganizationForm.location.trim(), position: OrganizationForm.position.trim(), startMonth: OrganizationForm.startMonth, startYear: OrganizationForm.startYear, endMonth: OrganizationForm.current ? '' : OrganizationForm.endMonth, endYear: OrganizationForm.current ? '' : OrganizationForm.endYear, current: OrganizationForm.current, jobDescriptions: OrganizationForm.jobDescriptions.map(j => j.trim()).filter(j => j) }
+  if (OrganizationEditIndex.value >= 0) OrganizationExperiences.value[OrganizationEditIndex.value] = entry
+  else OrganizationExperiences.value.push(entry)
+  resetOrganization()
+}
+
+function editOrganization(idx) {
+  const w = OrganizationExperiences.value[idx]
+  Object.assign(OrganizationForm, { company: w.company, location: w.location || '', position: w.position, startMonth: w.startMonth, startYear: w.startYear, endMonth: w.endMonth, endYear: w.endYear, current: w.current, jobDescriptions: [...w.jobDescriptions] })
+  if (!OrganizationForm.jobDescriptions.length) OrganizationForm.jobDescriptions = ['']
+  OrganizationEditIndex.value = idx; clearOrganizationErrors()
+}
+
+function deleteOrganization(idx) {
+  if (confirm('Hapus pengalaman ini?')) {
+    OrganizationExperiences.value.splice(idx, 1)
+    if (OrganizationEditIndex.value === idx) resetOrganization()
+    else if (OrganizationEditIndex.value > idx) OrganizationEditIndex.value--
+  }
+}
+
+function resetOrganization() {
+  Object.assign(OrganizationForm, { company: '', location: '', position: '', startMonth: '', startYear: '', endMonth: '', endYear: '', current: false, jobDescriptions: [''] })
+  OrganizationEditIndex.value = -1; clearOrganizationErrors()
+}
+
 // ===== VALIDATION for wizard =====
 function validate(stepIdx) {
   const id = steps[stepIdx]?.id
@@ -522,6 +669,7 @@ function validate(stepIdx) {
     if (eduForm.major.trim() && eduForm.institution.trim()) saveEdu()
     return educations.value.length > 0
   }
+  if (id === 'organization') return true
   if (id === 'experience') return workExperiences.value.length > 0
   if (id === 'skills') return !!formData.technical_skills.trim() && !!formData.soft_skills.trim()
   if (id === 'certifications') return true
@@ -531,12 +679,13 @@ function validate(stepIdx) {
 // ===== TEXT FOR ANALYSIS =====
 function getTextForAnalysis() {
   const eduText = educations.value.map(e => `${e.major} di ${e.institution}${e.location ? ', ' + e.location : ''} (IPK: ${e.gpa})`).join('\n')
+  const orgText = OrganizationExperiences.value.map(o => `${o.position} di ${o.company}\nJobdesk: ${o.jobDescriptions.join('; ')}`).join('\n')
   const workText = workExperiences.value.map(w => `${w.position} di ${w.company}\nJobdesk: ${w.jobDescriptions.join('; ')}`).join('\n')
-  return `Name: ${formData.full_name}\nEmail: ${formData.email} | Phone: ${formData.phone} | Address: ${formData.address}\nLinkedIn: ${formData.linkedin}\nSummary: ${formData.summary}\nEducation: ${eduText}\nWork Experience: ${workText}\nTechnical Skills: ${formData.technical_skills}\nSoft Skills: ${formData.soft_skills}\nCertifications: ${formData.cert_name} from ${formData.issuer}`
+  return `Name: ${formData.full_name}\nEmail: ${formData.email} | Phone: ${formData.phone} | Address: ${formData.address}\nLinkedIn: ${formData.linkedin}\nSummary: ${formData.summary}\nEducation: ${eduText}\nOrganizational Experience: ${orgText}\nWork Experience: ${workText}\nTechnical Skills: ${formData.technical_skills}\nSoft Skills: ${formData.soft_skills}\nCertifications: ${formData.cert_name} from ${formData.issuer}`
 }
 
 // ===== COMPUTED =====
-const hasPreviewData = computed(() => !!(formData.full_name || formData.summary || educations.value.length || workExperiences.value.length || formData.technical_skills))
+const hasPreviewData = computed(() => !!(formData.full_name || formData.summary || educations.value.length || OrganizationExperiences.value.length || workExperiences.value.length || formData.technical_skills))
 
 // ===== LOCALSTORAGE =====
 onMounted(() => {
@@ -545,6 +694,8 @@ onMounted(() => {
     if (d) Object.assign(formData, JSON.parse(d))
     const e = localStorage.getItem(`cv_${STORE}_edu`)
     if (e) { educations.value = JSON.parse(e); if (educations.value.length) { const edu = educations.value[0]; Object.assign(eduForm, { major: edu.major, institution: edu.institution, location: edu.location || '', startMonth: edu.startMonth, startYear: edu.startYear, endMonth: edu.endMonth, endYear: edu.endYear, gpa: edu.gpa, showDate: edu.showDate !== undefined ? edu.showDate : true, isCurrent: edu.isCurrent || false, activities: edu.activities && edu.activities.length ? edu.activities : [''], coursework: edu.coursework || '' }) } }
+    const org = localStorage.getItem(`cv_${STORE}_org`)
+    if (org) OrganizationExperiences.value = JSON.parse(org)
     const w = localStorage.getItem(`cv_${STORE}_work`)
     if (w) workExperiences.value = JSON.parse(w)
     const photo = localStorage.getItem(`cv_${STORE}_photo`)
@@ -556,6 +707,7 @@ onMounted(() => {
 
 watch(formData, v => localStorage.setItem(`cv_${STORE}_data`, JSON.stringify(v)), { deep: true })
 watch(educations, v => localStorage.setItem(`cv_${STORE}_edu`, JSON.stringify(v)), { deep: true })
+watch(OrganizationExperiences, v => localStorage.setItem(`cv_${STORE}_org`, JSON.stringify(v)), { deep: true })
 watch(workExperiences, v => localStorage.setItem(`cv_${STORE}_work`, JSON.stringify(v)), { deep: true })
 watch(useProfilePicture, v => localStorage.setItem(`cv_${STORE}_usePhoto`, String(v)))
 
