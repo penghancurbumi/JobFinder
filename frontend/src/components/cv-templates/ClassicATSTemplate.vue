@@ -7,7 +7,7 @@
         <p class="text-[13px] text-on-dark-mute">Template <strong class="text-white">Classic ATS</strong> menampilkan format akademis formal tanpa foto. Nama dan kontak akan ditampilkan di tengah.</p>
       </div>
       <div v-for="f in personalFields" :key="f.key" class="flex flex-col">
-        <label class="mb-[8px] font-semibold text-on-dark-mute">{{ f.label }} <span v-if="f.required" class="text-accent-danger font-bold">*</span></label>
+        <label class="mb-[8px]  text-on-dark-mute">{{ f.label }} <span v-if="f.required" class="text-accent-danger ">*</span></label>
         <input v-if="f.key === 'email'" type="email" v-model="formData[f.key]" :placeholder="f.placeholder" @input="validateEmail" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
         <input v-else-if="f.key === 'linkedin'" type="url" v-model="formData[f.key]" :placeholder="f.placeholder" @input="validateLinkedIn" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
         <input v-else v-model="formData[f.key]" :placeholder="f.placeholder" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
@@ -22,51 +22,51 @@
         <p class="text-[13px] text-on-dark-mute"><strong class="text-white">Objective</strong> berbeda dari ringkasan profesional — tulis tujuan karir Anda secara spesifik dan langsung (1–2 kalimat).</p>
       </div>
       <div class="flex flex-col">
-        <label class="mb-[8px] font-semibold text-on-dark-mute">Tujuan Karir (Objective) <span class="text-accent-danger font-bold">*</span>
+        <label class="mb-[8px]  text-on-dark-mute">Tujuan Karir (Objective) <span class="text-accent-danger ">*</span>
           <button class="bg-transparent border-none text-white cursor-pointer text-[12px] ml-[12px] px-[8px] py-[2px] rounded-full hover:bg-white/10" @click.prevent="requestSuggestion('objective', 'Tujuan Karir')">💡 AI Suggestion</button>
         </label>
         <textarea v-model="formData.objective" placeholder="Contoh: Mencari posisi Software Engineer di perusahaan teknologi terkemuka untuk berkontribusi dalam pengembangan solusi berbasis cloud yang berdampak bagi jutaan pengguna." rows="4" class="w-full bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
         <span class="text-[12px] text-stone mt-[6px]">Singkat dan spesifik. Sebutkan posisi yang dituju dan kontribusi yang ingin diberikan. Maksimal 3 kalimat.</span>
-        <div v-if="suggestions.objective" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px]"><span class="font-semibold text-white">Saran AI:</span> {{ suggestions.objective }}</div>
+        <div v-if="suggestions.objective" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px]"><span class=" text-white">Saran AI:</span> {{ suggestions.objective }}</div>
       </div>
     </div>
 
     <!-- EDUCATION -->
     <div v-else-if="currentId === 'education'">
       <div class="flex flex-col gap-[16px]">
-        <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Gelar <span class="text-accent-danger font-bold">*</span></label>
+        <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Gelar <span class="text-accent-danger ">*</span></label>
           <input v-model="eduForm.degree" placeholder="Contoh: Sarjana (S1)" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           <div v-if="eduErrors.degree" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.degree }}</div>
         </div>
-        <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Jurusan <span class="text-accent-danger font-bold">*</span></label>
+        <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Jurusan <span class="text-accent-danger ">*</span></label>
           <input v-model="eduForm.major" placeholder="Contoh: Ilmu Komputer" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           <div v-if="eduErrors.major" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.major }}</div>
         </div>
-        <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Institusi / Universitas <span class="text-accent-danger font-bold">*</span></label>
+        <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Institusi / Universitas <span class="text-accent-danger ">*</span></label>
           <input v-model="eduForm.institution" placeholder="Contoh: Universitas Gadjah Mada" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           <div v-if="eduErrors.institution" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.institution }}</div>
         </div>
-        <div class="grid grid-cols-2 gap-[12px]">
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Mulai <span class="text-accent-danger font-bold">*</span></label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Tahun Mulai <span class="text-accent-danger ">*</span></label>
             <select v-model="eduForm.startYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
               <option value="" disabled class="bg-surface-elevated">-- Pilih Tahun --</option>
               <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
             </select>
             <div v-if="eduErrors.startYear" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.startYear }}</div>
           </div>
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Selesai</label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Tahun Selesai</label>
             <select v-model="eduForm.endYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
               <option value="" class="bg-surface-elevated">-- Sekarang --</option>
               <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
             </select>
           </div>
         </div>
-        <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">IPK <span class="text-accent-danger font-bold">*</span></label>
+        <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">IPK <span class="text-accent-danger ">*</span></label>
           <input v-model="eduForm.gpa" placeholder="Contoh: 3.75" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           <span class="text-[12px] text-stone mt-[6px]">Skala 0.00 – 4.00</span>
           <div v-if="eduErrors.gpa" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.gpa }}</div>
         </div>
-        <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Penghargaan / Prestasi Akademik</label>
+        <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Penghargaan / Prestasi Akademik</label>
           <input v-model="eduForm.honors" placeholder="Contoh: Cum Laude, Beasiswa Bidikmisi" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           <span class="text-[12px] text-stone mt-[6px]">Opsional. Tambahkan jika ada penghargaan akademik.</span>
         </div>
@@ -76,11 +76,11 @@
     <!-- EXPERIENCE -->
     <div v-else-if="currentId === 'experience'">
       <div v-if="workExperiences.length > 0" class="mb-[24px]">
-        <span class="text-[13px] font-semibold text-stone uppercase tracking-[1px] mb-[12px] block">Pengalaman Tersimpan ({{ workExperiences.length }})</span>
+        <span class="text-[13px]  text-stone uppercase tracking-[1px] mb-[12px] block">Pengalaman Tersimpan ({{ workExperiences.length }})</span>
         <div v-for="(work, idx) in workExperiences" :key="'work-'+idx" class="border border-hairline-dark rounded-[12px] p-[16px] mb-[12px]">
           <div class="flex justify-between items-start gap-[12px]">
             <div class="flex-1 min-w-0">
-              <div class="font-semibold text-on-dark text-[14px]">{{ work.position }}</div>
+              <div class=" text-on-dark text-[14px]">{{ work.position }}</div>
               <div class="text-[14px] text-on-dark-mute">{{ work.company }}</div>
               <div class="text-[13px] text-stone">{{ work.startYear }} – {{ work.endYear || 'Sekarang' }}</div>
             </div>
@@ -92,25 +92,25 @@
         </div>
       </div>
       <div class="border border-hairline-dark rounded-[16px] p-[20px]">
-        <h4 class="text-[16px] font-semibold text-on-dark mb-[20px]">{{ workEditIndex >= 0 ? 'Edit Pengalaman' : 'Tambah Pengalaman Baru' }}</h4>
+        <h4 class="text-[16px]  text-on-dark mb-[20px]">{{ workEditIndex >= 0 ? 'Edit Pengalaman' : 'Tambah Pengalaman Baru' }}</h4>
         <div class="flex flex-col gap-[16px]">
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Nama Perusahaan / Organisasi <span class="text-accent-danger font-bold">*</span></label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Nama Perusahaan / Organisasi <span class="text-accent-danger ">*</span></label>
             <input v-model="workForm.company" placeholder="Contoh: PT Maju Bersama" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
             <div v-if="workErrors.company" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.company }}</div>
           </div>
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Posisi / Jabatan <span class="text-accent-danger font-bold">*</span></label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Posisi / Jabatan <span class="text-accent-danger ">*</span></label>
             <input v-model="workForm.position" placeholder="Contoh: Staff Programmer" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
             <div v-if="workErrors.position" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.position }}</div>
           </div>
-          <div class="grid grid-cols-2 gap-[12px]">
-            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Mulai <span class="text-accent-danger font-bold">*</span></label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+            <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Tahun Mulai <span class="text-accent-danger ">*</span></label>
               <select v-model="workForm.startYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
                 <option value="" disabled class="bg-surface-elevated">-- Pilih Tahun --</option>
                 <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
               </select>
               <div v-if="workErrors.startYear" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.startYear }}</div>
             </div>
-            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Selesai</label>
+            <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Tahun Selesai</label>
               <select v-model="workForm.endYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
                 <option value="" class="bg-surface-elevated">-- Sekarang --</option>
                 <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
@@ -118,7 +118,7 @@
             </div>
           </div>
           <div class="border-t border-hairline-dark pt-[16px]">
-            <h5 class="text-[14px] font-semibold text-on-dark mb-[12px]">Deskripsi Tugas <span class="text-accent-danger font-bold">*</span></h5>
+            <h5 class="text-[14px]  text-on-dark mb-[12px]">Deskripsi Tugas <span class="text-accent-danger ">*</span></h5>
             <div class="flex flex-col gap-[8px]">
               <div v-for="(jd, jdIdx) in workForm.jobDescriptions" :key="'jd-'+jdIdx" class="flex gap-[8px] items-start">
                 <span class="text-on-dark-mute text-[14px] mt-[12px] shrink-0">{{ jdIdx + 1 }}.</span>
@@ -131,8 +131,8 @@
           </div>
         </div>
         <div class="flex gap-[12px] mt-[24px] pt-[16px] border-t border-hairline-dark">
-          <button @click="saveWork" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90">{{ workEditIndex >= 0 ? 'Simpan Perubahan' : 'Simpan Pengalaman' }}</button>
-          <button v-if="workEditIndex >= 0" @click="resetWork" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Batal</button>
+          <button @click="saveWork" class="inline-flex items-center justify-center  rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90">{{ workEditIndex >= 0 ? 'Simpan Perubahan' : 'Simpan Pengalaman' }}</button>
+          <button v-if="workEditIndex >= 0" @click="resetWork" class="inline-flex items-center justify-center  rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Batal</button>
         </div>
       </div>
     </div>
@@ -143,12 +143,12 @@
         <p class="text-[13px] text-on-dark-mute">Pada template Classic, keahlian digabung dalam satu bagian. Cantumkan semua skill yang relevan, pisahkan dengan koma atau titik koma.</p>
       </div>
       <div class="flex flex-col">
-        <label class="mb-[8px] font-semibold text-on-dark-mute">Keahlian <span class="text-accent-danger font-bold">*</span>
+        <label class="mb-[8px]  text-on-dark-mute">Keahlian <span class="text-accent-danger ">*</span>
           <button class="bg-transparent border-none text-white cursor-pointer text-[12px] ml-[12px] px-[8px] py-[2px] rounded-full hover:bg-white/10" @click.prevent="requestSuggestion('skills', 'Keahlian')">💡 AI Suggestion</button>
         </label>
         <textarea v-model="formData.skills" placeholder="Contoh: Microsoft Office, C++, Java, Manajemen Proyek, Komunikasi, Kepemimpinan, Analisis Data" rows="5" class="w-full bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
         <span class="text-[12px] text-stone mt-[6px]">Gabungkan keahlian teknis dan soft skills. Sebutkan yang paling relevan dengan posisi yang dituju.</span>
-        <div v-if="suggestions.skills" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px]"><span class="font-semibold text-white">Saran AI:</span> {{ suggestions.skills }}</div>
+        <div v-if="suggestions.skills" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px]"><span class=" text-white">Saran AI:</span> {{ suggestions.skills }}</div>
       </div>
     </div>
 
@@ -158,35 +158,35 @@
         <p class="text-[13px] text-on-dark-mute"><strong class="text-white">Referensi</strong> adalah bagian khas CV formal/klasik. Cantumkan 1–2 orang yang dapat memberikan rekomendasi profesional Anda.</p>
       </div>
       <div class="border border-hairline-dark rounded-[16px] p-[20px]">
-        <h4 class="text-[15px] font-semibold text-on-dark mb-[16px]">Referensi 1</h4>
-        <div class="grid grid-cols-2 gap-[12px]">
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Nama Lengkap</label>
+        <h4 class="text-[15px]  text-on-dark mb-[16px]">Referensi 1</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Nama Lengkap</label>
             <input v-model="formData.ref1_name" placeholder="Contoh: Dr. Andi Wijaya" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           </div>
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Jabatan</label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Jabatan</label>
             <input v-model="formData.ref1_title" placeholder="Contoh: Dosen Pembimbing" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           </div>
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Institusi</label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Institusi</label>
             <input v-model="formData.ref1_company" placeholder="Contoh: Universitas Indonesia" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           </div>
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Kontak (Email/Telepon)</label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Kontak (Email/Telepon)</label>
             <input v-model="formData.ref1_contact" placeholder="Contoh: andi@ui.ac.id" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           </div>
         </div>
       </div>
       <div class="border border-hairline-dark rounded-[16px] p-[20px]">
-        <h4 class="text-[15px] font-semibold text-on-dark mb-[16px]">Referensi 2 (Opsional)</h4>
-        <div class="grid grid-cols-2 gap-[12px]">
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Nama Lengkap</label>
+        <h4 class="text-[15px]  text-on-dark mb-[16px]">Referensi 2 (Opsional)</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Nama Lengkap</label>
             <input v-model="formData.ref2_name" placeholder="Contoh: Budi Santosa, S.E." class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           </div>
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Jabatan</label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Jabatan</label>
             <input v-model="formData.ref2_title" placeholder="Contoh: Manager HRD" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           </div>
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Institusi</label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Institusi</label>
             <input v-model="formData.ref2_company" placeholder="Contoh: PT Maju Jaya" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           </div>
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Kontak (Email/Telepon)</label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Kontak (Email/Telepon)</label>
             <input v-model="formData.ref2_contact" placeholder="Contoh: +6281234567890" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           </div>
         </div>
@@ -199,7 +199,7 @@
     <div class="p-[48px]">
       <!-- Centered Header -->
       <div class="text-center mb-[6px]">
-        <h1 class="text-[24px] font-bold uppercase tracking-[3px] mb-[6px]">{{ formData.full_name || '[Nama Anda]' }}</h1>
+        <h1 class="text-[24px] uppercase tracking-[3px] mb-[6px]">{{ formData.full_name || '[Nama Anda]' }}</h1>
         <div class="text-[15px] text-gray-600">
           <span v-if="formData.email && !errors.email">{{ formData.email }}</span>
           <span v-if="formData.phone"> &nbsp;|&nbsp; {{ formData.phone }}</span>
@@ -210,19 +210,19 @@
 
       <!-- Objective -->
       <div v-if="formData.objective" class="mb-[20px]">
-        <h2 class="text-[12px] font-bold uppercase tracking-[2px] text-center mb-[6px]">Tujuan Karir</h2>
+        <h2 class="text-[12px] uppercase tracking-[2px] text-center mb-[6px]">Tujuan Karir</h2>
         <div class="h-px bg-black mb-[10px]"></div>
         <p class="text-[12px] italic text-justify">{{ formData.objective }}</p>
       </div>
 
       <!-- Education -->
       <div v-if="educations.length > 0" class="mb-[20px]">
-        <h2 class="text-[12px] font-bold uppercase tracking-[2px] text-center mb-[6px]">Pendidikan</h2>
+        <h2 class="text-[12px] uppercase tracking-[2px] text-center mb-[6px]">Pendidikan</h2>
         <div class="h-px bg-black mb-[10px]"></div>
         <div v-for="(edu, i) in educations" :key="i" class="mb-[12px]">
           <div class="flex justify-between items-start">
             <div>
-              <div class="text-[12px] font-bold uppercase">{{ edu.institution }}</div>
+              <div class="text-[12px] uppercase">{{ edu.institution }}</div>
               <div class="text-[12px]">{{ edu.degree }}, {{ edu.major }} &nbsp;|&nbsp; IPK: {{ formatGPA(edu.gpa) }}/4.00</div>
               <div v-if="edu.honors" class="text-[11px] italic text-gray-600">{{ edu.honors }}</div>
             </div>
@@ -235,12 +235,12 @@
 
       <!-- Work Experience -->
       <div v-if="workExperiences.length > 0" class="mb-[20px]">
-        <h2 class="text-[12px] font-bold uppercase tracking-[2px] text-center mb-[6px]">Pengalaman Kerja</h2>
+        <h2 class="text-[12px] uppercase tracking-[2px] text-center mb-[6px]">Pengalaman Kerja</h2>
         <div class="h-px bg-black mb-[10px]"></div>
         <div v-for="(work, i) in workExperiences" :key="i" class="mb-[14px]">
           <div class="flex justify-between items-start">
             <div>
-              <div class="text-[12px] font-bold uppercase">{{ work.company }}</div>
+              <div class="text-[12px] uppercase">{{ work.company }}</div>
               <div class="text-[12px] italic">{{ work.position }}</div>
             </div>
             <div class="text-[11px] text-gray-500 shrink-0">{{ work.startYear }} – {{ work.endYear || 'Sekarang' }}</div>
@@ -253,24 +253,24 @@
 
       <!-- Skills -->
       <div v-if="formData.skills" class="mb-[20px]">
-        <h2 class="text-[12px] font-bold uppercase tracking-[2px] text-center mb-[6px]">Keahlian</h2>
+        <h2 class="text-[12px] uppercase tracking-[2px] text-center mb-[6px]">Keahlian</h2>
         <div class="h-px bg-black mb-[10px]"></div>
         <p class="text-[12px] text-center">{{ formData.skills }}</p>
       </div>
 
       <!-- References -->
       <div v-if="formData.ref1_name" class="mb-[20px]">
-        <h2 class="text-[12px] font-bold uppercase tracking-[2px] text-center mb-[6px]">Referensi</h2>
+        <h2 class="text-[12px]  uppercase tracking-[2px] text-center mb-[6px]">Referensi</h2>
         <div class="h-px bg-black mb-[10px]"></div>
         <div class="grid grid-cols-2 gap-[20px]">
           <div v-if="formData.ref1_name">
-            <div class="text-[12px] font-bold">{{ formData.ref1_name }}</div>
+            <div class="text-[12px] ">{{ formData.ref1_name }}</div>
             <div class="text-[11px] italic">{{ formData.ref1_title }}</div>
             <div class="text-[11px]">{{ formData.ref1_company }}</div>
             <div class="text-[11px] text-gray-500">{{ formData.ref1_contact }}</div>
           </div>
           <div v-if="formData.ref2_name">
-            <div class="text-[12px] font-bold">{{ formData.ref2_name }}</div>
+            <div class="text-[12px] ">{{ formData.ref2_name }}</div>
             <div class="text-[11px] italic">{{ formData.ref2_title }}</div>
             <div class="text-[11px]">{{ formData.ref2_company }}</div>
             <div class="text-[11px] text-gray-500">{{ formData.ref2_contact }}</div>

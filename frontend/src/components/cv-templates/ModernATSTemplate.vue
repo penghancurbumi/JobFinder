@@ -6,10 +6,10 @@
       <div class="flex flex-col gap-sm mb-lg">
         <label class="flex items-center gap-sm cursor-pointer w-max">
           <input type="checkbox" v-model="useProfilePicture" class="w-[15px] h-[15px] rounded accent-white" />
-          <span class="text-[14px] text-on-dark-mute font-semibold">Gunakan Foto Profil</span>
+          <span class="text-[14px] text-on-dark-mute ">Gunakan Foto Profil</span>
         </label>
         <div v-if="useProfilePicture" class="flex flex-col gap-xs mt-sm">
-          <label class="mb-[8px] font-semibold text-on-dark-mute">Foto Profil</label>
+          <label class="mb-[8px]  text-on-dark-mute">Foto Profil</label>
           <div class="flex items-center gap-lg">
             <div class="w-[100px] h-[100px] rounded-full overflow-hidden border-2 border-hairline-dark bg-white flex shrink-0">
               <img v-if="profilePictureUrl" :src="profilePictureUrl" class="w-full h-full object-cover" />
@@ -20,7 +20,7 @@
         </div>
       </div>
       <div v-for="f in personalFields" :key="f.key" class="flex flex-col">
-        <label class="mb-[8px] font-semibold text-on-dark-mute">{{ f.label }} <span v-if="f.required" class="text-accent-danger font-bold">*</span></label>
+        <label class="mb-[8px]  text-on-dark-mute">{{ f.label }} <span v-if="f.required" class="text-accent-danger">*</span></label>
         <input v-if="f.key === 'email'" type="email" v-model="formData[f.key]" :placeholder="f.placeholder" @input="validateEmail" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
         <input v-else-if="f.key === 'linkedin'" type="url" v-model="formData[f.key]" :placeholder="f.placeholder" @input="validateLinkedIn" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
         <input v-else-if="f.key === 'github'" type="url" v-model="formData[f.key]" :placeholder="f.placeholder" @input="validateGitHub" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
@@ -33,14 +33,14 @@
     <!-- SUMMARY -->
     <div v-else-if="currentId === 'summary'" class="flex flex-col gap-[20px]">
       <div class="flex flex-col">
-        <label class="mb-[8px] font-semibold text-on-dark-mute">
-          Ringkasan Profesional <span class="text-accent-danger font-bold">*</span>
+        <label class="mb-[8px]  text-on-dark-mute">
+          Ringkasan Profesional <span class="text-accent-danger">*</span>
           <button class="bg-transparent border-none text-white cursor-pointer text-[12px] ml-[12px] px-[8px] py-[2px] rounded-full transition-colors duration-200 hover:bg-white/10" @click.prevent="requestSuggestion('summary', 'Ringkasan Profesional')">💡 AI Suggestion</button>
         </label>
         <textarea v-model="formData.summary" placeholder="Ringkasan profesional 2–3 kalimat yang menonjolkan pencapaian dengan angka..." rows="4" class="w-full h-80 bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
         <span class="text-[12px] text-stone mt-[6px]">Sorot pencapaian dengan angka. Maksimal 4 baris.</span>
         <div v-if="suggestions.summary" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px]">
-          <span class="font-semibold text-white">Saran AI:</span> {{ suggestions.summary }}
+          <span class=" text-white">Saran AI:</span> {{ suggestions.summary }}
         </div>
       </div>
     </div>
@@ -48,30 +48,30 @@
     <!-- EDUCATION -->
     <div v-else-if="currentId === 'education'">
       <div class="flex flex-col gap-[16px]">
-        <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Jurusan <span class="text-accent-danger font-bold">*</span></label>
+        <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Jurusan <span class="text-accent-danger">*</span></label>
           <input v-model="eduForm.major" placeholder="Contoh: Teknik Informatika" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           <div v-if="eduErrors.major" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.major }}</div>
         </div>
-        <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Institusi / Universitas <span class="text-accent-danger font-bold">*</span></label>
+        <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Institusi / Universitas <span class="text-accent-danger">*</span></label>
           <input v-model="eduForm.institution" placeholder="Contoh: Universitas Indonesia" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           <div v-if="eduErrors.institution" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.institution }}</div>
         </div>
-        <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Lokasi Institusi</label>
+        <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Lokasi Institusi</label>
           <input v-model="eduForm.location" placeholder="Contoh: Jakarta, Indonesia" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
         </div>
         <label class="flex items-center gap-[8px] cursor-pointer">
           <input type="checkbox" v-model="eduForm.showDate" class="w-[15px] h-[15px] rounded accent-white" />
           <span class="text-[14px] text-on-dark-mute">Tampilkan tanggal pada CV</span>
         </label>
-        <div v-if="eduForm.showDate" class="grid grid-cols-2 gap-[12px]">
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Mulai <span class="text-accent-danger font-bold">*</span></label>
+        <div v-if="eduForm.showDate" class="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Bulan Mulai <span class="text-accent-danger">*</span></label>
             <select v-model="eduForm.startMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
               <option value="" disabled class="bg-surface-elevated">-- Pilih Bulan --</option>
               <option v-for="m in MONTHS" :key="m" :value="m" class="bg-surface-elevated">{{ m }}</option>
             </select>
             <div v-if="eduErrors.startMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.startMonth }}</div>
           </div>
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Mulai <span class="text-accent-danger font-bold">*</span></label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Tahun Mulai <span class="text-accent-danger">*</span></label>
             <select v-model="eduForm.startYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
               <option value="" disabled class="bg-surface-elevated">-- Pilih Tahun --</option>
               <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
@@ -83,15 +83,15 @@
           <input type="checkbox" v-model="eduForm.isCurrent" class="w-[15px] h-[15px] rounded accent-white" />
           <span class="text-[14px] text-on-dark-mute">Saya masih dalam pendidikan ini</span>
         </label>
-        <div v-if="eduForm.showDate && !eduForm.isCurrent" class="grid grid-cols-2 gap-[12px]">
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Selesai <span class="text-accent-danger font-bold">*</span></label>
+        <div v-if="eduForm.showDate && !eduForm.isCurrent" class="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Bulan Selesai <span class="text-accent-danger">*</span></label>
             <select v-model="eduForm.endMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
               <option value="" disabled class="bg-surface-elevated">-- Pilih Bulan --</option>
               <option v-for="m in MONTHS" :key="m" :value="m" class="bg-surface-elevated">{{ m }}</option>
             </select>
             <div v-if="eduErrors.endMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.endMonth }}</div>
           </div>
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Selesai <span class="text-accent-danger font-bold">*</span></label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Tahun Selesai <span class="text-accent-danger">*</span></label>
             <select v-model="eduForm.endYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
               <option value="" disabled class="bg-surface-elevated">-- Pilih Tahun --</option>
               <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
@@ -100,7 +100,7 @@
           </div>
         </div>
         <div v-if="eduErrors.period" class="text-accent-danger text-[12px]">{{ eduErrors.period }}</div>
-        <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">IPK <span class="text-accent-danger font-bold">*</span></label>
+        <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">IPK <span class="text-accent-danger">*</span></label>
           <input v-model="eduForm.gpa" placeholder="Contoh: 3.50" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           <span class="text-[12px] text-stone mt-[6px]">Format desimal, skala 0.00 – 4.00</span>
           <div v-if="eduErrors.gpa" class="text-accent-danger text-[12px] mt-[4px]">{{ eduErrors.gpa }}</div>
@@ -108,7 +108,7 @@
 
         <!-- Pengalaman Perkuliahan -->
         <div class="border-t border-hairline-dark pt-[16px]">
-          <h5 class="text-[14px] font-semibold text-on-dark mb-[12px]">Pengalaman Perkuliahan <span class="text-stone text-[12px] font-normal">(opsional)</span></h5>
+          <h5 class="text-[14px]  text-on-dark mb-[12px]">Pengalaman Perkuliahan <span class="text-stone text-[12px] font-normal">(opsional)</span></h5>
           <div class="flex flex-col gap-[8px]">
             <div v-for="(act, actIdx) in eduForm.activities" :key="'act-'+actIdx" class="flex gap-[8px] items-start">
               <span class="text-on-dark-mute text-[14px] mt-[12px] shrink-0">{{ actIdx + 1 }}.</span>
@@ -121,7 +121,7 @@
         
         <!-- Relevant Coursework -->
         <div class="border-t border-hairline-dark pt-[16px]">
-          <h5 class="text-[14px] font-semibold text-on-dark mb-[4px]">Relevant Coursework <span class="text-stone text-[12px] font-normal">(opsional)</span></h5>
+          <h5 class="text-[14px]  text-on-dark mb-[4px]">Relevant Coursework <span class="text-stone text-[12px] font-normal">(opsional)</span></h5>
           <span class="text-[12px] text-stone mb-[8px] block">Pisahkan dengan koma. Contoh: Algoritma, Machine Learning, Basis Data</span>
           <textarea v-model="eduForm.coursework" placeholder="Algoritma & Pemrograman, Kecerdasan Buatan, Jaringan Komputer..." rows="2" class="w-full bg-transparent border border-hairline-dark rounded-[12px] p-[12px] text-[14px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
         </div>
@@ -131,11 +131,11 @@
     <!-- Organizational Experience -->
     <div v-else-if="currentId === 'organization'">
       <div v-if="OrganizationExperiences.length > 0" class="mb-[24px]">
-        <span class="text-[13px] font-semibold text-stone uppercase tracking-[1px] mb-[12px] block">Pengalaman Tersimpan ({{ OrganizationExperiences.length }})</span>
+        <span class="text-[13px]  text-stone uppercase tracking-[1px] mb-[12px] block">Pengalaman Tersimpan ({{ OrganizationExperiences.length }})</span>
         <div v-for="(Organization, idx) in OrganizationExperiences" :key="'Organization-'+idx" class="border border-hairline-dark rounded-[12px] p-[16px] mb-[12px]">
           <div class="flex justify-between items-start gap-[12px]">
             <div class="flex-1 min-w-0">
-              <div class="font-semibold text-on-dark text-[14px]">{{  Organization.position }}</div>
+              <div class=" text-on-dark text-[14px]">{{  Organization.position }}</div>
               <div class="text-[14px] text-on-dark-mute">{{ Organization.company }}</div>
               <div class="text-[13px] text-stone">{{  Organization.startMonth }} {{  Organization.startYear }} – {{  Organization.current ? 'Sekarang' :  Organization.endMonth + ' ' +  Organization.endYear }}</div>
               <div class="text-[12px] text-stone mt-[4px]">{{  Organization.jobDescriptions.filter(j => j.trim()).length }} jobdesk</div>
@@ -149,28 +149,28 @@
       </div>
 
       <div class="border border-hairline-dark rounded-[16px] p-[20px]">
-        <h4 class="text-[16px] font-semibold text-on-dark mb-[20px]">{{ OrganizationEditIndex >= 0 ? 'Edit Pengalaman' : 'Tambah Pengalaman Baru' }}</h4>
+        <h4 class="text-[16px]  text-on-dark mb-[20px]">{{ OrganizationEditIndex >= 0 ? 'Edit Pengalaman' : 'Tambah Pengalaman Baru' }}</h4>
         <div class="flex flex-col gap-[16px]">
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Nama Perusahaan / Organisasi <span class="text-accent-danger font-bold">*</span></label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Nama Perusahaan / Organisasi <span class="text-accent-danger">*</span></label>
             <input v-model="OrganizationForm.company" placeholder="Contoh: Himpunan ABC" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
             <div v-if="OrganizationErrors.company" class="text-accent-danger text-[12px] mt-[4px]">{{ OrganizationErrors.company }}</div>
           </div>
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Lokasi</label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Lokasi</label>
             <input v-model="OrganizationForm.location" placeholder="Contoh: Jakarta, Indonesia" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           </div>
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Posisi/Jabatan <span class="text-accent-danger font-bold">*</span></label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Posisi/Jabatan <span class="text-accent-danger">*</span></label>
             <input v-model="OrganizationForm.position" placeholder="Contoh: Ketua Organisasi" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
             <div v-if="OrganizationErrors.position" class="text-accent-danger text-[12px] mt-[4px]">{{ OrganizationErrors.position }}</div>
           </div>
-          <div class="grid grid-cols-2 gap-[12px]">
-            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Mulai <span class="text-accent-danger font-bold">*</span></label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+            <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Bulan Mulai <span class="text-accent-danger">*</span></label>
               <select v-model="OrganizationForm.startMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
                 <option value="" disabled class="bg-surface-elevated">-- Pilih Bulan --</option>
                 <option v-for="m in MONTHS" :key="m" :value="m" class="bg-surface-elevated">{{ m }}</option>
               </select>
               <div v-if="OrganizationErrors.startMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ OrganizationErrors.startMonth }}</div>
             </div>
-            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Mulai <span class="text-accent-danger font-bold">*</span></label>
+            <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Tahun Mulai <span class="text-accent-danger">*</span></label>
               <select v-model="OrganizationForm.startYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
                 <option value="" disabled class="bg-surface-elevated">-- Pilih Tahun --</option>
                 <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
@@ -182,15 +182,15 @@
             <input type="checkbox" v-model="OrganizationForm.current" class="w-[15px] h-[15px] rounded accent-white" />
             <span class="text-[14px] text-on-dark-mute">Saya masih bekerja di sini</span>
           </label>
-          <div v-if="!OrganizationForm.current" class="grid grid-cols-2 gap-[12px]">
-            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Selesai <span class="text-accent-danger font-bold">*</span></label>
+          <div v-if="!OrganizationForm.current" class="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+            <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Bulan Selesai <span class="text-accent-danger">*</span></label>
               <select v-model="OrganizationForm.endMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
                 <option value="" disabled class="bg-surface-elevated">-- Pilih Bulan --</option>
                 <option v-for="m in MONTHS" :key="m" :value="m" class="bg-surface-elevated">{{ m }}</option>
               </select>
               <div v-if="OrganizationErrors.endMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ OrganizationErrors.endMonth }}</div>
             </div>
-            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Selesai <span class="text-accent-danger font-bold">*</span></label>
+            <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Tahun Selesai <span class="text-accent-danger">*</span></label>
               <select v-model="OrganizationForm.endYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
                 <option value="" disabled class="bg-surface-elevated">-- Pilih Tahun --</option>
                 <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
@@ -200,7 +200,7 @@
           </div>
           <div v-if="OrganizationErrors.period" class="text-accent-danger text-[12px]">{{ OrganizationErrors.period }}</div>
           <div class="border-t border-hairline-dark pt-[16px]">
-            <h5 class="text-[14px] font-semibold text-on-dark mb-[12px]">Jobdesk / Deskripsi Pekerjaan <span class="text-accent-danger font-bold">*</span></h5>
+            <h5 class="text-[14px]  text-on-dark mb-[12px]">Jobdesk / Deskripsi Pekerjaan <span class="text-accent-danger">*</span></h5>
             <div class="flex flex-col gap-[8px]">
               <div v-for="(jd, jdIdx) in OrganizationForm.jobDescriptions" :key="'jd-'+jdIdx" class="flex gap-[8px] items-start">
                 <span class="text-on-dark-mute text-[14px] mt-[12px] shrink-0">{{ jdIdx + 1 }}.</span>
@@ -213,8 +213,8 @@
           </div>
         </div>
         <div class="flex gap-[12px] mt-[24px] pt-[16px] border-t border-hairline-dark">
-          <button @click="saveOrganization" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90">{{ OrganizationEditIndex >= 0 ? 'Simpan Perubahan' : 'Simpan Pengalaman' }}</button>
-          <button v-if="OrganizationEditIndex >= 0" @click="resetOrganization" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Batal</button>
+          <button @click="saveOrganization" class="inline-flex items-center justify-center  rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90">{{ OrganizationEditIndex >= 0 ? 'Simpan Perubahan' : 'Simpan Pengalaman' }}</button>
+          <button v-if="OrganizationEditIndex >= 0" @click="resetOrganization" class="inline-flex items-center justify-center  rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Batal</button>
         </div>
       </div>
     </div>
@@ -222,11 +222,11 @@
     <!-- Work EXPERIENCE -->
     <div v-else-if="currentId === 'experience'">
       <div v-if="workExperiences.length > 0" class="mb-[24px]">
-        <span class="text-[13px] font-semibold text-stone uppercase tracking-[1px] mb-[12px] block">Pengalaman Tersimpan ({{ workExperiences.length }})</span>
+        <span class="text-[13px]  text-stone uppercase tracking-[1px] mb-[12px] block">Pengalaman Tersimpan ({{ workExperiences.length }})</span>
         <div v-for="(work, idx) in workExperiences" :key="'work-'+idx" class="border border-hairline-dark rounded-[12px] p-[16px] mb-[12px]">
           <div class="flex justify-between items-start gap-[12px]">
             <div class="flex-1 min-w-0">
-              <div class="font-semibold text-on-dark text-[14px]">{{ work.position }}</div>
+              <div class=" text-on-dark text-[14px]">{{ work.position }}</div>
               <div class="text-[14px] text-on-dark-mute">{{ work.company }}</div>
               <div class="text-[13px] text-stone">{{ work.startMonth }} {{ work.startYear }} – {{ work.current ? 'Sekarang' : work.endMonth + ' ' + work.endYear }}</div>
               <div class="text-[12px] text-stone mt-[4px]">{{ work.jobDescriptions.filter(j => j.trim()).length }} jobdesk</div>
@@ -240,28 +240,28 @@
       </div>
 
       <div class="border border-hairline-dark rounded-[16px] p-[20px]">
-        <h4 class="text-[16px] font-semibold text-on-dark mb-[20px]">{{ workEditIndex >= 0 ? 'Edit Pengalaman' : 'Tambah Pengalaman Baru' }}</h4>
+        <h4 class="text-[16px]  text-on-dark mb-[20px]">{{ workEditIndex >= 0 ? 'Edit Pengalaman' : 'Tambah Pengalaman Baru' }}</h4>
         <div class="flex flex-col gap-[16px]">
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Nama Perusahaan<span class="text-accent-danger font-bold">*</span></label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Nama Perusahaan<span class="text-accent-danger">*</span></label>
             <input v-model="workForm.company" placeholder="Contoh: PT ABC" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
             <div v-if="workErrors.company" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.company }}</div>
           </div>
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Lokasi</label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Lokasi</label>
             <input v-model="workForm.location" placeholder="Contoh: Jakarta, Indonesia" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
           </div>
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Posisi/Jabatan <span class="text-accent-danger font-bold">*</span></label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Posisi/Jabatan <span class="text-accent-danger">*</span></label>
             <input v-model="workForm.position" placeholder="Contoh: Frontend Developer" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
             <div v-if="workErrors.position" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.position }}</div>
           </div>
-          <div class="grid grid-cols-2 gap-[12px]">
-            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Mulai <span class="text-accent-danger font-bold">*</span></label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+            <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Bulan Mulai <span class="text-accent-danger">*</span></label>
               <select v-model="workForm.startMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
                 <option value="" disabled class="bg-surface-elevated">-- Pilih Bulan --</option>
                 <option v-for="m in MONTHS" :key="m" :value="m" class="bg-surface-elevated">{{ m }}</option>
               </select>
               <div v-if="workErrors.startMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.startMonth }}</div>
             </div>
-            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Mulai <span class="text-accent-danger font-bold">*</span></label>
+            <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Tahun Mulai <span class="text-accent-danger">*</span></label>
               <select v-model="workForm.startYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
                 <option value="" disabled class="bg-surface-elevated">-- Pilih Tahun --</option>
                 <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
@@ -273,15 +273,15 @@
             <input type="checkbox" v-model="workForm.current" class="w-[15px] h-[15px] rounded accent-white" />
             <span class="text-[14px] text-on-dark-mute">Saya masih bekerja di sini</span>
           </label>
-          <div v-if="!workForm.current" class="grid grid-cols-2 gap-[12px]">
-            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Selesai <span class="text-accent-danger font-bold">*</span></label>
+          <div v-if="!workForm.current" class="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+            <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Bulan Selesai <span class="text-accent-danger">*</span></label>
               <select v-model="workForm.endMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
                 <option value="" disabled class="bg-surface-elevated">-- Pilih Bulan --</option>
                 <option v-for="m in MONTHS" :key="m" :value="m" class="bg-surface-elevated">{{ m }}</option>
               </select>
               <div v-if="workErrors.endMonth" class="text-accent-danger text-[12px] mt-[4px]">{{ workErrors.endMonth }}</div>
             </div>
-            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Selesai <span class="text-accent-danger font-bold">*</span></label>
+            <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Tahun Selesai <span class="text-accent-danger">*</span></label>
               <select v-model="workForm.endYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
                 <option value="" disabled class="bg-surface-elevated">-- Pilih Tahun --</option>
                 <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
@@ -291,7 +291,7 @@
           </div>
           <div v-if="workErrors.period" class="text-accent-danger text-[12px]">{{ workErrors.period }}</div>
           <div class="border-t border-hairline-dark pt-[16px]">
-            <h5 class="text-[14px] font-semibold text-on-dark mb-[12px]">Jobdesk / Deskripsi Pekerjaan <span class="text-accent-danger font-bold">*</span></h5>
+            <h5 class="text-[14px]  text-on-dark mb-[12px]">Jobdesk / Deskripsi Pekerjaan <span class="text-accent-danger">*</span></h5>
             <div class="flex flex-col gap-[8px]">
               <div v-for="(jd, jdIdx) in workForm.jobDescriptions" :key="'jd-'+jdIdx" class="flex gap-[8px] items-start">
                 <span class="text-on-dark-mute text-[14px] mt-[12px] shrink-0">{{ jdIdx + 1 }}.</span>
@@ -304,8 +304,8 @@
           </div>
         </div>
         <div class="flex gap-[12px] mt-[24px] pt-[16px] border-t border-hairline-dark">
-          <button @click="saveWork" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90">{{ workEditIndex >= 0 ? 'Simpan Perubahan' : 'Simpan Pengalaman' }}</button>
-          <button v-if="workEditIndex >= 0" @click="resetWork" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Batal</button>
+          <button @click="saveWork" class="inline-flex items-center justify-center  rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90">{{ workEditIndex >= 0 ? 'Simpan Perubahan' : 'Simpan Pengalaman' }}</button>
+          <button v-if="workEditIndex >= 0" @click="resetWork" class="inline-flex items-center justify-center  rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Batal</button>
         </div>
       </div>
     </div>
@@ -313,11 +313,11 @@
     <!-- PROJECTS -->
     <div v-else-if="currentId === 'projects'">
       <div v-if="projects.length > 0" class="mb-[24px]">
-        <span class="text-[13px] font-semibold text-stone uppercase tracking-[1px] mb-[12px] block">Proyek Tersimpan ({{ projects.length }})</span>
+        <span class="text-[13px]  text-stone uppercase tracking-[1px] mb-[12px] block">Proyek Tersimpan ({{ projects.length }})</span>
         <div v-for="(proj, idx) in projects" :key="'proj-'+idx" class="border border-hairline-dark rounded-[12px] p-[16px] mb-[12px]">
           <div class="flex justify-between items-start gap-[12px]">
             <div class="flex-1 min-w-0">
-              <div class="font-semibold text-on-dark text-[14px]">{{ proj.name }}</div>
+              <div class=" text-on-dark text-[14px]">{{ proj.name }}</div>
               <div v-if="proj.role" class="text-[14px] text-on-dark-mute">{{ proj.role }}</div>
               <div v-if="proj.tech" class="text-[12px] text-stone mt-[2px]"><span class="text-on-dark-mute font-medium">Teknologi:</span> {{ proj.tech }}</div>
               <div v-if="proj.link" class="text-[12px] text-accent-cyan mt-[2px] truncate">{{ proj.link }}</div>
@@ -333,22 +333,22 @@
       </div>
 
       <div class="border border-hairline-dark rounded-[16px] p-[20px]">
-        <h4 class="text-[16px] font-semibold text-on-dark mb-[20px]">{{ projectEditIndex >= 0 ? 'Edit Proyek' : 'Tambah Proyek Baru' }}</h4>
+        <h4 class="text-[16px] text-on-dark mb-[20px]">{{ projectEditIndex >= 0 ? 'Edit Proyek' : 'Tambah Proyek Baru' }}</h4>
         
         <div class="flex flex-col gap-[16px]">
-          <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Nama Proyek <span class="text-accent-danger font-bold">*</span></label>
+          <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Nama Proyek <span class="text-accent-danger">*</span></label>
             <input v-model="projectForm.name" placeholder="Contoh: Aplikasi Manajemen Inventaris Toko" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />
             <div v-if="projectErrors.name" class="text-accent-danger text-[12px] mt-[4px]">{{ projectErrors.name }}</div>
           </div>
 
-          <div class="grid grid-cols-2 gap-[12px]">
-            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Mulai</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+            <div class="flex flex-col"><label class="mb-[8px] text-on-dark-mute">Bulan Mulai</label>
               <select v-model="projectForm.startMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
                 <option value="" class="bg-surface-elevated">-- Pilih Bulan (Opsional) --</option>
                 <option v-for="m in MONTHS" :key="m" :value="m" class="bg-surface-elevated">{{ m }}</option>
               </select>
             </div>
-            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Mulai</label>
+            <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Tahun Mulai</label>
               <select v-model="projectForm.startYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
                 <option value="" class="bg-surface-elevated">-- Pilih Tahun (Opsional) --</option>
                 <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
@@ -361,15 +361,15 @@
             <span class="text-[14px] text-on-dark-mute">Proyek masih berlangsung</span>
           </label>
 
-          <div v-if="!projectForm.current" class="grid grid-cols-2 gap-[12px]">
-            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Bulan Selesai</label>
+          <div v-if="!projectForm.current" class="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+            <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Bulan Selesai</label>
               <select v-model="projectForm.endMonth" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
                 <option value="" class="bg-surface-elevated">-- Pilih Bulan (Opsional) --</option>
                 <option v-for="m in MONTHS" :key="m" :value="m" class="bg-surface-elevated">{{ m }}</option>
               </select>
             </div>
 
-            <div class="flex flex-col"><label class="mb-[8px] font-semibold text-on-dark-mute">Tahun Selesai</label>
+            <div class="flex flex-col"><label class="mb-[8px]  text-on-dark-mute">Tahun Selesai</label>
               <select v-model="projectForm.endYear" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none appearance-none">
                 <option value="" class="bg-surface-elevated">-- Pilih Tahun (Opsional) --</option>
                 <option v-for="y in YEARS" :key="y" :value="y" class="bg-surface-elevated">{{ y }}</option>
@@ -378,15 +378,15 @@
           </div>
           <div v-if="projectErrors.period" class="text-accent-danger text-[12px]">{{ projectErrors.period }}</div>
           <div class="flex flex-col">
-            <label class="mb-[8px] font-semibold text-on-dark-mute">Deskripsi Proyek & Kontribusi <span class="text-accent-danger font-bold">*</span></label>
+            <label class="mb-[8px]  text-on-dark-mute">Deskripsi Proyek & Kontribusi <span class="text-accent-danger">*</span></label>
             <textarea v-model="projectForm.description" placeholder="Contoh: Mengembangkan sistem manajemen inventaris berbasis web dengan fitur pemindaian barcode real-time dan laporan otomatis." rows="3" class="w-full bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
             <div v-if="projectErrors.description" class="text-accent-danger text-[12px] mt-[4px]">{{ projectErrors.description }}</div>
           </div>
         </div>
 
         <div class="flex gap-[12px] mt-[24px] pt-[16px] border-t border-hairline-dark">
-          <button @click="saveProject" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90">{{ projectEditIndex >= 0 ? 'Simpan Perubahan' : 'Simpan Proyek' }}</button>
-          <button v-if="projectEditIndex >= 0" @click="resetProject" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Batal</button>
+          <button @click="saveProject" class="inline-flex items-center justify-center  rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-on-dark text-ink hover:bg-white/90">{{ projectEditIndex >= 0 ? 'Simpan Perubahan' : 'Simpan Proyek' }}</button>
+          <button v-if="projectEditIndex >= 0" @click="resetProject" class="inline-flex items-center justify-center  rounded-full transition-all duration-200 cursor-pointer text-[14px] px-[20px] h-[40px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated">Batal</button>
         </div>
       </div>
     </div>
@@ -394,25 +394,25 @@
     <!-- Certifications, Technical Skills and Soft Skill -->
     <div v-else-if="currentId === 'certifications'" class="flex flex-col gap-[20px]">
        <div class="flex flex-col">
-        <label class="mb-[8px] font-semibold text-on-dark-mute">Keahlian Teknis <span class="text-accent-danger font-bold">*</span>
+        <label class="mb-[8px]  text-on-dark-mute">Keahlian Teknis <span class="text-accent-danger">*</span>
           <button class="bg-transparent border-none text-white cursor-pointer text-[12px] ml-[12px] px-[8px] py-[2px] rounded-full hover:bg-white/10" @click.prevent="requestSuggestion('technical_skills', 'Keahlian Teknis')">💡 AI Suggestion</button>
         </label>
         <textarea v-model="formData.technical_skills" placeholder="Contoh: Python, Vue.js, SQL, Docker" rows="3" class="w-full bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
         <span class="text-[12px] text-stone mt-[6px]">Pisahkan dengan koma. Sebutkan yang relevan dengan posisi yang dilamar.</span>
-        <div v-if="suggestions.technical_skills" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px]"><span class="font-semibold text-white">Saran AI:</span> {{ suggestions.technical_skills }}</div>
+        <div v-if="suggestions.technical_skills" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px]"><span class=" text-white">Saran AI:</span> {{ suggestions.technical_skills }}</div>
       </div>
 
       <div class="flex flex-col">
-        <label class="mb-[8px] font-semibold text-on-dark-mute">Soft Skills <span class="text-accent-danger font-bold">*</span>
+        <label class="mb-[8px]  text-on-dark-mute">Soft Skills <span class="text-accent-danger">*</span>
           <button class="bg-transparent border-none text-white cursor-pointer text-[12px] ml-[12px] px-[8px] py-[2px] rounded-full hover:bg-white/10" @click.prevent="requestSuggestion('soft_skills', 'Soft Skills')">💡 AI Suggestion</button>
         </label>
         <textarea v-model="formData.soft_skills" placeholder="Contoh: Kepemimpinan, Komunikasi, Pemecahan Masalah" rows="3" class="w-full bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
         <span class="text-[12px] text-stone mt-[6px]">Buktikan dengan contoh di pengalaman kerja.</span>
-        <div v-if="suggestions.soft_skills" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px]"><span class="font-semibold text-white">Saran AI:</span> {{ suggestions.soft_skills }}</div>
+        <div v-if="suggestions.soft_skills" class="bg-surface-deep px-[16px] py-[12px] rounded-md text-[13px] text-on-dark-mute mt-[8px]"><span class=" text-white">Saran AI:</span> {{ suggestions.soft_skills }}</div>
       </div>
 
       <div class="flex flex-col">
-        <label class="mb-[8px] font-semibold text-on-dark-mute">Sertifikasi</label>
+        <label class="mb-[8px]  text-on-dark-mute">Sertifikasi</label>
         <textarea v-model="formData.cert_name" placeholder="Contoh: AWS Certified Developer" rows="3" class="w-full bg-transparent border border-hairline-dark rounded-[12px] p-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone resize-none"></textarea>
         <span class="text-[12px] text-stone mt-[6px]">Cantumkan nama lengkap sertifikasi</span>
       </div>
@@ -429,7 +429,7 @@
       </div>
 
       <div :class="useProfilePicture ? 'flex-1' : ''">
-        <h1 class="text-[30px] font-bold uppercase tracking-[2px] mb-0 leading-none">{{ formData.full_name || '[Nama Anda]' }}</h1>
+        <h1 class="text-[30px] uppercase tracking-[2px] mb-0 leading-none">{{ formData.full_name || '[Nama Anda]' }}</h1>
         <div class="text-[12px] text-gray-500 flex flex-wrap gap-x-[2px]" :class="useProfilePicture ? '' : 'justify-center'">
           <span v-if="formData.phone">{{ formData.phone }} |</span>
           <span v-if="formData.email && !errors.email">{{ formData.email }} |</span>
@@ -443,11 +443,11 @@
 
     <!-- Education -->
     <div v-if="educations.length > 0" class="mt-[8px]">
-      <h2 class="text-[15px] font-bold tracking-[1px] mb-[8px] text-black border-b border-black">Pendidikan</h2>
+      <h2 class="text-[15px] tracking-[1px] mb-[8px] text-black border-b border-black">Pendidikan</h2>
       <div v-for="(edu, i) in educations" :key="i" class="mb-[4px]">
         <div class="flex justify-between items-start">
           <div>
-            <div class="text-[12px] font-bold text-black">{{ edu.institution }}<span v-if="edu.location" class="text-gray-500 font-bold"> - {{ edu.location }}</span></div>
+            <div class="text-[12px] text-black">{{ edu.institution }}<span v-if="edu.location" class="text-gray-500"> - {{ edu.location }}</span></div>
             <div class="text-[12px] italic text-black">{{ edu.major }} &nbsp;: {{ formatGPA(edu.gpa) }}/4.00</div>
           </div>
           <div v-if="edu.showDate" class="text-[12px] text-black shrink-0 text-right">
@@ -463,11 +463,11 @@
 
     <!-- Organizational Experience -->
     <div v-if="OrganizationExperiences.length > 0" class="mt-[8px] mb-[10px]">
-      <h2 class="text-[15px] font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Pengalaman Organisasi</h2>
+      <h2 class="text-[15px] tracking-[2px] mb-[6px] text-black border-b border-black">Pengalaman Organisasi</h2>
       <div v-for="(org, i) in OrganizationExperiences" :key="i" class="mb-[6px]">
         <div class="flex justify-between items-start">
           <div>
-            <div class="text-[12px] font-bold text-black">{{ org.company }}<span v-if="org.location" class="text-gray-500 font-bold"> - {{ org.location }}</span></div>
+            <div class="text-[12px] text-black">{{ org.company }}<span v-if="org.location" class="text-gray-500"> - {{ org.location }}</span></div>
             <div class="text-[12px] italic text-black">{{ org.position }}</div>
           </div>
           <div class="text-[12px] text-black shrink-0 text-right">{{ org.startMonth }} {{ org.startYear }} – {{ org.current ? 'Sekarang' : org.endMonth + ' ' + org.endYear }}</div>
@@ -480,11 +480,11 @@
 
     <!-- Work Experience -->
     <div v-if="workExperiences.length > 0" class="mt-[8px] mb-[10px]">
-      <h2 class="text-[15px] font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Pengalaman Kerja</h2>
+      <h2 class="text-[15px] tracking-[2px] mb-[6px] text-black border-b border-black">Pengalaman Kerja</h2>
       <div v-for="(work, i) in workExperiences" :key="i" class="mb-[6px]">
         <div class="flex justify-between items-start">
           <div>
-            <div class="text-[12px] text-black font-bold">{{ work.company }}<span v-if="work.location" class="text-gray-500 font-bold"> - {{ work.location }}</span></div>
+            <div class="text-[12px] text-black">{{ work.company }}<span v-if="work.location" class="text-gray-500"> - {{ work.location }}</span></div>
             <div class="text-[12px] italic text-black">{{ work.position }}</div>
           </div>
           <div class="text-[12px] text-black shrink-0 text-right">{{ work.startMonth }} {{ work.startYear }} – {{ work.current ? 'Sekarang' : work.endMonth + ' ' + work.endYear }}</div>
@@ -497,15 +497,15 @@
 
     <!-- Skills, Awards, and Competitions (Combined) -->
     <div v-if="projects.length > 0 || formData.technical_skills || formData.soft_skills || formData.cert_name" class="mt-[8px] mb-[10px]">
-      <h2 class="text-[15px] font-bold tracking-[2px] mb-[6px] text-black border-b border-black">Kemampuan, Penghargaan, dan Kompetisi</h2>
+      <h2 class="text-[15px] tracking-[2px] mb-[6px] text-black border-b border-black">Kemampuan, Penghargaan, dan Kompetisi</h2>
       
       <!-- Projects (Posisi Paling Atas) -->
       <div v-if="projects.length > 0" class="mb-[15px]">
-        <span class="text-[12px] font-bold mb-[5px] block">Project :</span>
+        <span class="text-[12px] mb-[5px] block">Project :</span>
         <div v-for="(proj, i) in projects" :key="i" class="mb-[6px]">
           <div class="flex justify-between items-start">
             <div>
-              <div class="text-[12px] text-black font-bold">{{ proj.name }}</div>
+              <div class="text-[12px] text-black">{{ proj.name }}</div>
             </div>
           </div>
           <p v-if="proj.description" class="text-[12px] text-justify leading-[1.3] mt-[2px] mb-0 text-black">{{ proj.description }}</p>
