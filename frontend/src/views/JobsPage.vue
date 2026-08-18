@@ -26,14 +26,13 @@
           </button>
         </div>
 
-        <span class="text-[12px] text-stone mt-[8px] block">
+        <span v-if="backgroundRunning" class="text-[12px] text-white mt-[8px] flex items-center gap-[6px]">
+          Data pekerjaan sedang ditambahkan, mohon tunggu sebentar...
+        </span>
+        <span v-else class="text-[12px] text-white mt-[8px] block">
           Total data {{ jobTotal.toLocaleString('id-ID') }} jobs • {{ (status.total_jobs_scraped || 0).toLocaleString('id-ID') }} data job ditambahkan
         </span>
 
-      </div>
-
-      <div v-if="statusMsg" class="mb-xl bg-surface-elevated rounded-md p-lg border border-hairline-dark">
-        <span class="text-sm font-medium" :class="statusType === 'error' ? 'text-accent-danger' : 'text-accent-teal'">{{ statusMsg }}</span>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] items-start gap-lg">
@@ -410,6 +409,7 @@ onMounted(async () => {
       backgroundRunning.value = false
       if (data.message) setStatusMsg(data.message, "ok")
       refreshStatus()
+      fetchPage(1, false)
       return
     }
     if (data.status === "failed") {
