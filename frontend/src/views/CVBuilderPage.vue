@@ -21,9 +21,9 @@
             />
           </div>
 
-          <ul class="list-none m-0 p-0 flex md:block overflow-x-auto md:overflow-visible pb-[12px] md:pb-0">
+          <ul class="list-none m-0 p-0 flex flex-col">
             <!-- Step 0: Template Select -->
-            <li class="flex shrink-0 items-center px-[16px] py-[12px] rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent cursor-pointer"
+            <li class="flex items-center px-[16px] py-[12px] rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-l-[3px] border-transparent cursor-pointer"
                 :class="{ 'bg-surface-deep !text-on-dark font-medium !border-white': currentStep === 0 }"
                 @click="goToStep(0)">
               <div class="w-[28px] h-[28px] rounded-full border border-hairline-dark flex items-center justify-center text-[12px] mr-[12px] shrink-0 transition-colors" :class="{ 'bg-white text-ink border-white': currentStep > 0 }">1</div>
@@ -32,7 +32,7 @@
 
             <!-- Template-specific steps -->
             <li v-for="(section, index) in activeSteps" :key="section.id"
-                class="flex shrink-0 items-center px-[16px] py-[12px] rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent"
+                class="flex items-center px-[16px] py-[12px] rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-l-[3px] border-transparent"
                 :class="{
                   'bg-surface-deep !text-on-dark font-medium !border-white': currentStep === index + 1,
                   'cursor-pointer': index + 1 <= maxStepReached,
@@ -44,7 +44,7 @@
             </li>
 
             <!-- Preview Step -->
-            <li class="flex shrink-0 items-center px-[16px] py-[12px] rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-b-[3px] md:border-b-0 md:border-l-[3px] border-transparent"
+            <li class="flex items-center px-[16px] py-[12px] rounded-none transition-all duration-200 text-on-dark-mute hover:bg-surface-deep border-l-[3px] border-transparent"
                 :class="{
                   'bg-surface-deep !text-on-dark font-medium !border-white': currentStep === totalSteps - 1,
                   'cursor-pointer': totalSteps - 1 <= maxStepReached,
