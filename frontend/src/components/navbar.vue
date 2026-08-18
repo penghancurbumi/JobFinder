@@ -11,6 +11,8 @@
         <router-link to="/" class="text-[20px] font-medium text-on-dark no-underline tracking-[-0.02em] flex items-center gap-[8px]">
           JobFinder
         </router-link>
+
+        <!-- Desktop Nav -->
         <div class="hidden lg:flex gap-lg">
           <router-link to="/" class="nav-link" active-class="nav-link-active">Home</router-link>
           <router-link to="/jobs" class="nav-link" active-class="nav-link-active">Peluang</router-link>
@@ -18,21 +20,56 @@
           <router-link to="/cv-builder" class="nav-link" active-class="nav-link-active">Pembuat CV</router-link>
           <router-link to="/chatbot" class="nav-link" active-class="nav-link-active">Asisten AI</router-link>
         </div>
+
+        <!-- Hamburger Button (mobile only) -->
+        <button
+          class="lg:hidden flex flex-col justify-center items-center w-[40px] h-[40px] gap-[5px] cursor-pointer bg-transparent border-none p-0"
+          @click="toggleMenu"
+          aria-label="Toggle navigation menu"
+        >
+          <span class="hamburger-line" :class="{ 'rotate-45 translate-y-[7px]': isOpen }"></span>
+          <span class="hamburger-line" :class="{ 'opacity-0 scale-x-0': isOpen }"></span>
+          <span class="hamburger-line" :class="{ '-rotate-45 -translate-y-[7px]': isOpen }"></span>
+        </button>
       </div>
     </nav>
+
+    <!-- Mobile Menu Full Screen -->
+    <Transition name="mobile-menu">
+      <div
+        v-if="isOpen"
+        class="lg:hidden fixed top-[72px] left-0 right-0 bottom-0 z-40 bg-canvas-dark flex flex-col"
+      >
+        <div class="flex flex-col px-[32px] py-[80px] gap-[10px]">
+          <router-link to="/" class="text-[40px] font-light" @click="closeMenu">Home</router-link>
+          <router-link to="/jobs" class="text-[40px] font-light" @click="closeMenu">Peluang</router-link>
+          <router-link to="/cv-analyzer" class="text-[40px] font-light" @click="closeMenu">Analisis CV</router-link>
+          <router-link to="/cv-builder" class="text-[40px] font-light" @click="closeMenu">Pembuat CV</router-link>
+          <router-link to="/chatbot" class="text-[40px] font-light" @click="closeMenu">Asisten AI</router-link>
+        </div>
+      </div>
+    </Transition>
+
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const isScrolled = ref(false)
 const isHome = computed(() => route.path === '/')
+const isOpen = ref(false)
+
+const toggleMenu = () => { isOpen.value = !isOpen.value }
+const closeMenu = () => { isOpen.value = false }
 
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 20
 }
+
+// Close menu on route change
+watch(() => route.path, () => closeMenu())
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
@@ -64,4 +101,30 @@ onUnmounted(() => {
 .nav-link-active {
   @apply text-white;
 }
+
+/* Hamburger lines */
+.hamburger-line {
+  @apply block w-[22px] h-[2px] bg-white rounded-full transition-all duration-300 origin-center;
+}
+
+/* Mobile menu transition */
+.mobile-menu-enter-active {
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mobile-menu-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.mobile-menu-enter-from,
+.mobile-menu-leave-to {
+  opacity: 0;
+  transform: translateY(-12px);
+}
+
+/* Stagger animasi tiap link saat masuk */
+.mobile-menu-enter-active a:nth-child(1) { transition-delay: 0.05s; }
+.mobile-menu-enter-active a:nth-child(2) { transition-delay: 0.10s; }
+.mobile-menu-enter-active a:nth-child(3) { transition-delay: 0.15s; }
+.mobile-menu-enter-active a:nth-child(4) { transition-delay: 0.20s; }
+.mobile-menu-enter-active a:nth-child(5) { transition-delay: 0.25s; }
+
 </style>
