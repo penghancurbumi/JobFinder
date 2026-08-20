@@ -14,7 +14,7 @@
         <aside class="w-full md:w-[280px] shrink-0 md:sticky top-[100px] bg-surface-elevated rounded-[20px] py-xl border border-hairline-dark">
           <!-- Target Expertise -->
           <div class="mb-[24px] px-[16px]">
-            <label class="text-[12px] mb-md text-on-dark-mute block font-semibold">Target Keahlian / Bidang</label>
+            <label class="text-[14px] mb-md text-on-dark-mute block font-semibold">Target Keahlian / Bidang</label>
             <CustomSelect
               :options="ExpertiseOptions"
               v-model="targetExpertise"
@@ -109,7 +109,6 @@
               <div v-else ref="fontListRef" class="h-[280px] overflow-y-auto rounded-[12px] border border-hairline-dark divide-y divide-hairline-dark" tabindex="0" @wheel.stop>
                 <!-- System Fonts Section -->
                 <div v-if="filteredSystemFonts.length > 0">
-                  <div class="px-[14px] py-[6px] text-[10px] font-bold uppercase tracking-widest text-stone bg-white/3 sticky top-0">System Fonts</div>
                   <button v-for="f in filteredSystemFonts" :key="'sys-' + f.family" type="button"
                     @click="selectFont(f)"
                     class="w-full flex items-center gap-[10px] px-[14px] py-[10px] transition-colors hover:bg-white/5 text-left"
