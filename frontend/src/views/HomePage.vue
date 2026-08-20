@@ -4,10 +4,9 @@
     <section class="bg-transparent py-[110px]">
       <div class="w-full mx-auto px-[32px] md:px-[72px]">
         <div class="flex flex-col gap-[40px]">
-          <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] block text-stone">Job Aggregator Indonesia</span>
           <h1 class="font-medium leading-[1.0] tracking-[-0.8px]">
-            <span class="text-[48px] md:text-[64px] lg:text-[72px] block">Temukan Karier</span>
-            <span class="text-[48px] md:text-[64px] lg:text-[72px] block">Masa Depanmu</span>
+            <span class="text-[48px] md:text-[64px] lg:text-[82px] block">Temukan Karier</span>
+            <span class="text-[48px] md:text-[64px] lg:text-[82px] block">Masa Depanmu</span>
           </h1>
 
           <p class="text-sm md:text-[18px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute max-w-[640px]">
@@ -16,13 +15,13 @@
           </p>
 
           <div class="flex gap-[20px] flex-wrap items-center">
-            <router-link to="/jobs" class="inline-flex items-center gap-[8px] justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-sm md:text-[18px] px-[24px] h-[48px] bg-on-dark text-ink hover:bg-white/90">
+            <router-link to="/jobs" class="inline-flex items-center gap-[8px] justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-sm md:text-[20px] px-[24px] h-[48px] bg-on-dark text-ink hover:bg-white/90">
               Get Started
-              <Icon icon="mdi-light:arrow-right" width="20"/>
+              <Icon icon="mdi-light:arrow-right" width="25"/>
             </router-link>            
 
-            <a href="https://github.com/penghancurbumi/JobFinder" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-[8px] justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-sm md:text-[18px] px-[24px] h-[48px] bg-surface-elevated hover:bg-body border border-hairline-dark text-on-dark">
-              <Icon icon="mdi:github" width="20"/>
+            <a href="https://github.com/penghancurbumi/JobFinder" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-[8px] justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-sm md:text-[20px] px-[24px] h-[48px] bg-surface-elevated hover:bg-body border border-hairline-dark text-on-dark">
+              <Icon icon="mdi:github" width="25"/>
               GitHub</a>
           </div>
         </div>
@@ -32,7 +31,7 @@
       <div class="flex flex-col md:flex-row md:items-center gap-[16px] md:gap-[24px] mt-[90px]">
         <div class="flex flex-row items-center gap-2 px-[32px] md:px-[72px]">
           <div class="h-1 w-1 rounded-full bg-white"></div>
-          <p class="font-mono uppercase text-[14px] font-bold tracking-[1.5px] text-white shrink-0">Powered by Trusted Sources</p>
+          <p class="font-mono uppercase text-[16px] font-bold tracking-[1.5px] text-white shrink-0">Powered by Trusted Sources</p>
         </div>
 
         <div class="logo-track-wrapper flex-1 min-w-0">
@@ -226,10 +225,6 @@ onMounted(async () => {
   display: flex;
   width: max-content;
   animation: marquee-hero 25s linear infinite;
-}
-
-.logo-track:hover {
-  animation-play-state: paused;
 }
 
 /* Logo group (one full set) */
