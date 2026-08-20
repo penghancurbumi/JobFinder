@@ -2,13 +2,13 @@
     
     <nav 
       :class="[
-        'h-[72px] px-[32px] md:px-[72px] flex items-center sticky top-0 z-50 transition-all duration-300 border-b',
-        (isScrolled || !isHome) ? 'bg-canvas-dark' : 'bg-transparent',
+        'py-[18px] md:py-[20px] px-[32px] md:px-[72px] flex items-center sticky top-0 z-50 transition-all duration-300 border-b',
+        (isScrolled || !isHome || isOpen) ? 'bg-canvas-dark' : 'bg-transparent',
         isScrolled ? 'border-hairline-dark' : 'border-transparent'
       ]"
     >
       <div class="w-full mx-auto flex items-center justify-between">
-        <router-link to="/" class="text-[20px] font-medium text-on-dark no-underline tracking-[-0.02em] flex items-center gap-[8px]">
+        <router-link to="/" class="text-[25px] md:text-[30px] font-medium text-on-dark no-underline tracking-[-0.02em] leading-none flex items-center gap-[8px]">
           JobFinder
         </router-link>
 
@@ -23,13 +23,14 @@
 
         <!-- Hamburger Button (mobile only) -->
         <button
-          class="lg:hidden flex flex-col justify-center items-center w-[40px] h-[40px] gap-[5px] cursor-pointer bg-transparent border-none p-0"
+          class="lg:hidden flex justify-center items-center w-[40px] h-[40px] cursor-pointer bg-transparent border-none p-0 text-white transition-all duration-300"
           @click="toggleMenu"
           aria-label="Toggle navigation menu"
         >
-          <span class="hamburger-line" :class="{ 'rotate-45 translate-y-[7px]': isOpen }"></span>
-          <span class="hamburger-line" :class="{ 'opacity-0 scale-x-0': isOpen }"></span>
-          <span class="hamburger-line" :class="{ '-rotate-45 -translate-y-[7px]': isOpen }"></span>
+          <Transition name="icon-swap" mode="out-in">
+            <Icon v-if="!isOpen" key="menu" icon="griddy-icons:menu-alt-03" width="30" style="display:block" />
+            <Icon v-else key="close" icon="griddy-icons:minus" width="30" style="display:block" />
+          </Transition>
         </button>
       </div>
     </nav>
@@ -40,12 +41,22 @@
         v-if="isOpen"
         class="lg:hidden fixed top-[72px] left-0 right-0 bottom-0 z-40 bg-canvas-dark flex flex-col"
       >
-        <div class="flex flex-col px-[32px] py-[80px] gap-[10px]">
-          <router-link to="/" class="text-[40px] font-light" @click="closeMenu">Home</router-link>
-          <router-link to="/jobs" class="text-[40px] font-light" @click="closeMenu">Peluang</router-link>
-          <router-link to="/cv-analyzer" class="text-[40px] font-light" @click="closeMenu">Analisis CV</router-link>
-          <router-link to="/cv-builder" class="text-[40px] font-light" @click="closeMenu">Pembuat CV</router-link>
-          <router-link to="/chatbot" class="text-[40px] font-light" @click="closeMenu">Asisten AI</router-link>
+        <div class="flex flex-col px-[32px] py-[80px] gap-xs">
+          <router-link to="/" class="text-[40px] sm:text-[50px] font-light" @click="closeMenu">Home</router-link>
+          <router-link to="/jobs" class="text-[40px] sm:text-[50px] font-light" @click="closeMenu">Peluang</router-link>
+          <router-link to="/cv-analyzer" class="text-[40px] sm:text-[50px] font-light" @click="closeMenu">Analisis CV</router-link>
+          <router-link to="/cv-builder" class="text-[40px] sm:text-[50px] font-light" @click="closeMenu">Pembuat CV</router-link>
+          <router-link to="/chatbot" class="text-[40px] sm:text-[50px] font-light" @click="closeMenu">Asisten AI</router-link>
+        </div>
+
+        <!-- Footer -->
+        <div class="absolute flex justify-between items-center bottom-0 left-0 right-0 px-[32px] py-[30px]">
+          <p class="text-[14px] font-normal leading-[1.6] text-on-dark-mute">JobFinder &copy; 2026</p>
+          
+          <div class="flex flex-row gap-sm">
+            <Icon icon="mdi:github" width="30"/>
+            <Icon icon="mdi:linkedin" width="30"/>
+          </div>
         </div>
       </div>
     </Transition>
@@ -54,6 +65,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { Icon } from '@iconify/vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -68,6 +80,11 @@ const handleScroll = () => {
   isScrolled.value = window.scrollY > 20
 }
 
+// Lock/unlock body scroll saat menu buka/tutup
+watch(isOpen, (val) => {
+  document.body.style.overflow = val ? 'hidden' : ''
+})
+
 // Close menu on route change
 watch(() => route.path, () => closeMenu())
 
@@ -77,6 +94,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  document.body.style.overflow = '' // cleanup
 })
 </script>
 
@@ -102,9 +120,18 @@ onUnmounted(() => {
   @apply text-white;
 }
 
-/* Hamburger lines */
-.hamburger-line {
-  @apply block w-[22px] h-[2px] bg-white rounded-full transition-all duration-300 origin-center;
+/* Icon swap transition */
+.icon-swap-enter-active,
+.icon-swap-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.icon-swap-enter-from {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.7);
+}
+.icon-swap-leave-to {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.7);
 }
 
 /* Mobile menu transition */
