@@ -397,4 +397,34 @@ httpServer.listen(PORT, async () => {
   }
   console.log(`Backend running on http://localhost:${PORT}`)
   runBot()
+
+  // ── Auto-cleanup harian ──────────────────────────────────────────────────
+  // Hanya MENGHAPUS data kadaluarsa/tidak aktif — TIDAK menambah data baru.
+  // Penambahan data hanya bisa dilakukan manual via tombol "Perbarui Data".
+  //
+  // Interval: 24 jam
+  // Delay awal: 60 detik setelah server start (beri waktu cache warm-up)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const AUTO_CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000 // 24 jam
+
+  const runAutoCleanup = async () => {
+    console.log('[Auto-cleanup] Memulai pembersihan data kadaluarsa...')
+    try {
+      const result = await runCleanup()
+      await refreshJobsCache()
+      console.log(`[Auto-cleanup] Selesai. Total dihapus: ${result.total} job.`)
+    } catch (e) {
+      console.error('[Auto-cleanup] Error:', e.message)
+    }
+  }
+
+  // Jalankan pertama kali 60 detik setelah start, lalu tiap 24 jam
+  setTimeout(() => {
+    runAutoCleanup()
+    setInterval(runAutoCleanup, AUTO_CLEANUP_INTERVAL_MS)
+  }, 60_000)
+
+  console.log('[Auto-cleanup] Scheduler aktif: setiap 24 jam (pertama dalam 60 detik)')
 })
+
