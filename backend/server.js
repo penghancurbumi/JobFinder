@@ -204,7 +204,7 @@ io.on("connection", async (socket) => {
   } catch { /* ignore */ }
   const result = await getFilteredJobs()
   socket.emit("jobs-updated", result)
-  
+
   socket.on("request-scrape", async () => {
     const resp = await startScrape()
     if (resp.status === "running") {
@@ -305,7 +305,7 @@ app.post("/api/cv/analyze", upload.single("cv"), async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: "CV file required (PDF format)" })
     }
-    
+
     if (req.file.mimetype === "application/pdf") {
       try {
         const parser = new PDFParse({ data: req.file.buffer })
@@ -322,9 +322,9 @@ app.post("/api/cv/analyze", upload.single("cv"), async (req, res) => {
     const result = await analyzeCV(cvText, expertise)
     // Wrap the string result back into the expected object structure for frontend
     res.json({
-        ats: result.ats,
-        eligible: result.eligible,
-        analysis: result.analysis
+      ats: result.ats,
+      eligible: result.eligible,
+      analysis: result.analysis
     })
   } catch (e) {
     res.status(500).json({ error: e.message })
@@ -387,7 +387,7 @@ app.get("/api/chat/history/:sessionId", async (req, res) => {
   }
 })
 
-httpServer.listen(PORT, async () => {
+httpServer.listen(PORT, '0.0.0.0', async () => {
   try {
     await loadJobsCache()
     const cached = getJobsCache() || []
@@ -395,7 +395,7 @@ httpServer.listen(PORT, async () => {
   } catch (e) {
     console.error("Failed to load jobs cache:", e.message)
   }
-  console.log(`Backend running on http://localhost:${PORT}`)
+  console.log(`Backend running on http://0.0.0.0:${PORT}`)
   runBot()
 
   // ── Auto-cleanup harian ──────────────────────────────────────────────────

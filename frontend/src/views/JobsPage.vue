@@ -376,7 +376,7 @@ const buttonLabel = computed(() => {
 
 async function refreshStatus() {
   try {
-    const res = await fetch("http://localhost:3000/api/status")
+    const res = await fetch("http://192.168.18.42:3000/api/status")
     if (res.ok) status.value = await res.json()
   } catch { /* ignore */ }
 }
@@ -392,7 +392,7 @@ onMounted(async () => {
   await fetchPage(1, false)
   refreshStatus()
 
-  socket = io("http://localhost:3000")
+  socket = io("http://192.168.18.42:3000")
   
   socket.on("jobs-updated", (data) => {
     applyJobsPayload(data)
@@ -462,7 +462,7 @@ async function fetchPage(p, append = false) {
     limit: String(limit)
   })
   try {
-    const res = await fetch(`http://localhost:3000/api/jobs?${params}`)
+    const res = await fetch(`http://192.168.18.42:3000/api/jobs?${params}`)
     if (res.ok) {
       const data = await res.json()
       if (append) jobs.value = [...jobs.value, ...(data.jobs || [])]

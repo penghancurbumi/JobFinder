@@ -3,10 +3,10 @@
     <!-- Hero Section (Dark Canvas) -->
     <section class="bg-transparent py-[110px]">
       <div class="w-full mx-auto px-[32px] md:px-[72px]">
-        <div class="flex flex-col gap-[40px]">
+        <div class="flex flex-col gap-[30px] md:gap-[40px]">
           <h1 class="font-medium leading-[1.0] tracking-[-0.8px]">
-            <span class="text-[48px] md:text-[64px] lg:text-[82px] block">Temukan Karier</span>
-            <span class="text-[48px] md:text-[64px] lg:text-[82px] block">Masa Depanmu</span>
+            <span class="text-[42px] md:text-[64px] lg:text-[82px] block">Temukan Karier</span>
+            <span class="text-[42px] md:text-[64px] lg:text-[82px] block">Masa Depanmu</span>
           </h1>
 
           <p class="text-sm md:text-[18px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute max-w-[640px]">
@@ -31,7 +31,7 @@
       <div class="flex flex-col md:flex-row md:items-center gap-[16px] md:gap-[24px] mt-[90px]">
         <div class="flex flex-row items-center gap-2 px-[32px] md:px-[72px]">
           <div class="h-1 w-1 rounded-full bg-white"></div>
-          <p class="font-mono uppercase text-[16px] font-bold tracking-[1.5px] text-white shrink-0">Powered by Trusted Sources</p>
+          <p class="font-mono uppercase text-[12px] md:text-[16px] font-bold tracking-[1.5px] text-white shrink-0">Powered by Trusted Sources</p>
         </div>
 
         <div class="logo-track-wrapper flex-1 min-w-0">
@@ -181,8 +181,8 @@ function formatNumber(n) {
 onMounted(async () => {
   try {
     const [jobsRes, expertiseRes] = await Promise.all([
-      fetch("http://localhost:3000/api/jobs"),
-      fetch("http://localhost:3000/api/expertise-areas"),
+      fetch("http://192.168.18.42:3000/api/jobs"),
+      fetch("http://192.168.18.42:3000/api/expertise-areas"),
     ])
 
     if (jobsRes.ok) {
