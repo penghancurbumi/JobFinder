@@ -11,7 +11,7 @@
         <div v-if="useProfilePicture" class="flex flex-col gap-xs mt-sm">
           <label class="mb-[8px]  text-on-dark-mute">Foto Profil</label>
           <div class="flex items-center gap-lg">
-            <div class="w-[100px] h-[100px] rounded-full overflow-hidden border-2 border-hairline-dark bg-white flex shrink-0">
+            <div class="w-[100px] h-[100px] rounded-full overflow-hidden border-1 border-hairline-dark bg-white flex shrink-0">
               <img v-if="profilePictureUrl" :src="profilePictureUrl" class="w-full h-full object-cover" />
               <Icon v-else icon="iconamoon:profile-fill" class="text-[70px] text-gray-300 mx-auto my-auto" />
             </div>
@@ -19,6 +19,7 @@
           </div>
         </div>
       </div>
+      
       <div v-for="f in personalFields" :key="f.key" class="flex flex-col">
         <label class="mb-[8px]  text-on-dark-mute">{{ f.label }} <span v-if="f.required" class="text-accent-danger">*</span></label>
         <input v-if="f.key === 'email'" type="email" v-model="formData[f.key]" :placeholder="f.placeholder" @input="validateEmail" class="w-full bg-transparent border border-hairline-dark rounded-[12px] h-[48px] px-[16px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone" />

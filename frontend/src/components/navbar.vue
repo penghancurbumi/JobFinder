@@ -42,11 +42,11 @@
         class="lg:hidden fixed top-[72px] left-0 right-0 bottom-0 z-40 bg-canvas-dark flex flex-col"
       >
         <div class="flex flex-col px-[32px] py-[80px] gap-xs">
-          <router-link to="/" class="text-[40px] sm:text-[50px] font-light" @click="closeMenu">Home</router-link>
-          <router-link to="/jobs" class="text-[40px] sm:text-[50px] font-light" @click="closeMenu">Peluang</router-link>
-          <router-link to="/cv-analyzer" class="text-[40px] sm:text-[50px] font-light" @click="closeMenu">Analisis CV</router-link>
-          <router-link to="/cv-builder" class="text-[40px] sm:text-[50px] font-light" @click="closeMenu">Pembuat CV</router-link>
-          <router-link to="/chatbot" class="text-[40px] sm:text-[50px] font-light" @click="closeMenu">Asisten AI</router-link>
+          <router-link to="/" class="text-[40px] sm:text-[50px] font-normal" @click="closeMenu">Home</router-link>
+          <router-link to="/jobs" class="text-[40px] sm:text-[50px] font-normal" @click="closeMenu">Peluang</router-link>
+          <router-link to="/cv-analyzer" class="text-[40px] sm:text-[50px] font-normal" @click="closeMenu">Analisis CV</router-link>
+          <router-link to="/cv-builder" class="text-[40px] sm:text-[50px] font-normal" @click="closeMenu">Pembuat CV</router-link>
+          <router-link to="/chatbot" class="text-[40px] sm:text-[50px] font-normal" @click="closeMenu">Asisten AI</router-link>
         </div>
 
         <!-- Footer -->

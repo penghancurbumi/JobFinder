@@ -2,7 +2,7 @@
   <div class="min-h-screen pt-[50px] bg-canvas-dark text-on-dark font-sans">
     <div class="w-full mx-auto px-[32px] md:px-[72px]">
       <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark mb-xs">Asisten AI</h1>
-      <p class="text-[16px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute mb-xl">Konsultasikan perjalanan karir Anda, struktur dokumen CV, hingga strategi wawancara.</p>
+      <p class="text-[12px] md:text-[16px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute mb-xl">Konsultasikan perjalanan karir Anda, struktur dokumen CV, hingga strategi wawancara.</p>
 
     <div class="bg-surface-elevated border border-hairline-dark rounded-[20px] overflow-hidden flex flex-col h-[500px]">
       <div class="flex-1 overflow-y-auto p-xl flex flex-col gap-lg bg-surface-deep" ref="chatRef">
