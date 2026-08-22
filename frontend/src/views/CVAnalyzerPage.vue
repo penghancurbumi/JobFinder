@@ -3,19 +3,86 @@
     <div class="w-full mx-auto px-[32px] md:px-[72px]">
       <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-xs block">ATS Simulator</span>
       <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] mb-sm text-on-dark">CV Analyzer</h1>
-      <p class="text-[16px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute mb-xl">Unggah CV Anda untuk mendapatkan analisis mendalam berbasis AI dan simulasi sistem ATS.</p>
+      <p class="text-[12px] md:text-[16px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute mb-xl">Unggah CV Anda untuk mendapatkan analisis mendalam berbasis AI dan simulasi sistem ATS.</p>
 
       <div class="bg-surface-elevated border border-hairline-dark rounded-[20px] p-xxl mb-xl">
         <div class="mb-md gap-sm">
-          <label class="mb-sm block text-on-dark font-medium text-lg">Unggah Dokumen CV (PDF)</label>
+          <label class="mb-lg block text-on-dark font-medium text-lg">Unggah Dokumen CV (PDF)</label>
           <div class="flex gap-md items-center flex-wrap">
-            <input type="file" accept=".pdf" @change="onFileChange" class="flex-1 min-w-[200px] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-hairline-dark file:border file:text-sm file:font-medium file:bg-transparent file:text-on-dark hover:file:bg-surface-elevated cursor-pointer" />
             
-              <CustomSelect
-                label="Pilih Bidang Keahlian"
-                :options="ExpertiseOptions"
-                v-model="targetExpertise"
-                class="flex-1 min-w-[200px]"
+            <div class="relative flex-1 min-w-[200px] h-[200px]">
+              <label
+                class="absolute inset-0 bg-surface-elevated border-2 border-dashed border-hairline-dark rounded-sm flex items-center justify-center px-4 cursor-pointer hover:bg-surface-elevated"
+              >
+                <input
+                  ref="fileInput"
+                  type="file"
+                  accept=".pdf"
+                  @change="onFileChange"
+                  class="hidden"
+                />
+
+                <div class="flex flex-col gap-2 items-center">
+                  <Icon icon="material-symbols:upload-file" width="35"/>
+
+                  <div class="flex flex-col items-center gap-0">
+                    <span class="text-sm text-on-dark">
+                      Pilih file PDF
+                    </span>
+
+                    <span class="text-[10px] text-on-dark-mute font-normal">Drag & drop atau klik untuk memilih file</span>
+                  </div>
+                </div>
+
+              </label>
+            </div>
+
+            <div v-if="file" class="flex-1 min-w-[200px] border border-hairline-dark rounded-sm">
+              <div class="flex flex-row gap-2 items-center p-md">
+                <Icon icon="mdi:file" width="30" class="text-on-dark-mute"/>
+                
+               <div class="flex flex-col flex-1 justify-center min-w-0">
+                <div class="w-full flex items-center justify-between">
+                  <span class="text-[12px] font-medium text-on-dark truncate"
+                  :title="file.name">
+                    {{ file.name }}
+                  </span>
+
+                  <button
+                    type="button"
+                    @click="removeFile"
+                    class="flex items-center justify-center text-on-dark-mute hover:text-white transition"
+                  >
+                    <Icon icon="lucide:x" width="15" />
+                  </button>
+                </div>
+
+                <span class="text-[10px] text-on-dark-mute font-mono">
+                  <template v-if="uploadProgress < 100">
+                    {{ formatFileSize(uploadedBytes) }} of {{ formatFileSize(file.size) }}
+                  </template>
+
+                  <template v-else>
+                    {{ formatFileSize(file.size) }}
+                  </template>
+                </span>
+
+                <div v-if="uploadProgress < 100" class="w-full bg-white/10 h-[2px] rounded-full overflow-hidden mt-1">
+                  <div 
+                    class="bg-white h-full transition-all duration-100 ease-out"
+                    :style="{ width: `${uploadProgress}%` }"
+                  ></div>
+                </div>   
+                          
+               </div>
+              </div>
+            </div>
+
+            <CustomSelect
+              label="Pilih Bidang Keahlian"
+              :options="ExpertiseOptions"
+              v-model="targetExpertise"
+              class="flex-1 min-w-[200px]"
               />
 
             <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[24px] h-[48px] text-[14px] md:text-[16px] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed" @click="analyze" :disabled="analyzing || !file">
@@ -138,6 +205,7 @@ import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler,
 import { Line, Doughnut } from 'vue-chartjs'
 import CustomSelect from "../components/CustomSelect.vue"
 import { useHead } from "@vueuse/head"
+import { Icon } from "@iconify/vue"
 
 useHead({
   title: 'Analisis CV & ATS Score — JobFinder',
@@ -174,7 +242,11 @@ onMounted(async () => {
 })
 
 function onFileChange(e) {
-  file.value = e.target.files[0]
+  const selected = e.target.files[0]
+  if (selected) {
+    file.value = selected
+    simulateUpload(selected.size)
+  }
 }
 
 async function analyze() {
@@ -258,6 +330,55 @@ const lineChartData = computed(() => {
     }]
   }
 })
+
+const fileInput = ref(null)
+const uploadProgress = ref(0)
+const uploadedBytes = ref(0)
+let uploadTimer = null
+
+function simulateUpload(totalSize) {
+  if (uploadTimer) clearInterval(uploadTimer)
+  uploadProgress.value = 0
+  uploadedBytes.value = 0
+  
+  const duration = 750 // 750ms animasi halus
+  const interval = 25  // pembaruan tiap 25ms
+  const steps = duration / interval
+  const byteIncrement = totalSize / steps
+  const percentIncrement = 100 / steps
+  
+  uploadTimer = setInterval(() => {
+    if (uploadProgress.value < 100) {
+      uploadProgress.value = Math.min(100, Math.round(uploadProgress.value + percentIncrement))
+      uploadedBytes.value = Math.min(totalSize, Math.round(uploadedBytes.value + byteIncrement))
+    } else {
+      uploadProgress.value = 100
+      uploadedBytes.value = totalSize
+      clearInterval(uploadTimer)
+    }
+  }, interval)
+}
+
+function removeFile() {
+  if (uploadTimer) clearInterval(uploadTimer)
+  file.value = null
+  uploadProgress.value = 0
+  uploadedBytes.value = 0
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+  result.value = null
+}
+
+function formatFileSize(bytes, decimals = 2) {
+  if (!bytes || bytes <= 0) return "0 KB"
+  const mb = bytes / (1024 * 1024)
+  if (mb < 0.1){
+    return (bytes / 1024).toFixed(0) + " KB"
+  }
+  return mb.toFixed(1) + " MB"
+}
+
 </script>
 
 <style scoped>
