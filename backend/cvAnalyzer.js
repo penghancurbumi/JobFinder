@@ -21,17 +21,19 @@ function normalizePdfText(text) {
     .trim()
 }
 
-export async function analyzeCV(cvText, expertise) {
+export async function analyzeCV(cvText, expertise = "") {
   const normalizedText = normalizePdfText(cvText)
   const atsResult = checkATSFormat(normalizedText)
 
   // Selalu analisis dengan AI, tidak pernah blacklist
-  const model = getClient(`Kamu adalah AI agent handal yang ahli dalam merekrut, menganalisis CV, dan mencari pekerjaan/internship di bidang ${expertise}. Jawab dalam bahasa Indonesia. Jangan gunakan asterisks (**) untuk bold. Jangan tampilkan proses berpikirmu.`)
+  const contextStr = expertise ? `di bidang ${expertise}` : "secara profesional dan rekrutmen industri"
+  const model = getClient(`Kamu adalah AI agent handal yang ahli dalam merekrut, menganalisis CV, dan menilai kecocokan karier kandidat ${contextStr}. Jawab dalam bahasa Indonesia. Jangan gunakan asterisks (**) untuk bold. Jangan tampilkan proses berpikirmu.`)
   if (!model) {
     return { ats: atsResult, eligible: true, analysis: "AI analysis unavailable (API key not configured)." }
   }
 
-  const prompt = `Analisis CV berikut untuk posisi ${expertise}.
+  const promptExpertise = expertise ? `untuk posisi/bidang ${expertise}` : `secara menyeluruh berdasarkan profil dan keahlian pada CV`
+  const prompt = `Analisis CV berikut ${promptExpertise}.
 
 Tolong balas HANYA dengan sebuah JSON object yang valid (tanpa blok markdown seperti \`\`\`json). Format JSON-nya adalah:
 {
