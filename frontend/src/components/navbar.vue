@@ -23,14 +23,23 @@
 
         <!-- Hamburger Button (mobile only) -->
         <button
-          class="lg:hidden flex justify-center items-center w-[40px] h-[40px] cursor-pointer bg-transparent border-none p-0 text-white transition-all duration-300"
+          class="lg:hidden flex justify-center items-center w-[40px] h-[40px] cursor-pointer bg-transparent border-none p-0 focus:outline-none"
           @click="toggleMenu"
           aria-label="Toggle navigation menu"
         >
-          <Transition name="icon-swap" mode="out-in">
-            <Icon v-if="!isOpen" key="menu" icon="griddy-icons:menu-alt-03" width="30" style="display:block" />
-            <Icon v-else key="close" icon="griddy-icons:minus" width="30" style="display:block" />
-          </Transition>
+          <div class="w-[24px] h-[16px] flex flex-col justify-between items-center relative">
+            <span
+              class="w-full h-[2px] bg-white rounded-full transition-all duration-300 ease-in-out origin-left"
+              :class="isOpen ? 'opacity-0 scale-x-0' : 'opacity-100 scale-x-100'"
+            ></span>
+            <span
+              class="w-full h-[2px] bg-white rounded-full transition-all duration-300 ease-in-out"
+            ></span>
+            <span
+              class="w-full h-[2px] bg-white rounded-full transition-all duration-300 ease-in-out origin-left"
+              :class="isOpen ? 'opacity-0 scale-x-0' : 'opacity-100 scale-x-100'"
+            ></span>
+          </div>
         </button>
       </div>
     </nav>
@@ -120,19 +129,7 @@ onUnmounted(() => {
   @apply text-white;
 }
 
-/* Icon swap transition */
-.icon-swap-enter-active,
-.icon-swap-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-.icon-swap-enter-from {
-  opacity: 0;
-  transform: rotate(-90deg) scale(0.7);
-}
-.icon-swap-leave-to {
-  opacity: 0;
-  transform: rotate(90deg) scale(0.7);
-}
+
 
 /* Mobile menu transition */
 .mobile-menu-enter-active {

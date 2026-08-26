@@ -36,59 +36,52 @@
 
               </label>
             </div>
+          </div>
 
-            <div v-if="file" class="flex-1 min-w-[200px] border border-hairline-dark rounded-sm">
+          <div v-if="file" class="flex-1 min-w-[200px] border border-hairline-dark rounded-sm mt-md">
               <div class="flex flex-row gap-2 items-center p-md">
                 <Icon icon="mdi:file" width="30" class="text-on-dark-mute"/>
                 
-               <div class="flex flex-col flex-1 justify-center min-w-0">
-                <div class="w-full flex items-center justify-between">
-                  <span class="text-[12px] font-medium text-on-dark truncate"
-                  :title="file.name">
-                    {{ file.name }}
+                <div class="flex flex-col flex-1 justify-center min-w-0">
+                  <div class="w-full flex items-center justify-between">
+                    <span class="text-[12px] font-medium text-on-dark truncate"
+                    :title="file.name">
+                      {{ file.name }}
+                    </span>
+
+                    <button
+                      type="button"
+                      @click="removeFile"
+                      class="flex items-center justify-center text-on-dark-mute hover:text-white transition"
+                    >
+                      <Icon icon="lucide:x" width="15" />
+                    </button>
+                  </div>
+
+                  <span class="text-[10px] text-on-dark-mute font-mono">
+                    <template v-if="uploadProgress < 100">
+                      {{ formatFileSize(uploadedBytes) }} of {{ formatFileSize(file.size) }}
+                    </template>
+
+                    <template v-else>
+                      {{ formatFileSize(file.size) }}
+                    </template>
                   </span>
 
-                  <button
-                    type="button"
-                    @click="removeFile"
-                    class="flex items-center justify-center text-on-dark-mute hover:text-white transition"
-                  >
-                    <Icon icon="lucide:x" width="15" />
-                  </button>
+                  <div v-if="uploadProgress < 100" class="w-full bg-white/10 h-[2px] rounded-full overflow-hidden mt-1">
+                    <div 
+                      class="bg-white h-full transition-all duration-100 ease-out"
+                      :style="{ width: `${uploadProgress}%` }"
+                    ></div>
+                  </div>   
+                  
                 </div>
-
-                <span class="text-[10px] text-on-dark-mute font-mono">
-                  <template v-if="uploadProgress < 100">
-                    {{ formatFileSize(uploadedBytes) }} of {{ formatFileSize(file.size) }}
-                  </template>
-
-                  <template v-else>
-                    {{ formatFileSize(file.size) }}
-                  </template>
-                </span>
-
-                <div v-if="uploadProgress < 100" class="w-full bg-white/10 h-[2px] rounded-full overflow-hidden mt-1">
-                  <div 
-                    class="bg-white h-full transition-all duration-100 ease-out"
-                    :style="{ width: `${uploadProgress}%` }"
-                  ></div>
-                </div>   
-                          
-               </div>
               </div>
             </div>
 
-            <CustomSelect
-              label="Pilih Bidang Keahlian"
-              :options="ExpertiseOptions"
-              v-model="targetExpertise"
-              class="flex-1 min-w-[200px]"
-              />
-
-            <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[24px] h-[48px] text-[14px] md:text-[16px] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed" @click="analyze" :disabled="analyzing || !file">
+           <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[24px] h-[48px] text-[14px] md:text-[16px] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed mt-md" @click="analyze" :disabled="analyzing || !file">
               {{ analyzing ? 'Menganalisis...' : 'Analisis Dokumen' }}
             </button>
-          </div>
         </div>
       </div>
 
@@ -102,39 +95,49 @@
 
         <template v-else>
           <!-- Score Summary -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-xl mb-xl">
-            <div class="bg-surface-elevated rounded-[20px] p-xxl flex items-center gap-xl">
-              <div class="w-[120px] h-[120px] shrink-0 relative">
-                <Doughnut :data="overallChartData" :options="doughnutOptions" />
-              </div>
-              <div>
-                <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Overall Score</span>
-                <h3 class="text-[32px] font-medium leading-[1.19] tracking-[-0.32px] m-0 text-white">{{ result.analysis.overallScore || 0 }}<span class="text-[20px] text-on-dark-mute">/100</span></h3>
-                <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute mt-[4px]">Kecocokan dengan posisi {{ targetExpertise }}</p>
-              </div>
-            </div>
+          <div class="bg-surface-elevated rounded-[20px] p-xl mb-xl flex flex-col">
+            <span class="font-mono uppercase text-[12px] font-bold tracking-[1px] text-stone mb-lg block">ATS Score</span>
             
-            <div class="bg-surface-elevated rounded-[20px] p-xxl flex items-center gap-xl">
-              <div class="w-[120px] h-[120px] shrink-0 relative">
+            <div class="flex flex-col items-center justify-center gap-md py-sm">
+              <div class="w-[200px] h-[200px] shrink-0 relative flex items-center justify-center">
                 <Doughnut :data="atsChartData" :options="doughnutOptions" />
-              </div>
-              
-              <div>
-                <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">ATS Score</span>
-                <h3 class="text-[32px] font-medium leading-[1.19] tracking-[-0.32px] m-0" :class="result.ats.isATS ? 'text-accent-teal' : 'text-accent-danger'">{{ result.ats.score }}<span class="text-[20px] text-on-dark-mute">%</span></h3>
-                <span class="inline-block rounded-full text-[13px] font-medium mt-[4px]" :class="result.ats.isATS ? 'text-accent-teal' : 'text-accent-danger'">
-                  {{ result.ats.isATS ? 'Format ATS Valid' : 'Format ATS Kurang' }}
-                </span>
-                <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute mt-[4px]">{{ result.ats.matchedSections.length }} / {{ result.ats.totalSections }} bagian wajib ditemukan</p>
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span class="text-[40px] font-medium text-white leading-none tracking-tight">
+                    {{ result.ats.score }}
+                  </span>
+                  <span class="text-[12px] text-on-dark-mute font-mono leading-none mt-[4px]">
+                    Persen
+                  </span>
+                </div>
               </div>
             </div>
+
+              <div class="flex flex-col mt-lg px-xl">
+                <div class="flex flex-row items-center gap-md border-b border-hairline-dark pb-sm">
+                  <div class="shrink-0 bg-transparent h-3.5 w-3.5 border-2 border-white rounded-full flex items-center justify-center">
+                    <div class="h-1.5 w-1.5 bg-white rounded-full"></div>
+                  </div>
+                  <span class="text-[12px] font-normal text-white">
+                    {{ result.ats.isATS ? 'Format ATS Valid' : 'Format ATS Kurang' }}
+                  </span>
+                </div>
+                
+                <div class="flex flex-row items-center gap-md pt-sm">
+                  <div class="shrink-0 bg-transparent h-3.5 w-3.5 border-2 border-white rounded-full flex items-center justify-center">
+                    <div class="h-1.5 w-1.5 rounded-full"></div>
+                  </div>
+                  <span class="text-[12px] font-normal text-white">
+                    {{ result.ats.matchedSections.length }} / {{ result.ats.totalSections }} bagian wajib ditemukan
+                  </span>
+                </div>
+              </div>
           </div>
 
           <!-- Charts Dashboard -->
-          <div class="bg-surface-elevated rounded-[20px] p-xxl mb-xl">
-            <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-lg block text-stone">Analisis Kategori (Line Chart)</span>
+          <div class="bg-surface-elevated rounded-[20px] p-xl mb-xl">
+            <span class="font-mono uppercase text-[12px] font-bold tracking-[1px] mb-lg block text-stone">Analisis Kategori</span>
             <div class="relative h-[300px] w-full">
-              <Line :data="lineChartData" :options="lineOptions" />
+              <Bar :data="barChartData" :options="barOptions" :plugins="[barGradientPlugin]" />
             </div>
           </div>
 
@@ -199,18 +202,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue"
+import { ref, computed } from "vue"
 import axios from "axios"
 import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js'
-import { Line, Doughnut } from 'vue-chartjs'
-import CustomSelect from "../components/CustomSelect.vue"
+import { Bar, Doughnut } from 'vue-chartjs'
 import { useHead } from "@vueuse/head"
 import { Icon } from "@iconify/vue"
 
 useHead({
   title: 'Analisis CV & ATS Score — JobFinder',
   meta: [
-    { name: 'description', content: 'Unggah CV Anda dan dapatkan analisis mendalam berbasis AI. Simulasikan skor ATS, temukan kelemahan CV, dan dapatkan rekomendasi perbaikan yang spesifik untuk bidang keahlianmu.' },
+    { name: 'description', content: 'Unggah CV Anda dan dapatkan analisis mendalam berbasis AI. Simulasikan skor ATS, temukan kelemahan CV, dan dapatkan rekomendasi perbaikan yang komprehensif.' },
     { property: 'og:title', content: 'Analisis CV & ATS Score — JobFinder' },
     { property: 'og:description', content: 'Simulasi ATS dan analisis CV berbasis AI untuk pencari kerja Indonesia.' },
   ]
@@ -218,28 +220,10 @@ useHead({
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale, LinearScale, ArcElement)
 
-// Expertise areas diambil dari API agar selalu sinkron dengan backend
-const expertiseAreas = ref([])
-const ExpertiseOptions = computed(() => [
-  { value: '', label: 'Pilih Bidang Keahlian' },
-  ...expertiseAreas.value.map(a => ({ value: a, label: a }))
-])
 
 const file = ref(null)
-const targetExpertise = ref('')
 const analyzing = ref(false)
 const result = ref(null)
-
-const FALLBACK_AREAS = ['IT Infra', 'Graphic Design', 'Software Development', 'Data Science', 'UI/UX Design', 'Digital Marketing', 'Content Writing', 'Mobile Development', 'DevOps', 'Cyber Security', 'AI / Machine Learning', 'Product Management', 'Others']
-
-onMounted(async () => {
-  try {
-    const { data } = await axios.get('/api/expertise-areas')
-    expertiseAreas.value = data
-  } catch {
-    expertiseAreas.value = FALLBACK_AREAS
-  }
-})
 
 function onFileChange(e) {
   const selected = e.target.files[0]
@@ -255,7 +239,6 @@ async function analyze() {
   result.value = null
   try {
     const form = new FormData()
-    form.append("expertise", targetExpertise.value)
     form.append("cv", file.value)
     
     const { data } = await axios.post("/api/cv/analyze", form)
@@ -280,8 +263,8 @@ const doughnutOptions = {
   plugins: { legend: { display: false }, tooltip: { enabled: false } }
 }
 
-const overallChartData = computed(() => {
-  const score = result.value?.analysis?.overallScore || 0
+const atsChartData = computed(() => {
+  const score = result.value?.ats?.score || 0
   return {
     labels: ['Score', 'Remaining'],
     datasets: [{
@@ -292,41 +275,73 @@ const overallChartData = computed(() => {
   }
 })
 
-const atsChartData = computed(() => {
-  const score = result.value?.ats?.score || 0
-  const color = score >= 25 ? '#00a87e' : '#e23b4a'
-  return {
-    labels: ['Score', 'Remaining'],
-    datasets: [{
-      data: [score, 100 - score],
-      backgroundColor: [color, 'rgba(255,255,255,0.08)'],
-      borderWidth: 0
-    }]
-  }
-})
-
-const lineOptions = {
+const barOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: { 
-    y: { min: 0, max: 100, ticks: { color: '#8d969e' }, grid: { color: 'rgba(255,255,255,0.06)' } },
-    x: { ticks: { color: '#8d969e' }, grid: { display: false } }
+    y: { 
+      min: 0, 
+      max: 100, 
+      ticks: { 
+        color: '#8d969e',
+        stepSize: 20,
+        font: { size: 10 }
+      }, 
+      grid: { color: 'rgba(255, 255, 255, 0.06)' } 
+    },
+    x: { 
+      ticks: { color: '#8d969e', font: { size: 10, weight: 500 } }, 
+      grid: { display: false } 
+    }
   },
-  plugins: { legend: { display: false } }
+  plugins: { 
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: '#171717',
+      titleColor: '#ffffff',
+      bodyColor: '#ffffff',
+      borderColor: 'rgba(255, 255, 255, 0.2)',
+      borderWidth: 1,
+      padding: 10,
+      displayColors: false,
+      callbacks: {
+        label: (context) => `Skor: ${context.raw}/100`
+      }
+    }
+  }
 }
 
-const lineChartData = computed(() => {
+const barGradientPlugin = {
+  id: 'barGradient',
+  beforeDatasetsDraw(chart) {
+    const { ctx, chartArea } = chart
+    if (!chartArea) return
+    const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top)
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0)')
+    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.01)')
+    chart.data.datasets[0].backgroundColor = gradient
+  }
+}
+
+const barChartData = computed(() => {
   const cats = result.value?.analysis?.categories || {}
   return {
     labels: ['Skills', 'Experience', 'Education', 'Projects', 'Certificates', 'Soft Skills'],
     datasets: [{
       label: 'Skor Kategori',
-      data: [cats.Skills||0, cats.Experience||0, cats.Education||0, cats.Projects||0, cats.Certificates||0, cats.SoftSkills||0],
-      borderColor: '#ffffff',
-      backgroundColor: 'rgba(90, 90, 90, 0.3)',
-      pointBackgroundColor: '#ffffff',
-      fill: true,
-      tension: 0.4
+      data: [
+        cats.Skills || 0,
+        cats.Experience || 0,
+        cats.Education || 0,
+        cats.Projects || 0,
+        cats.Certificates || 0,
+        cats.SoftSkills || 0,
+      ],
+      backgroundColor: '#ffffff',
+      borderRadius: 8,
+      borderSkipped: false,
+      barThickness: 32,
+      maxBarThickness: 32,
     }]
   }
 })
