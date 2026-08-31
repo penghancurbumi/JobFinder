@@ -1,7 +1,7 @@
 import { spawn } from "child_process"
 import fs from "fs/promises"
 import path from "path"
-import { runQuery, deleteByUrls, deleteExpiredJobs, findDuplicate, deleteDuplicateJobs, deleteBadQualityJobs, isValidJobText } from "../db.js"
+import { runQuery, deleteByUrls, deleteExpiredJobs, findDuplicate, deleteDuplicateJobs, deleteBadQualityJobs, isValidJobText, deleteDeadLinkJobs } from "../db.js"
 
 const SCRAPY_PROJECT_DIR = path.join(process.cwd(), "scrapping-job")
 const EXPORTS_DIR = path.join(SCRAPY_PROJECT_DIR, "exports", "json")
@@ -150,19 +150,22 @@ export async function deleteClosedJobs() {
 }
 
 // Flag jobs that are no longer on the source platforms (404/closed) and remove
-// jobs past the age cap, absent from recent scrape cycles, exact duplicates, or
-// of unclear quality (URL-as-title, non-Latin scripts).
+// jobs past the age cap, absent from recent scrape cycles, exact duplicates,
+// of unclear quality (URL-as-title, non-Latin scripts), or confirmed dead
+// (404/410) by the link checker more than 7 days ago.
 export async function runCleanup() {
   const removedClosed = await deleteClosedJobs()
   const removedExpired = await deleteExpiredJobs(EXPIRED_OPTIONS)
   const removedDupes = await deleteDuplicateJobs()
   const removedBad = await deleteBadQualityJobs()
-  const total = removedClosed + removedExpired.age + removedExpired.notSeen + removedDupes + removedBad
+  const removedDeadLinks = await deleteDeadLinkJobs(7)
+  const total = removedClosed + removedExpired.age + removedExpired.notSeen + removedDupes + removedBad + removedDeadLinks
   console.log(
     `Cleanup done: ${removedClosed} closed/not-found removed, ${removedExpired.age} age-expired, ` +
-    `${removedExpired.notSeen} not-seen, ${removedDupes} duplicates, ${removedBad} unclear-quality (total ${total})`
+    `${removedExpired.notSeen} not-seen, ${removedDupes} duplicates, ${removedBad} unclear-quality, ` +
+    `${removedDeadLinks} dead-links (total ${total})`
   )
-  return { removedClosed, ...removedExpired, duplicates: removedDupes, unclear: removedBad, total }
+  return { removedClosed, ...removedExpired, duplicates: removedDupes, unclear: removedBad, deadLinks: removedDeadLinks, total }
 }
 
 // Run a single category scrape, streaming per-spider progress events as they happen.

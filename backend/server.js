@@ -13,7 +13,8 @@ import { getBuilderSections, getSuggestion } from "./cvBuilder.js"
 import { chat } from "./chatbot.js"
 import { runBot } from "./telegramBot.js"
 import { EXPERTISE_AREAS } from "./constants.js"
-import { fetchAll, fetchOne, runQuery, getJobsCache, loadJobsCache, refreshJobsCache, getScrapingState, updateScrapingState } from "./db.js"
+import { fetchAll, fetchOne, runQuery, getJobsCache, loadJobsCache, refreshJobsCache, getScrapingState, updateScrapingState, getJobsToCheck, updateLinkStatus, getLinkCheckStats, deleteDeadLinkJobs } from "./db.js"
+import { checkJobsBatch } from "./linkChecker.js"
 
 const app = express()
 const httpServer = createServer(app)
@@ -78,7 +79,7 @@ async function performScrape(platform, idx) {
     last_run_at: new Date().toISOString(),
     error_message: "",
   })
-  const jobsPayload = await getFilteredJobs("", "all", "all", "newest", "", "", false, 1, 200)
+  const jobsPayload = await getFilteredJobs("", "all", "all", "newest", "", "", false, "all", "all", "all", 1, 200)
   io.emit("jobs-updated", jobsPayload)
   io.emit("scrape-status", {
     status: "completed",
@@ -88,9 +89,55 @@ async function performScrape(platform, idx) {
     message: `Data ${platform} berhasil diperbarui.`,
   })
   console.log(`Platform ${platform} selesai. Next: ${next} (${result.added} diproses)`)
+  // Verify a slice of link health after each scrape so dead listings are
+  // caught continuously without a dedicated manual run.
+  startLinkCheck(40).catch(() => {})
 }
 
-async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy = "newest", location = "", experience = "", hasSalary = false, education = "all", platform = "all", page = 1, limit = 200) {
+// ---- Link health check (active/404 verification) ----
+let linkCheckRunning = false
+
+async function startLinkCheck(limit = 300) {
+  if (linkCheckRunning) {
+    return { status: "running", message: "Pengecekan link sedang berlangsung." }
+  }
+  const targets = await getJobsToCheck(limit)
+  if (!targets.length) {
+    return { status: "nothing", message: "Semua link sudah dicek baru-baru ini.", stats: await getLinkCheckStats() }
+  }
+  linkCheckRunning = true
+  io.emit("link-check-status", { running: true, total: targets.length, done: 0 })
+
+  ;(async () => {
+    const tally = { active: 0, not_found: 0, unknown: 0 }
+    try {
+      await checkJobsBatch(targets, {
+        concurrency: 6,
+        onProgress: async ({ done, total, url, status }) => {
+          tally[status] = (tally[status] || 0) + 1
+          try {
+            await updateLinkStatus(url, status, new Date().toISOString())
+          } catch { /* ignore single-row failure */ }
+          io.emit("link-check-progress", { done, total, active: tally.active, notFound: tally.not_found, unknown: tally.unknown })
+        },
+      })
+      await refreshJobsCache()
+      const stats = await getLinkCheckStats()
+      io.emit("link-check-done", { checked: targets.length, active: tally.active, notFound: tally.not_found, unknown: tally.unknown, stats })
+      console.log(`Link check done: ${targets.length} URL (active ${tally.active}, not_found ${tally.not_found}, unknown ${tally.unknown})`)
+    } catch (e) {
+      console.error("Link check failed:", e.message)
+      io.emit("link-check-done", { checked: 0, error: e.message })
+    } finally {
+      linkCheckRunning = false
+      io.emit("link-check-status", { running: false })
+    }
+  })()
+
+  return { status: "started", total: targets.length }
+}
+
+async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy = "newest", location = "", experience = "", hasSalary = false, education = "all", platform = "all", linkStatus = "all", page = 1, limit = 200) {
   page = Math.max(parseInt(page, 10) || 1, 1)
   limit = Math.min(Math.max(parseInt(limit, 10) || 200, 1), 500)
   const offset = (page - 1) * limit
@@ -172,6 +219,10 @@ async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy
       if (lower(j.source) !== lower(platform)) return false
     }
 
+    if (linkStatus && linkStatus !== 'all') {
+      if ((j.linkStatus || 'unchecked') !== linkStatus) return false
+    }
+
     return true
   })
 
@@ -212,9 +263,14 @@ io.on("connection", async (socket) => {
     }
   })
 
-  socket.on("filter-jobs", async ({ search, bidang, tipe, sortBy, location, experience, hasSalary, education, page, limit }) => {
-    const result = await getFilteredJobs(search, bidang, tipe, sortBy, location, experience, hasSalary, education, page, limit)
+  socket.on("filter-jobs", async ({ search, bidang, tipe, sortBy, location, experience, hasSalary, education, platform, linkStatus, page, limit }) => {
+    const result = await getFilteredJobs(search, bidang, tipe, sortBy, location, experience, hasSalary, education, platform, linkStatus, page, limit)
     socket.emit("jobs-updated", result)
+  })
+
+  socket.on("check-links", async () => {
+    const resp = await startLinkCheck(300)
+    socket.emit("link-check-status", { running: resp.status === "started", total: resp.total || 0 })
   })
 })
 
@@ -263,7 +319,7 @@ app.get("/api/google-fonts", async (req, res) => {
 app.get("/api/expertise-areas", (req, res) => res.json(EXPERTISE_AREAS))
 
 app.get("/api/jobs", async (req, res) => {
-  const { search, bidang, tipe, sortBy, location, experience, hasSalary, education, platform, page, limit } = req.query
+  const { search, bidang, tipe, sortBy, location, experience, hasSalary, education, platform, linkStatus, page, limit } = req.query
   const result = await getFilteredJobs(
     search,
     bidang,
@@ -274,10 +330,30 @@ app.get("/api/jobs", async (req, res) => {
     hasSalary === 'true' || hasSalary === true,
     education,
     platform,
+    linkStatus,
     page,
     limit
   )
   res.json(result)
+})
+
+app.get("/api/jobs/link-check-status", async (req, res) => {
+  try {
+    const stats = await getLinkCheckStats()
+    res.json({ running: linkCheckRunning, stats })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
+app.post("/api/jobs/check-links", async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.body?.limit, 10) || 300, 500)
+    const result = await startLinkCheck(limit)
+    res.json(result)
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
 })
 
 app.get("/api/status", async (req, res) => {

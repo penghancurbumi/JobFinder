@@ -48,6 +48,12 @@ const db = new sqlite3.Database(dbPath, (err) => {
     db.run("ALTER TABLE jobs ADD COLUMN lastSeenAt TEXT", () => {})
     db.run("UPDATE jobs SET lastSeenAt = ? WHERE lastSeenAt IS NULL", [new Date().toISOString()], () => {})
 
+    // Link-health tracking: verifies stored URLs still resolve (not 404/410).
+    // NULL linkStatus = never checked. linkCheckedAt drives re-check staleness.
+    db.run("ALTER TABLE jobs ADD COLUMN linkStatus TEXT", () => {})
+    db.run("ALTER TABLE jobs ADD COLUMN linkCheckedAt TEXT", () => {})
+    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_linkstatus ON jobs(linkStatus)", () => {})
+
     // Remove the discontinued closed-listing markers (isClosed/closedAt) from
     // databases created during the "mark-closed" iteration. The index must be
     // dropped first, otherwise ALTER TABLE ... DROP COLUMN fails. Errors are
@@ -229,6 +235,54 @@ export async function findDuplicate(title, company, location) {
       String(location || "").trim().toLowerCase(),
     ]
   )
+}
+
+// ---- Link health (active/404 verification) ----
+// linkStatus: 'active' (2xx), 'not_found' (404/410), 'unknown' (bot-blocked
+// 401/403/429, 5xx, timeout — inconclusive, never treated as dead),
+// NULL/'unchecked' (not verified yet).
+export async function updateLinkStatus(url, status, checkedAt) {
+  await runQuery(
+    "UPDATE jobs SET linkStatus = ?, linkCheckedAt = ? WHERE url = ?",
+    [status, checkedAt, url]
+  )
+}
+
+// Never-checked rows first, then rows whose last check is older than
+// staleDays, oldest check first — so repeated runs walk through the whole
+// table evenly.
+export async function getJobsToCheck(limit = 300, staleDays = 14) {
+  const staleCutoff = new Date(Date.now() - staleDays * 24 * 60 * 60 * 1000).toISOString()
+  return fetchAll(
+    `SELECT id, url, source FROM jobs
+      WHERE linkStatus IS NULL OR linkCheckedAt IS NULL OR linkCheckedAt < ?
+      ORDER BY (linkCheckedAt IS NULL) DESC, linkCheckedAt ASC
+      LIMIT ?`,
+    [staleCutoff, limit]
+  )
+}
+
+export async function getLinkCheckStats() {
+  const rows = await fetchAll(
+    "SELECT COALESCE(NULLIF(linkStatus, ''), 'unchecked') AS status, COUNT(*) AS c FROM jobs GROUP BY status"
+  )
+  const stats = { total: 0, active: 0, not_found: 0, unknown: 0, unchecked: 0 }
+  for (const r of rows) {
+    if (r.status in stats) stats[r.status] = r.c
+    stats.total += r.c
+  }
+  return stats
+}
+
+// Remove jobs confirmed dead by the link checker after a grace period, so a
+// temporary outage on the source site doesn't wipe good data.
+export async function deleteDeadLinkJobs(maxAgeDays = 7) {
+  const cutoff = new Date(Date.now() - maxAgeDays * 24 * 60 * 60 * 1000).toISOString()
+  const res = await runQuery(
+    `DELETE FROM jobs WHERE linkStatus = 'not_found' AND linkCheckedAt IS NOT NULL AND linkCheckedAt < ?`,
+    [cutoff]
+  )
+  return res.changes
 }
 
 export async function deleteExpiredJobs({
