@@ -7,19 +7,23 @@
         isScrolled ? 'border-hairline-dark' : 'border-transparent'
       ]"
     >
-      <div class="w-full mx-auto flex items-center justify-between">
+      <div class="w-full mx-auto flex flex-row items-center justify-between">
         <router-link to="/" class="text-[25px] md:text-[30px] font-medium text-on-dark no-underline tracking-[-0.02em] leading-none flex items-center gap-[8px]">
           JobFinder
         </router-link>
 
         <!-- Desktop Nav -->
-        <div class="hidden lg:flex gap-lg">
+        <div class="hidden items-center lg:flex gap-xl">
           <router-link to="/" class="nav-link" active-class="nav-link-active">Home</router-link>
           <router-link to="/jobs" class="nav-link" active-class="nav-link-active">Peluang</router-link>
           <router-link to="/cv-analyzer" class="nav-link" active-class="nav-link-active">Analisis CV</router-link>
           <router-link to="/cv-builder" class="nav-link" active-class="nav-link-active">Pembuat CV</router-link>
           <router-link to="/chatbot" class="nav-link" active-class="nav-link-active">Asisten AI</router-link>
         </div>
+
+        <router-link to="/jobs" class="inline-flex items-center gap-[8px] justify-center font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm md:text-[15px] px-[18px] h-[44px] bg-on-dark text-ink hover:bg-white/90">
+          Get Started
+        </router-link>  
 
         <!-- Hamburger Button (mobile only) -->
         <button
@@ -113,7 +117,7 @@ onUnmounted(() => {
 }
 
 .nav-link {
-  @apply relative text-on-dark-mute text-[16px] font-medium leading-[1.5] tracking-[0.24px] px-1 py-1 no-underline transition-colors duration-200 hover:text-white;
+  @apply relative text-on-dark-mute text-[15px] font-medium leading-[1.5] tracking-[0.24px] px-1 py-1 no-underline transition-colors duration-200 hover:text-white;
 }
 
 .nav-link::after {

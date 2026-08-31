@@ -3,32 +3,38 @@
     <!-- Hero Section (Dark Canvas) -->
     <section class="bg-transparent py-[110px]">
       <div class="w-full mx-auto px-[32px] md:px-[72px]">
-        <div class="flex flex-col gap-[30px] md:gap-[40px]">
+        <div class="flex flex-col gap-[30px] md:gap-[40px] items-center">
           <h1 class="font-medium leading-[1.0] tracking-[-0.8px]">
-            <span class="text-[42px] md:text-[64px] lg:text-[82px] block">Temukan Karier</span>
-            <span class="text-[42px] md:text-[64px] lg:text-[82px] block">Masa Depanmu</span>
+            <span class="text-[42px] md:text-[64px] lg:text-[72px] block">Temukan Karier</span>
+            <span class="text-[42px] md:text-[64px] lg:text-[72px] block">Masa Depanmu</span>
           </h1>
 
-          <p class="text-sm md:text-[18px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute max-w-[640px]">
+          <p class="text-sm md:text-[15px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute max-w-[640px] text-center">
             Platform agregasi lowongan kerja dan magang dari seluruh sumber terpercaya.
             Lengkap dengan analisis CV dan pembuatan dokumen ATS berstandar industri.
           </p>
 
           <div class="flex gap-[20px] flex-wrap items-center">
-            <router-link to="/jobs" class="inline-flex items-center gap-[8px] justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-sm md:text-[20px] px-[24px] h-[48px] bg-on-dark text-ink hover:bg-white/90">
+            <router-link to="/jobs" class="inline-flex items-center gap-[8px] justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-sm md:text-[18px] px-[20px] h-[44px] bg-on-dark text-ink hover:bg-white/90">
               Get Started
               <Icon icon="mdi-light:arrow-right" width="25"/>
             </router-link>            
 
-            <a href="https://github.com/penghancurbumi/JobFinder" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-[8px] justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-sm md:text-[20px] px-[24px] h-[48px] bg-surface-elevated hover:bg-body border border-hairline-dark text-on-dark">
+            <a href="https://github.com/penghancurbumi/JobFinder" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-[8px] justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-sm md:text-[18px] px-[24px] h-[44px] bg-surface-elevated hover:bg-body border border-hairline-dark text-on-dark">
               <Icon icon="mdi:github" width="25"/>
               GitHub</a>
           </div>
         </div>
       </div>
 
+      <div class="w-full mx-auto px-[32px] md:px-[120px] flex items-center justify-center mt-20 overflow-hidden">
+        <div class="hero-border-gradient w-full overflow-hidden">
+          <img src="../assets/images/image-hero.png" alt="image hero" class="rounded-sm w-full h-full object-cover object-center block">
+        </div>
+      </div>
+
       <!-- Logo Slider — full width, label kiri -->
-      <div class="flex flex-col md:flex-row md:items-center gap-[16px] md:gap-[24px] mt-[90px]">
+      <div class="flex flex-col md:flex-row md:items-center gap-[16px] md:gap-[24px] mt-[80px]">
         <div class="flex flex-row items-center gap-2 px-[32px] md:px-[72px]">
           <div class="h-1 w-1 rounded-full bg-white"></div>
           <p class="font-mono uppercase text-[12px] md:text-[16px] font-bold tracking-[1.5px] text-white shrink-0">Powered by Trusted Sources</p>
@@ -181,19 +187,18 @@ function formatNumber(n) {
 onMounted(async () => {
   try {
     const [jobsRes, expertiseRes] = await Promise.all([
-      fetch("http://192.168.18.42:3000/api/jobs"),
-      fetch("http://192.168.18.42:3000/api/expertise-areas"),
+      fetch("/api/jobs?limit=500"),
+      fetch("/api/expertise-areas"),
     ])
 
     if (jobsRes.ok) {
-      const jobs = await jobsRes.json()
-      totalJobs.value = Array.isArray(jobs) ? jobs.length : 0
+      const data = await jobsRes.json()
+      const jobs = Array.isArray(data) ? data : (data.jobs || [])
+      totalJobs.value = data.total || jobs.length
       const sources = new Set()
-      if (Array.isArray(jobs)) {
-        jobs.forEach((j) => {
-          if (j.source) sources.add(j.source)
-        })
-      }
+      jobs.forEach((j) => {
+        if (j.source) sources.add(j.source)
+      })
       sourceCount.value = sources.size || 5
     }
 
@@ -212,6 +217,13 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* Gradient border: putih -> hairline-dark */
+.hero-border-gradient {
+  padding: 4px;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.12),#545252, rgba(255, 255, 255, 0.12), #545252, rgba(255, 255, 255, 0.12));
+  border-radius: 12px;
+}
+
 /* Track wrapper — overflow + fade mask */
 .logo-track-wrapper {
   position: relative;

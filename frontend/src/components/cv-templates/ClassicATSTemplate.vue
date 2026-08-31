@@ -210,7 +210,7 @@
 
       <!-- Objective -->
       <div v-if="formData.objective" class="mb-[20px]">
-        <h2 class="text-[12px] uppercase tracking-[2px] text-center mb-[6px]">Tujuan Karir</h2>
+        <h2 class="text-[12px] uppercase tracking-[2px] text-center mb-[8px]">Tujuan Karir</h2>
         <div class="h-px bg-black mb-[10px]"></div>
         <p class="text-[12px] italic text-justify">{{ formData.objective }}</p>
       </div>
@@ -234,7 +234,7 @@
       </div>
 
       <!-- Work Experience -->
-      <div v-if="workExperiences.length > 0" class="mb-[20px]">
+      <div v-if="workExperiences.length > 0" class="mb-[24px]">
         <h2 class="text-[12px] uppercase tracking-[2px] text-center mb-[6px]">Pengalaman Kerja</h2>
         <div class="h-px bg-black mb-[10px]"></div>
         <div v-for="(work, i) in workExperiences" :key="i" class="mb-[14px]">
