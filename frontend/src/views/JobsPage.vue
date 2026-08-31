@@ -24,6 +24,13 @@
             </svg>
             {{ buttonLabel }}
           </button>
+
+          <button @click="requestLinkCheck" class="w-full md:w-auto shrink-0 inline-flex items-center justify-center font-medium rounded-sm transition-all duration-200 cursor-pointer bg-transparent text-on-dark border border-hairline-dark hover:border-white px-[24px] h-[44px] text-[14px] gap-[8px] disabled:opacity-50 disabled:cursor-not-allowed" :disabled="linkChecking || backgroundRunning">
+            <svg v-if="linkChecking" class="animate-[spin_1s_linear_infinite]" viewBox="0 0 24 24" width="16" height="16">
+              <circle class="animate-[dash_1.5s_ease-in-out_infinite] [stroke-dasharray:60] [stroke-dashoffset:60]" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></circle>
+            </svg>
+            {{ linkCheckLabel }}
+          </button>
         </div>
 
         <span v-if="backgroundRunning" class="text-[12px] text-white mt-[8px] flex items-center gap-[6px]">
@@ -31,6 +38,9 @@
         </span>
         <span v-else class="text-[12px] text-white mt-[8px] block">
           Total data {{ jobTotal.toLocaleString('id-ID') }} jobs • {{ (status.total_jobs_scraped || 0).toLocaleString('id-ID') }} data job ditambahkan
+        </span>
+        <span v-if="linkChecking" class="text-[12px] text-white mt-[8px] flex items-center gap-[6px]">
+          Memeriksa status link lowongan... {{ linkProgress.done }}/{{ linkProgress.total }} — {{ linkProgress.active || 0 }} aktif, {{ linkProgress.notFound || 0 }} nonaktif
         </span>
 
       </div>
@@ -67,6 +77,11 @@
           <div class="mb-xl flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-medium text-sm">Platform</label>
             <CustomSelect v-model="platform" :options="platformOptions" placeholder="Semua Platform" />
+          </div>
+
+          <div class="mb-xl flex flex-col">
+            <label class="block text-on-dark-mute mb-sm font-medium text-sm">Status Lowongan</label>
+            <CustomSelect v-model="linkStatus" :options="linkStatusOptions" placeholder="Semua Status" />
           </div>
 
           <div class="mt-xl flex flex-col">
@@ -125,6 +140,13 @@
                     </span>
                     <span v-if="job.expertise" class="bg-white/10 text-white border border-white/25 rounded-full px-[12px] py-[4px] text-[12px] font-medium truncate max-w-[150px]">
                       {{ job.expertise }}
+                    </span>
+                    <span v-if="job.linkStatus === 'active'" class="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full px-[12px] py-[4px] text-[12px] font-medium flex items-center gap-[4px]">
+                      <span class="w-[6px] h-[6px] rounded-full bg-emerald-400 inline-block"></span>
+                      Aktif
+                    </span>
+                    <span v-else-if="job.linkStatus === 'not_found'" class="bg-red-500/15 text-red-400 border border-red-500/30 rounded-full px-[12px] py-[4px] text-[12px] font-medium">
+                      Nonaktif (404)
                     </span>
                   </div>
                 </div>
@@ -322,6 +344,22 @@ const platformOptions = [
 const hasSalary = ref(false)
 const sortBy = ref("newest")
 
+const linkStatus = ref("all")
+const linkChecking = ref(false)
+const linkProgress = ref({ done: 0, total: 0, active: 0, notFound: 0 })
+
+const linkStatusOptions = [
+  { value: 'all', label: 'Semua Status' },
+  { value: 'active', label: 'Terverifikasi Aktif' },
+  { value: 'unchecked', label: 'Belum Dicek' }
+]
+
+const linkCheckLabel = computed(() =>
+  linkChecking.value
+    ? `Cek Link ${linkProgress.value.done}/${linkProgress.value.total}`
+    : "Cek Status Link"
+)
+
 const expandedJobs = ref({})
 let socket = null
 
@@ -376,7 +414,7 @@ const buttonLabel = computed(() => {
 
 async function refreshStatus() {
   try {
-    const res = await fetch("http://192.168.18.42:3000/api/status")
+    const res = await fetch("/api/status")
     if (res.ok) status.value = await res.json()
   } catch { /* ignore */ }
 }
@@ -392,7 +430,7 @@ onMounted(async () => {
   await fetchPage(1, false)
   refreshStatus()
 
-  socket = io("http://192.168.18.42:3000")
+  socket = io()
   
   socket.on("jobs-updated", (data) => {
     applyJobsPayload(data)
@@ -427,6 +465,43 @@ onMounted(async () => {
   socket.on("connect", () => {
     loading.value = false
   })
+
+  socket.on("link-check-progress", (data) => {
+    linkChecking.value = true
+    if (data && typeof data.done === "number") {
+      linkProgress.value = {
+        done: data.done,
+        total: data.total || linkProgress.value.total,
+        active: data.active || 0,
+        notFound: data.notFound || 0
+      }
+    }
+  })
+
+  socket.on("link-check-status", (data) => {
+    if (data?.running) {
+      linkChecking.value = true
+      if (data.total) linkProgress.value = { ...linkProgress.value, done: 0, total: data.total }
+    }
+  })
+
+  socket.on("link-check-done", (data) => {
+    linkChecking.value = false
+    if (data?.error) {
+      setStatusMsg("Pengecekan link gagal: " + data.error, "error")
+    } else {
+      const nf = data?.notFound || 0
+      setStatusMsg(
+        nf > 0
+          ? `Pengecekan selesai: ${nf} link nonaktif ditemukan & ditandai.`
+          : "Pengecekan selesai, semua link yang dicek aktif.",
+        nf > 0 ? "error" : "ok"
+      )
+    }
+    fetchPage(1, false)
+  })
+
+  refreshLinkCheckStatus()
 })
 
 onUnmounted(() => {
@@ -457,12 +532,13 @@ async function fetchPage(p, append = false) {
     experience: experienceLevel.value,
     education: educationlevel.value,
     platform: platform.value,
+    linkStatus: linkStatus.value,
     hasSalary: hasSalary.value ? 'true' : 'false',
     page: String(p),
     limit: String(limit)
   })
   try {
-    const res = await fetch(`http://192.168.18.42:3000/api/jobs?${params}`)
+    const res = await fetch(`/api/jobs?${params}`)
     if (res.ok) {
       const data = await res.json()
       if (append) jobs.value = [...jobs.value, ...(data.jobs || [])]
@@ -508,7 +584,7 @@ const visiblePages = computed(() => {
 })
 
 let searchTimeout;
-watch([activeTipe, searchQuery, locationQuery, experienceLevel, educationlevel, hasSalary, sortBy, platform], () => {
+watch([activeTipe, searchQuery, locationQuery, experienceLevel, educationlevel, hasSalary, sortBy, platform, linkStatus], () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
     fetchPage(1, false)
@@ -523,6 +599,7 @@ function resetFilters() {
   experienceLevel.value = "all"
   educationlevel.value = "all"
   platform.value = "all"
+  linkStatus.value = "all"
   hasSalary.value = false
 }
 
@@ -530,5 +607,37 @@ function requestScrape() {
   if (socket && !backgroundRunning.value) {
     socket.emit("request-scrape")
   }
+}
+
+async function requestLinkCheck() {
+  if (linkChecking.value) return
+  try {
+    const res = await fetch("/api/jobs/check-links", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}"
+    })
+    const data = await res.json().catch(() => ({}))
+    if (data.status === "nothing") {
+      setStatusMsg("Semua link sudah dicek baru-baru ini.", "ok")
+      return
+    }
+    linkChecking.value = true
+    linkProgress.value = { done: 0, total: data.total || 0, active: 0, notFound: 0 }
+  } catch {
+    setStatusMsg("Gagal memulai pengecekan link.", "error")
+  }
+}
+
+async function refreshLinkCheckStatus() {
+  try {
+    const res = await fetch("/api/jobs/link-check-status")
+    if (!res.ok) return
+    const data = await res.json()
+    if (data.running) {
+      linkChecking.value = true
+      linkProgress.value = { ...linkProgress.value, done: 0, total: data.stats?.unchecked || 0 }
+    }
+  } catch { /* ignore */ }
 }
 </script>
