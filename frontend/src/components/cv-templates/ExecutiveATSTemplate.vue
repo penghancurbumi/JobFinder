@@ -508,5 +508,5 @@ watch(achievements, v => localStorage.setItem(`cv_${STORE}_ach`, JSON.stringify(
 watch(educations, v => localStorage.setItem(`cv_${STORE}_edu`, JSON.stringify(v)), { deep: true })
 watch(workExperiences, v => localStorage.setItem(`cv_${STORE}_work`, JSON.stringify(v)), { deep: true })
 
-defineExpose({ steps, validate, getTextForAnalysis, hasPreviewData })
+defineExpose({ steps, validate, getTextForAnalysis, hasPreviewData, formData })
 </script>

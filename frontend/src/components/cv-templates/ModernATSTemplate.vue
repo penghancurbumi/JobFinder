@@ -473,7 +473,7 @@
       </div>
 
       <div :class="useProfilePicture ? 'flex-1' : ''">
-        <h1 class="text-[30px] uppercase tracking-[2px] mb-0 leading-none">{{ formData.full_name || '[Nama Anda]' }}</h1>
+        <h1 class="text-[30px] uppercase tracking-[2px] mb-0 font-semibold leading-none">{{ formData.full_name || '[Nama Anda]' }}</h1>
         <div class="text-[12px] text-gray-500 flex flex-wrap gap-x-[2px]" :class="useProfilePicture ? '' : 'justify-center'">
           <span v-if="formData.phone">{{ formData.phone }} |</span>
           <span v-if="formData.email && !errors.email">{{ formData.email }} |</span>
@@ -487,11 +487,11 @@
 
     <!-- Education -->
     <div v-if="educations.length > 0" class="mt-[8px]">
-      <h2 class="text-[15px] tracking-[1px] mb-[8px] text-black border-b border-black">Pendidikan</h2>
+      <h2 class="text-[15px] tracking-[1px] mb-[8px] font-semibold text-black border-b border-black">Pendidikan</h2>
       <div v-for="(edu, i) in educations" :key="i" class="mb-[4px]">
         <div class="flex justify-between items-start">
           <div>
-            <div class="text-[12px] text-black">{{ edu.institution }}<span v-if="edu.location" class="text-gray-500"> - {{ edu.location }}</span></div>
+            <div class="text-[12px] text-black font-semibold">{{ edu.institution }}<span v-if="edu.location" class="text-gray-500"> - {{ edu.location }}</span></div>
             <div class="text-[12px] italic text-black">{{ edu.major }} &nbsp;: {{ formatGPA(edu.gpa) }}/4.00</div>
           </div>
           <div v-if="edu.showDate" class="text-[12px] text-black shrink-0 text-right">
@@ -507,12 +507,12 @@
 
     <!-- Organizational Experience -->
     <div v-if="OrganizationExperiences.length > 0" class="mt-[8px] mb-[10px]">
-      <h2 class="text-[15px] tracking-[2px] mb-[6px] text-black border-b border-black">Pengalaman Organisasi</h2>
+      <h2 class="text-[15px] tracking-[2px] mb-[6px] text-black border-b border-black font-semibold">Pengalaman Organisasi</h2>
      
       <div v-for="(org, i) in OrganizationExperiences" :key="i" class="mb-[6px]">
         <div class="flex justify-between items-start">
           <div>
-            <div class="text-[12px] text-black">{{ org.company }}<span v-if="org.location" class="text-gray-500"> - {{ org.location }}</span></div>
+            <div class="text-[12px] text-black font-semibold">{{ org.company }}<span v-if="org.location" class="text-gray-500"> - {{ org.location }}</span></div>
             <div class="text-[12px] italic text-black">{{ org.position }}</div>
           </div>
           <div class="text-[12px] text-black shrink-0 text-right">{{ org.startMonth }} {{ org.startYear }} – {{ org.current ? 'Sekarang' : org.endMonth + ' ' + org.endYear }}</div>
@@ -526,13 +526,13 @@
 
     <!-- Work Experience -->
     <div v-if="workExperiences.length > 0" class="mt-[8px] mb-[10px]">
-      <h2 class="text-[15px] tracking-[2px] mb-[6px] text-black border-b border-black">Pengalaman Kerja</h2>
+      <h2 class="text-[15px] tracking-[2px] mb-[6px] text-black border-b border-black font-semibold">Pengalaman Kerja</h2>
       
       <div v-for="(work, i) in workExperiences" :key="i" class="mb-[6px]">
         <div class="flex justify-between items-start">
           
           <div>
-            <div class="text-[12px] text-black">{{ work.company }}<span v-if="work.location" class="text-gray-500"> - {{ work.location }}</span></div>
+            <div class="text-[12px] text-black font-semibold">{{ work.company }}<span v-if="work.location" class="text-gray-500"> - {{ work.location }}</span></div>
             <div class="text-[12px] italic text-black">{{ work.position }}</div>
           </div>
 
@@ -547,15 +547,15 @@
 
     <!-- Skills, Awards, and Competitions (Combined) -->
     <div v-if="projects.length > 0 || formData.technical_skills || formData.soft_skills || formData.cert_name" class="mt-[8px] mb-[10px]">
-      <h2 class="text-[15px] tracking-[2px] mb-[6px] text-black border-b border-black">Kemampuan, Penghargaan, dan Kompetisi</h2>
+      <h2 class="text-[15px] tracking-[2px] mb-[6px] text-black border-b border-black font-semibold">Kemampuan, Penghargaan, dan Kompetisi</h2>
       
       <!-- Projects (Posisi Paling Atas) -->
       <div v-if="projects.length > 0" class="mb-[15px]">
-        <span class="text-[12px] mb-[5px] block">Project :</span>
+        <span class="text-[12px] mb-[5px] block font-semibold">Project :</span>
         <div v-for="(proj, i) in projects" :key="i" class="mb-[6px]">
           <div class="flex justify-between items-start">
             <div>
-              <div class="text-[12px] text-black">{{ proj.name }}</div>
+              <div class="text-[12px] text-black font-semibold">{{ proj.name }}</div>
             </div>
           </div>
           
@@ -564,11 +564,11 @@
       </div>
 
       <!-- Skills -->
-      <p v-if="formData.technical_skills" class="text-[12px] mb-[4px]"><strong>Teknis:</strong> {{ formData.technical_skills }}</p>
-      <p v-if="formData.soft_skills" class="text-[12px] mb-[4px]"><strong>Soft Skills:</strong> {{ formData.soft_skills }}</p>
+      <p v-if="formData.technical_skills" class="text-[12px] mb-[4px]"><strong class="font-semibold">Teknis:</strong> {{ formData.technical_skills }}</p>
+      <p v-if="formData.soft_skills" class="text-[12px] mb-[4px]"><strong class="font-semibold">Soft Skills:</strong> {{ formData.soft_skills }}</p>
 
       <!-- Certifications -->
-      <p v-if="formData.cert_name" class="text-[12px] mt-[4px]"><strong>Sertifikasi:</strong> {{ formData.cert_name }}</p>
+      <p v-if="formData.cert_name" class="text-[12px] mt-[4px]"><strong class="font-semibold">Sertifikasi:</strong> {{ formData.cert_name }}</p>
     </div>
   </div>
 </template>
@@ -916,5 +916,5 @@ watch(workExperiences, v => localStorage.setItem(`cv_${STORE}_work`, JSON.string
 watch(projects, v => localStorage.setItem(`cv_${STORE}_proj`, JSON.stringify(v)), { deep: true })
 watch(useProfilePicture, v => localStorage.setItem(`cv_${STORE}_usePhoto`, String(v)))
 
-defineExpose({ steps, validate, getTextForAnalysis, hasPreviewData })
+defineExpose({ steps, validate, getTextForAnalysis, hasPreviewData, formData })
 </script>
