@@ -165,7 +165,8 @@
           <div v-else>
             <div class="flex justify-between items-center mb-[24px] flex-wrap gap-[12px]">
               <h3 class="text-[24px] font-medium leading-[1.33] text-on-dark">Pratinjau Dokumen</h3>
-              <div class="flex gap-[12px]">
+              <div class="flex gap-[12px] flex-wrap items-center">
+                <input v-model="customFileName" type="text" :placeholder="defaultPdfName" class="bg-transparent border border-hairline-dark rounded-full h-[32px] px-[16px] text-[13px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone w-[200px]" />
                 <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[13px] px-[16px] h-[32px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed" @click="analyzeBuiltCV" :disabled="analyzing">
                   {{ analyzing ? 'Memindai...' : 'Scan ATS Score' }}
                 </button>
@@ -265,10 +266,12 @@
       </div>
     </div>
 
-    <!-- Print container: hidden in browser, shown only when printing -->
-    <div class="cv-print-container" ref="printContainer" style="display:none;">
+    <!-- Print container: hidden in browser, shown only when printing.
+         v-if memastikan komponen selalu dirender ulang dengan data TERBARU saat tombol unduh diklik. -->
+    <div v-if="printReady" class="cv-print-container" ref="printContainer">
       <component
         :is="activeTemplateComponent"
+        ref="printTemplateRef"
         :step-index="0"
         :is-preview="true"
         :template-font="templateFont"
@@ -520,25 +523,45 @@ async function analyzeBuiltCV() {
 }
 
 const pdfLoading = ref(false)
+const printReady = ref(false)
+const customFileName = ref('')
+const printContainer = ref(null)
+const printTemplateRef = ref(null)
+
+const defaultPdfName = computed(() => {
+  const name = previewTemplateRef.value?.formData?.full_name || templateRef.value?.formData?.full_name || ''
+  return name ? 'CV_' + name.trim().replace(/\s+/g, '_') : 'CV_Nama_Anda'
+})
+
+function sanitizeFilename(name) {
+  return name.trim().replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, '-').slice(0, 80)
+}
+
+function buildPdfFilename() {
+  const custom = customFileName.value.trim()
+  if (custom) return sanitizeFilename(custom).replace(/\.pdf$/i, '') + '.pdf'
+  const name = previewTemplateRef.value?.formData?.full_name || templateRef.value?.formData?.full_name || ''
+  return (name ? 'CV-' + sanitizeFilename(name) : 'CV-JobFinder') + '.pdf'
+}
 
 async function downloadPDF() {
   if (pdfLoading.value) return
   pdfLoading.value = true
 
-  // Tampilkan container print, render konten
-  if (printContainer.value) printContainer.value.style.display = 'block'
-
+  // Render container print via v-if agar instance baru selalu memuat data TERBARU dari localStorage
+  printReady.value = true
   await nextTick()
+  try { await document.fonts.ready } catch { }
+  await new Promise(r => setTimeout(r, 200))
 
   try {
     const html2pdf = (await import('html2pdf.js')).default
     const element = printContainer.value
-    const filename = 'CV-' + (element?.querySelector('h1')?.textContent?.trim().replace(/\s+/g, '-') || 'JobFinder') + '.pdf'
 
     await html2pdf()
       .set({
         margin: [10, 10, 10, 10],
-        filename,
+        filename: buildPdfFilename(),
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
@@ -555,12 +578,10 @@ async function downloadPDF() {
     console.error('PDF generation failed:', e)
     alert('Gagal membuat PDF. Silakan coba lagi.')
   } finally {
-    if (printContainer.value) printContainer.value.style.display = 'none'
+    printReady.value = false
     pdfLoading.value = false
   }
 }
-
-const printContainer = ref(null)
 const previewWrapper = ref(null)
 const previewScaler = ref(null)
 
@@ -662,5 +683,16 @@ watch(currentStep, async () => {
     border-radius: 2px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
   }
+}
+
+/* Container untuk generate PDF: offscreen tapi tetap ter-render (html2canvas
+   tidak bisa menangkap elemen dengan display:none). Lebar A4 @96dpi. */
+.cv-print-container {
+  position: fixed;
+  top: 0;
+  left: -12000px;
+  width: 794px;
+  background: #ffffff;
+  z-index: -1;
 }
 </style>
