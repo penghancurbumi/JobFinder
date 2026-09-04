@@ -35,10 +35,6 @@
 
       <!-- Logo Slider — full width, label kiri -->
       <div class="flex flex-col md:flex-row md:items-center gap-[16px] md:gap-[24px] mt-[80px]">
-        <div class="flex flex-row items-center gap-2 px-[32px] md:px-[72px]">
-          <div class="h-1 w-1 rounded-full bg-white"></div>
-          <p class="font-mono uppercase text-[12px] md:text-[16px] font-bold tracking-[1.5px] text-white shrink-0">Powered by Trusted Sources</p>
-        </div>
 
         <div class="logo-track-wrapper flex-1 min-w-0">
           <div class="logo-track">
@@ -90,37 +86,7 @@
       <div class="w-full mx-auto px-[32px] md:px-[72px]">
         <div class="mb-xxl">
           <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-lg block">Fitur Unggulan</span>
-          <h2 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark">Satu Platform, Semua Kebutuhan Kariermu</h2>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-xl">
-          <div class="bg-surface-elevated rounded-[20px] p-xxl flex flex-col">
-            <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-xs text-stone">Multi-Source</span>
-            <h3 class="text-[20px] font-medium leading-[1.4] mb-sm text-on-dark">Agregasi Lowongan</h3>
-            <p class="md:text-[16px] text-sm font-normal leading-[1.6] text-on-dark-mute mb-lg flex-1">Kumpulan lowongan kerja dan magang dari LinkedIn, Glints, Jobstreet, Fastwork, dan Pintarnya dalam satu tampilan.</p>
-            <router-link to="/jobs" class="inline-flex items-center font-semibold transition-all duration-200 cursor-pointer text-[16px] bg-transparent text-on-dark hover:text-white pl-0">Lihat Lowongan →</router-link>
-          </div>
-
-          <div class="bg-surface-elevated rounded-[20px] p-xxl flex flex-col">
-            <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-xs text-stone">ATS Check</span>
-            <h3 class="text-[20px] font-medium leading-[1.4] mb-sm text-on-dark">Analisis CV</h3>
-            <p class="md:text-[16px] text-sm font-normal leading-[1.6] text-on-dark-mute mb-lg flex-1">Evaluasi kompatibilitas CV-mu terhadap sistem ATS dan dapatkan skor kecocokan dengan bidang keahlian spesifik.</p>
-            <router-link to="/cv-analyzer" class="inline-flex items-center font-semibold transition-all duration-200 cursor-pointer text-[16px] bg-transparent text-on-dark hover:text-white pl-0">Analisis Sekarang →</router-link>
-          </div>
-
-          <div class="bg-surface-elevated rounded-[20px] p-xxl flex flex-col">
-            <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-xs text-stone">Builder</span>
-            <h3 class="text-[20px] font-medium leading-[1.4] mb-sm text-on-dark">Pembuat CV</h3>
-            <p class="md:text-[16px] text-sm font-normal leading-[1.6] text-on-dark-mute mb-lg flex-1">Buat dokumen CV ATS-minimalis dengan panduan pengisian dari asisten AI. Format rapi dan siap pakai.</p>
-            <router-link to="/cv-builder" class="inline-flex items-center font-semibold transition-all duration-200 cursor-pointer text-[16px] bg-transparent text-on-dark hover:text-white pl-0">Buat CV →</router-link>
-          </div>
-
-          <!-- Featured card — cobalt violet inversion -->
-          <div class="bg-surface-elevated rounded-[20px] p-xxl flex flex-col">
-            <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-xs text-stone">AI-Powered</span>
-            <h3 class="text-[20px] font-medium leading-[1.4] mb-sm text-on-dark">Diskusi Karier</h3>
-            <p class="md:text-[16px] text-sm font-normal leading-[1.6] text-on-dark-mute mb-lg flex-1">Tanya apapun seputar karier, lowongan, atau penyusunan CV. Dapatkan saran personal dari asisten AI.</p>
-            <router-link to="/chatbot" class="inline-flex items-center font-semibold transition-all duration-200 cursor-pointer text-[16px] bg-transparent text-on-dark hover:text-white pl-0">Mulai Chat →</router-link>
-          </div>
+          <h2 class="text-[40px] md:text-[50px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark">Satu Platform, Semua Kebutuhan Kariermu</h2>
         </div>
       </div>
     </section>
