@@ -21,7 +21,7 @@
           <router-link to="/chatbot" class="nav-link" active-class="nav-link-active">Asisten AI</router-link>
         </div>
 
-        <router-link to="/jobs" class="inline-flex items-center gap-[8px] justify-center font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm md:text-[15px] px-[18px] h-[44px] bg-on-dark text-ink hover:bg-white/90">
+        <router-link to="/jobs" class="hidden lg:inline-flex items-center gap-[8px] justify-center font-medium rounded-sm transition-all duration-200 cursor-pointer text-sm md:text-[15px] px-[18px] h-[44px] bg-on-dark text-ink hover:bg-white/90">
           Get Started
         </router-link>  
 
@@ -52,9 +52,9 @@
     <Transition name="mobile-menu">
       <div
         v-if="isOpen"
-        class="lg:hidden fixed top-[72px] left-0 right-0 bottom-0 z-40 bg-canvas-dark flex flex-col"
+        class="px-[32px] py-[80px] lg:hidden fixed top-[72px] left-0 right-0 bottom-0 z-40 bg-canvas-dark flex flex-col justify-between"
       >
-        <div class="flex flex-col px-[32px] py-[80px] gap-xs">
+        <div class="flex flex-col gap-xs">
           <router-link to="/" class="text-[40px] sm:text-[50px] font-normal" @click="closeMenu">Home</router-link>
           <router-link to="/jobs" class="text-[40px] sm:text-[50px] font-normal" @click="closeMenu">Peluang</router-link>
           <router-link to="/cv-analyzer" class="text-[40px] sm:text-[50px] font-normal" @click="closeMenu">Analisis CV</router-link>
