@@ -95,22 +95,23 @@
 
         <template v-else>
           <!-- Score Summary -->
-          <div class="bg-surface-elevated rounded-[20px] p-xl mb-xl flex flex-col">
-            <span class="font-mono uppercase text-[12px] font-bold tracking-[1px] text-stone mb-lg block">ATS Score</span>
-            
-            <div class="flex flex-col items-center justify-center gap-md py-sm">
-              <div class="w-[200px] h-[200px] shrink-0 relative flex items-center justify-center">
-                <Doughnut :data="atsChartData" :options="doughnutOptions" />
-                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span class="text-[40px] font-medium text-white leading-none tracking-tight">
-                    {{ result.ats.score }}
-                  </span>
-                  <span class="text-[12px] text-on-dark-mute font-mono leading-none mt-[4px]">
-                    Persen
-                  </span>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-xl">
+            <div class="col-span-1 bg-surface-elevated rounded-[20px] p-xl mb-xl flex flex-col">
+              <span class="font-mono uppercase text-[12px] font-bold tracking-[1px] text-stone mb-lg block">ATS Score</span>
+              
+              <div class="flex flex-col items-center justify-center gap-md py-sm">
+                <div class="w-[200px] h-[200px] shrink-0 relative flex items-center justify-center">
+                  <Doughnut :data="atsChartData" :options="doughnutOptions" />
+                  <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span class="text-[40px] font-medium text-white leading-none tracking-tight">
+                      {{ result.ats.score }}
+                    </span>
+                    <span class="text-[12px] text-on-dark-mute font-mono leading-none mt-[4px]">
+                      Persen
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
               <div class="flex flex-col mt-lg px-xl">
                 <div class="flex flex-row items-center gap-md border-b border-hairline-dark pb-sm">
@@ -131,15 +132,17 @@
                   </span>
                 </div>
               </div>
-          </div>
+            </div>
 
-          <!-- Charts Dashboard -->
-          <div class="bg-surface-elevated rounded-[20px] p-xl mb-xl">
-            <span class="font-mono uppercase text-[12px] font-bold tracking-[1px] mb-lg block text-stone">Analisis Kategori</span>
-            <div class="relative h-[300px] w-full">
-              <Bar :data="barChartData" :options="barOptions" :plugins="[barGradientPlugin]" />
+            <!-- Charts Dashboard -->
+            <div class="col-span-2 bg-surface-elevated rounded-[20px] p-xl mb-xl">
+              <span class="font-mono uppercase text-[12px] font-bold tracking-[1px] mb-lg block text-stone">Analisis Kategori</span>
+              <div class="relative h-[300px] w-full">
+                <Line :data="lineChartData" :options="lineOptions" :plugins="[lineGradientPlugin]" />
+              </div>
             </div>
           </div>
+
 
           <!-- Summary -->
           <div class="bg-surface-elevated rounded-[20px] p-xxl mb-xl">
@@ -204,8 +207,8 @@
 <script setup>
 import { ref, computed } from "vue"
 import axios from "axios"
-import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js'
-import { Bar, Doughnut } from 'vue-chartjs'
+import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, CategoryScale, LinearScale, ArcElement } from 'chart.js'
+import { Line, Doughnut } from 'vue-chartjs'
 import { useHead } from "@vueuse/head"
 import { Icon } from "@iconify/vue"
 
@@ -218,7 +221,7 @@ useHead({
   ]
 })
 
-ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, BarElement, CategoryScale, LinearScale, ArcElement)
+ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, CategoryScale, LinearScale, ArcElement)
 
 
 const file = ref(null)
@@ -275,7 +278,7 @@ const atsChartData = computed(() => {
   }
 })
 
-const barOptions = {
+const lineOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: { 
@@ -311,19 +314,19 @@ const barOptions = {
   }
 }
 
-const barGradientPlugin = {
-  id: 'barGradient',
+const lineGradientPlugin = {
+  id: 'lineGradient',
   beforeDatasetsDraw(chart) {
     const { ctx, chartArea } = chart
     if (!chartArea) return
-    const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top)
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 0)')
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.01)')
+    const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
+    gradient.addColorStop(0, '#ffffff')
+    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
     chart.data.datasets[0].backgroundColor = gradient
   }
 }
 
-const barChartData = computed(() => {
+const lineChartData = computed(() => {
   const cats = result.value?.analysis?.categories || {}
   return {
     labels: ['Skills', 'Experience', 'Education', 'Projects', 'Certificates', 'Soft Skills'],
@@ -337,11 +340,14 @@ const barChartData = computed(() => {
         cats.Certificates || 0,
         cats.SoftSkills || 0,
       ],
-      backgroundColor: '#ffffff',
-      borderRadius: 8,
-      borderSkipped: false,
-      barThickness: 32,
-      maxBarThickness: 32,
+      borderColor: '#ffffff',
+      borderWidth: 2,
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: '#ffffff',
+      pointBorderColor: '#ffffff',
+      pointRadius: 4,
+      pointHoverRadius: 6,
     }]
   }
 })
