@@ -14,7 +14,7 @@
             Lengkap dengan analisis CV dan pembuatan dokumen ATS berstandar industri.
           </p>
 
-          <div class="flex gap-[20px] flex-wrap items-center">
+          <div class="flex gap-sm md:gap-md flex-wrap items-center">
             <router-link to="/jobs" class="inline-flex items-center gap-[8px] justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-sm md:text-[18px] px-[20px] h-[44px] bg-on-dark text-ink hover:bg-white/90">
               Get Started
               <Icon icon="mdi-light:arrow-right" width="25"/>
@@ -82,11 +82,11 @@
 
 
     <!-- Features Section (Dark Canvas) -->
-    <section class="bg-transparent pt-[80px] pb-[80px]">
+    <section class="bg-transparent">
       <div class="w-full mx-auto px-[32px] md:px-[72px]">
         <div class="mb-xxl">
-          <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-lg block">Fitur Unggulan</span>
-          <h2 class="text-[40px] md:text-[50px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark">Satu Platform, Semua Kebutuhan Kariermu</h2>
+          <span class="font-mono uppercase text-[12px] font-bold tracking-[1px] text-stone mb-md block">Fitur Unggulan</span>
+          <h2 class="text-[30px] md:text-[50px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark">Satu Platform, Semua Kebutuhan Kariermu</h2>
         </div>
       </div>
     </section>
