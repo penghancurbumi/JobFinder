@@ -117,7 +117,7 @@ onUnmounted(() => {
 }
 
 .nav-link {
-  @apply relative text-on-dark-mute text-[15px] font-medium leading-[1.5] tracking-[0.24px] px-1 py-1 no-underline transition-colors duration-200 hover:text-white;
+  @apply relative text-on-dark-mute text-[18px] font-medium leading-[1.5] tracking-[0.24px] px-1 py-1 no-underline transition-colors duration-200 hover:text-white;
 }
 
 .nav-link::after {

@@ -34,10 +34,10 @@
         </div>
 
         <span v-if="backgroundRunning" class="text-[12px] text-white mt-[8px] flex items-center gap-[6px]">
-          Data pekerjaan sedang ditambahkan, mohon tunggu sebentar...
+          {{ backgroundStatusText }}
         </span>
         <span v-else class="text-[12px] text-white mt-[8px] block">
-          Total data {{ jobTotal.toLocaleString('id-ID') }} jobs • {{ (status.total_jobs_scraped || 0).toLocaleString('id-ID') }} data job ditambahkan
+          Total data {{ jobTotal.toLocaleString('id-ID') }} jobs • {{ (status.total_jobs_scraped || 0).toLocaleString('id-ID') }} data job ditambahkan • Diperbarui {{ lastUpdatedText }}
         </span>
         <span v-if="linkChecking" class="text-[12px] text-white mt-[8px] flex items-center gap-[6px]">
           Memeriksa status link lowongan... {{ linkProgress.done }}/{{ linkProgress.total }} — {{ linkProgress.active || 0 }} aktif, {{ linkProgress.notFound || 0 }} nonaktif
@@ -54,37 +54,37 @@
             <button @click="resetFilters" class="p-0 h-auto bg-transparent text-white hover:text-stone font-semibold cursor-pointer text-sm">Reset</button>
           </div>
 
-          <div class="mb-xl flex flex-col">
+          <div class="mb-md flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-medium text-sm">Tipe Pekerjaan</label>
             <CustomSelect v-model="activeTipe" :options="tipeOptions" placeholder="Semua Tipe" />
           </div>
 
-          <div class="mb-xl flex flex-col">
+          <div class="mb-md flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-medium text-sm">Pengalaman</label>
             <CustomSelect v-model="experienceLevel" :options="experienceOptions" placeholder="Semua Pengalaman" />
           </div>
 
-          <div class="mb-xl flex flex-col">
+          <div class="mb-md flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-medium text-sm">Pendidikan</label>
             <CustomSelect v-model="educationlevel" :options="educationOptions" placeholder="Semua Pendidikan" />
           </div>
 
-          <div class="mb-xl flex flex-col">
+          <div class="mb-md flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-medium text-sm">Urutkan Berdasarkan</label>
             <CustomSelect v-model="sortBy" :options="sortOptions" placeholder="Terbaru" />
           </div>
 
-          <div class="mb-xl flex flex-col">
+          <div class="mb-md flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-medium text-sm">Platform</label>
             <CustomSelect v-model="platform" :options="platformOptions" placeholder="Semua Platform" />
           </div>
 
-          <div class="mb-xl flex flex-col">
+          <div class="mb-md flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-medium text-sm">Status Lowongan</label>
             <CustomSelect v-model="linkStatus" :options="linkStatusOptions" placeholder="Semua Status" />
           </div>
 
-          <div class="mt-xl flex flex-col">
+          <div class="mb-md flex flex-col">
             <label class="block text-on-dark-mute mb-sm font-medium text-sm">Rentang Gaji</label>
             <label class="flex items-center gap-[8px] font-normal text-[13px] normal-case cursor-pointer text-on-dark-mute">
               <input type="checkbox" v-model="hasSalary" class="w-[12px] h-[12px] min-h-[12px] cursor-pointer" />
@@ -162,10 +162,11 @@
                 
                 <!-- Source -->
                 <div class="text-stone text-[12px] font-normal leading-[1.5]">
-                  Sumber: 
-                  <a :href="job.url" target="_blank" rel="noopener noreferrer" class="text-white font-medium no-underline hover:underline">
+                  Sumber:
+                  <a v-if="job.linkStatus !== 'not_found'" :href="job.url" target="_blank" rel="noopener noreferrer" class="text-white font-medium no-underline hover:underline">
                     {{ job.source }}
                   </a>
+                  <span v-else class="text-white font-medium">{{ job.source }}</span>
                 </div>
 
                 <!-- Info Meta Box (Uniform structure for all cards) -->
@@ -195,9 +196,17 @@
               
               <!-- Bottom Action Button -->
               <div class="mt-md pt-sm">
-                <a 
-                  :href="job.url" 
-                  target="_blank" 
+                <a
+                  v-if="job.linkStatus === 'not_found'"
+                  class="w-full inline-flex items-center justify-center font-medium rounded-sm px-[20px] py-[8px] h-[38px] text-[13px] no-underline gap-xs bg-surface-deep text-stone border border-hairline-dark cursor-not-allowed"
+                  title="Link lowongan sudah tidak aktif"
+                >
+                  Lowongan Nonaktif
+                </a>
+                <a
+                  v-else
+                  :href="job.url"
+                  target="_blank"
                   rel="noopener noreferrer"
                   class="w-full inline-flex items-center justify-center font-medium rounded-sm transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] py-[8px] h-[38px] text-[13px] no-underline gap-xs"
                 >
@@ -273,6 +282,7 @@ useHead({
 const jobs = ref([])
 const loading = ref(true)
 const backgroundRunning = ref(false)
+const scrapeProgress = ref(null)
 const status = ref({})
 const jobTotal = ref(0)
 const statusMsg = ref("")
@@ -351,7 +361,8 @@ const linkProgress = ref({ done: 0, total: 0, active: 0, notFound: 0 })
 const linkStatusOptions = [
   { value: 'all', label: 'Semua Status' },
   { value: 'active', label: 'Terverifikasi Aktif' },
-  { value: 'unchecked', label: 'Belum Dicek' }
+  { value: 'unchecked', label: 'Belum Dicek' },
+  { value: 'not_found', label: 'Nonaktif (404)' }
 ]
 
 const linkCheckLabel = computed(() =>
@@ -412,6 +423,10 @@ const buttonLabel = computed(() => {
   return `Perbarui Data`
 })
 
+const backgroundStatusText = computed(() =>
+  scrapeProgress.value?.message || "Data pekerjaan sedang ditambahkan, mohon tunggu sebentar..."
+)
+
 async function refreshStatus() {
   try {
     const res = await fetch("/api/status")
@@ -445,6 +460,7 @@ onMounted(async () => {
     }
     if (data.status === "completed") {
       backgroundRunning.value = false
+      scrapeProgress.value = null
       if (data.message) setStatusMsg(data.message, "ok")
       refreshStatus()
       fetchPage(1, false)
@@ -452,14 +468,20 @@ onMounted(async () => {
     }
     if (data.status === "failed") {
       backgroundRunning.value = false
+      scrapeProgress.value = null
       setStatusMsg(data.message || "Scraping gagal", "error")
       refreshStatus()
       return
     }
     if (data.status === "idle") {
       backgroundRunning.value = false
+      scrapeProgress.value = null
       refreshStatus()
     }
+  })
+
+  socket.on("scrape-progress", (data) => {
+    if (data && data.message) scrapeProgress.value = data
   })
 
   socket.on("connect", () => {
@@ -493,7 +515,7 @@ onMounted(async () => {
       const nf = data?.notFound || 0
       setStatusMsg(
         nf > 0
-          ? `Pengecekan selesai: ${nf} link nonaktif ditemukan & ditandai.`
+          ? `Pengecekan selesai: ${nf} link nonaktif ditemukan & disembunyikan dari daftar.`
           : "Pengecekan selesai, semua link yang dicek aktif.",
         nf > 0 ? "error" : "ok"
       )

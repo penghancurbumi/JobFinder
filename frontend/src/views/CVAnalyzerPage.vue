@@ -96,8 +96,8 @@
         <template v-else>
           <!-- Score Summary -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-xl">
-            <div class="col-span-1 bg-surface-elevated rounded-[20px] p-xl mb-xl flex flex-col">
-              <span class="font-mono uppercase text-[12px] font-bold tracking-[1px] text-stone mb-lg block">ATS Score</span>
+            <div class="col-span-1 bg-surface-elevated rounded-[20px] p-xl mb-xl flex flex-col border border-hairline-dark">
+              <span class="font-mono uppercase text-[15px] font-bold tracking-[1px] text-stone mb-lg block">ATS Score</span>
               
               <div class="flex flex-col items-center justify-center gap-md py-sm">
                 <div class="w-[200px] h-[200px] shrink-0 relative flex items-center justify-center">
@@ -135,32 +135,32 @@
             </div>
 
             <!-- Charts Dashboard -->
-            <div class="col-span-2 bg-surface-elevated rounded-[20px] p-xl mb-xl">
-              <span class="font-mono uppercase text-[12px] font-bold tracking-[1px] mb-lg block text-stone">Analisis Kategori</span>
+            <div class="col-span-2 bg-surface-elevated rounded-[20px] p-xl mb-xl border border-hairline-dark">
+              <span class="font-mono uppercase text-[15px] font-bold tracking-[1px] mb-lg block text-stone">Analisis Kategori</span>
               <div class="relative h-[300px] w-full">
-                <Line :data="lineChartData" :options="lineOptions" :plugins="[lineGradientPlugin]" />
+                <Line :data="lineChartData" :options="lineOptions" :plugins="[lineGradientPlugin, crosshairPlugin]" />
               </div>
             </div>
           </div>
 
 
           <!-- Summary -->
-          <div class="bg-surface-elevated rounded-[20px] p-xxl mb-xl">
-            <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Resume Summary</span>
+          <div class="bg-surface-elevated rounded-[20px] p-xxl mb-xl border border-hairline-dark">
+            <span class="font-mono uppercase text-[15px] font-bold tracking-[1px] text-stone">Resume Summary</span>
             <p class="text-[16px] font-normal leading-[1.6] text-on-dark-mute mt-sm">{{ result.analysis.summary }}</p>
           </div>
           
           <!-- Detailed Insights -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-xl mb-xl">
             <div class="bg-surface-elevated rounded-[20px] p-xxl border-t-3 border-accent-teal">
-              <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Kekuatan (Strengths)</span>
+              <span class="font-mono uppercase text-[15px] font-bold tracking-[1px] text-stone">Kekuatan (Strengths)</span>
               <ul class="pl-[20px] mt-md text-[14px] font-normal leading-[1.5] list-disc">
                 <li v-for="(item, idx) in result.analysis.strengths" :key="'s'+idx" class="mb-[8px] text-on-dark-mute">{{ item }}</li>
               </ul>
             </div>
             
             <div class="bg-surface-elevated rounded-[20px] p-xxl border-t-3 border-accent-danger">
-              <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Kelemahan (Weaknesses)</span>
+              <span class="font-mono uppercase text-[15px] font-bold tracking-[1px] text-stone">Kelemahan (Weaknesses)</span>
               <ul class="pl-[20px] mt-md text-[14px] font-normal leading-[1.5] list-disc">
                 <li v-for="(item, idx) in result.analysis.weaknesses" :key="'w'+idx" class="mb-[8px] text-on-dark-mute">{{ item }}</li>
               </ul>
@@ -169,7 +169,7 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-xl mb-xl">
             <div class="bg-surface-elevated rounded-[20px] p-xxl">
-              <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Keyword Match</span>
+              <span class="font-mono uppercase text-[15px] font-bold tracking-[1px] text-stone">Keyword Match</span>
               <div class="flex flex-wrap gap-[8px] mt-[12px]">
                 <span v-for="(kw, idx) in result.analysis.keywordMatch" :key="'kw'+idx" class="inline-flex items-center gap-[6px] bg-gray/10 text-white border border-white/25 rounded-full px-[12px] py-[4px] text-[13px]">
                   <span class="inline-block rounded-full bg-white w-[4px] h-[4px]"></span> {{ kw }}
@@ -179,7 +179,7 @@
             </div>
             
             <div class="bg-surface-elevated rounded-[20px] p-xxl">
-              <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Missing Skills</span>
+              <span class="font-mono uppercase text-[15px] font-bold tracking-[1px] text-stone">Missing Skills</span>
               <div class="flex flex-wrap gap-[8px] mt-[12px]">
                 <span v-for="(kw, idx) in result.analysis.missingSkills" :key="'mk'+idx" class="inline-flex items-center gap-[6px] bg-gray/10 text-white border border-white/25 rounded-full px-[12px] py-[4px] text-[13px]">
                   <span class="inline-block rounded-full bg-white w-[4px] h-[4px]"></span> {{ kw }}
@@ -191,7 +191,7 @@
 
           <!-- Recommendations -->
           <div class="bg-surface-elevated rounded-[20px] p-xxl border-l-3 border-primary">
-            <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Rekomendasi AI</span>
+            <span class="font-mono uppercase text-[15px] font-bold tracking-[1px] text-stone">Rekomendasi AI</span>
             <ul class="pl-[20px] mt-md text-[14px] font-normal leading-[1.6] list-disc">
               <li v-for="(rec, idx) in result.analysis.recommendations" :key="'r'+idx" class="mb-[12px] text-on-dark-mute">
                 {{ rec }}
@@ -281,6 +281,7 @@ const atsChartData = computed(() => {
 const lineOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  interaction: { mode: 'index', intersect: false },
   scales: { 
     y: { 
       min: 0, 
@@ -320,9 +321,30 @@ const lineGradientPlugin = {
     const { ctx, chartArea } = chart
     if (!chartArea) return
     const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
-    gradient.addColorStop(0, '#ffffff')
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.12)')
     gradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
     chart.data.datasets[0].backgroundColor = gradient
+  }
+}
+
+// Garis vertikal (crosshair) yang mengikuti titik data saat hover
+const crosshairPlugin = {
+  id: 'crosshair',
+  afterDatasetsDraw(chart) {
+    const active = chart.tooltip?._active
+    if (!active?.length) return
+    const { ctx, chartArea } = chart
+    if (!chartArea) return
+    const x = active[0].element.x
+    ctx.save()
+    ctx.beginPath()
+    ctx.setLineDash([4, 4])
+    ctx.moveTo(x, chartArea.top)
+    ctx.lineTo(x, chartArea.bottom)
+    ctx.lineWidth = 1
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)'
+    ctx.stroke()
+    ctx.restore()
   }
 }
 
@@ -346,8 +368,8 @@ const lineChartData = computed(() => {
       tension: 0.4,
       pointBackgroundColor: '#ffffff',
       pointBorderColor: '#ffffff',
-      pointRadius: 4,
-      pointHoverRadius: 6,
+      pointRadius: 3,
+      pointHoverRadius: 4.5,
     }]
   }
 })

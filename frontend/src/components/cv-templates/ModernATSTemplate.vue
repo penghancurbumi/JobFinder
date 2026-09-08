@@ -231,6 +231,7 @@
               <div class="flex-1 min-w-0">
                 <div class=" text-on-dark text-[14px]">{{  Organization.position }}</div>
                 <div class="text-[14px] text-on-dark-mute">{{ Organization.company }}</div>
+                <div class="text-[13px] text-stone">{{ Organization.startMonth }} {{ Organization.startYear }} – {{ Organization.current ? 'Sekarang' : Organization.endMonth + ' ' + Organization.endYear }}</div>
               </div>
 
               <div class="flex gap-[8px] shrink-0">
@@ -420,6 +421,7 @@
                 <div class=" text-on-dark text-[14px]">{{ proj.name }}</div>
                 <div v-if="proj.role" class="text-[14px] text-on-dark-mute">{{ proj.role }}</div>
                 <div v-if="proj.startMonth || proj.startYear" class="text-[13px] text-stone mt-[2px]">{{ proj.startMonth }} {{ proj.startYear }} <span v-if="proj.endMonth || proj.endYear || proj.current">– {{ proj.current ? 'Sekarang' : proj.endMonth + ' ' + proj.endYear }}</span></div>
+                <div v-if="proj.description" class=" text-stone text-[13px] mt-[2px]">{{ proj.description }}</div>
               </div>
 
               <div class="flex gap-[8px] shrink-0">

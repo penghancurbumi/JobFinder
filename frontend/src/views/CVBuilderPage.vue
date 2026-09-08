@@ -166,6 +166,7 @@
             <div class="flex justify-between items-center mb-[24px] flex-wrap gap-[12px]">
               <h3 class="text-[24px] font-medium leading-[1.33] text-on-dark">Pratinjau Dokumen</h3>
               <div class="flex gap-[12px] flex-wrap items-center">
+                <span class="text-[14px] text-on-dark-mute">Nama file:</span>
                 <input v-model="customFileName" type="text" :placeholder="defaultPdfName" class="bg-transparent border border-hairline-dark rounded-full h-[32px] px-[16px] text-[13px] text-on-dark focus:border-white focus:outline-none placeholder:text-stone w-[200px]" />
                 <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer text-[13px] px-[16px] h-[32px] bg-transparent border border-hairline-dark text-on-dark hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed" @click="analyzeBuiltCV" :disabled="analyzing">
                   {{ analyzing ? 'Memindai...' : 'Scan ATS Score' }}
@@ -205,7 +206,7 @@
 
                 <div class="bg-surface-elevated rounded-[20px] p-xxl mb-xl border border-hairline-dark">
                   <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] mb-lg block text-stone">Analisis Kategori</span>
-                  <div class="relative h-[280px] w-full"><Line :data="lineChartData" :options="lineOptions" /></div>
+                  <div class="relative h-[280px] w-full"><Line :data="lineChartData" :options="lineOptions" :plugins="[crosshairPlugin]" /></div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-xl mb-xl">
@@ -267,16 +268,22 @@
     </div>
 
     <!-- Print container: hidden in browser, shown only when printing.
-         v-if memastikan komponen selalu dirender ulang dengan data TERBARU saat tombol unduh diklik. -->
-    <div v-if="printReady" class="cv-print-container" ref="printContainer">
-      <component
-        :is="activeTemplateComponent"
-        ref="printTemplateRef"
-        :step-index="0"
-        :is-preview="true"
-        :template-font="templateFont"
-        :target-expertise="targetExpertise"
-      />
+         v-if memastikan komponen selalu dirender ulang dengan data TERBARU saat tombol unduh diklik.
+         Offscreen positioning WAJIB di wrapper (cv-print-outer), bukan di elemen yang di-pass ke
+         html2pdf (cv-print-container) — html2pdf meng-clone elemen sumber beserta offset CSS-nya,
+         sehingga left/top negatif di elemen sumber menggeser hasil clone keluar area render
+         dan PDF yang dihasilkan kosong. -->
+    <div v-if="printReady" class="cv-print-outer">
+      <div class="cv-print-container" ref="printContainer">
+        <component
+          :is="activeTemplateComponent"
+          ref="printTemplateRef"
+          :step-index="0"
+          :is-preview="true"
+          :template-font="templateFont"
+          :target-expertise="targetExpertise"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -500,7 +507,28 @@ const atsChartData = computed(() => {
   return { labels: ['Score', 'Remaining'], datasets: [{ data: [score, 100 - score], backgroundColor: [color, 'rgba(255,255,255,0.08)'], borderWidth: 0 }] }
 })
 
-const lineOptions = { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, ticks: { color: '#8d969e' }, grid: { color: 'rgba(255,255,255,0.06)' } }, x: { ticks: { color: '#8d969e' }, grid: { display: false } } }, plugins: { legend: { display: false } } }
+// Garis vertikal (crosshair) yang mengikuti titik data saat hover
+const crosshairPlugin = {
+  id: "crosshair",
+  afterDatasetsDraw(chart) {
+    const active = chart.tooltip?._active
+    if (!active?.length) return
+    const { ctx, chartArea } = chart
+    if (!chartArea) return
+    const x = active[0].element.x
+    ctx.save()
+    ctx.beginPath()
+    ctx.setLineDash([4, 4])
+    ctx.moveTo(x, chartArea.top)
+    ctx.lineTo(x, chartArea.bottom)
+    ctx.lineWidth = 1
+    ctx.strokeStyle = "rgba(255,255,255,0.45)"
+    ctx.stroke()
+    ctx.restore()
+  },
+}
+
+const lineOptions = { responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false }, scales: { y: { min: 0, max: 100, ticks: { color: '#8d969e' }, grid: { color: 'rgba(255,255,255,0.06)' } }, x: { ticks: { color: '#8d969e' }, grid: { display: false } } }, plugins: { legend: { display: false } } }
 
 const lineChartData = computed(() => {
   const cats = analysisResult.value?.analysis?.categories || {}
@@ -685,14 +713,22 @@ watch(currentStep, async () => {
   }
 }
 
-/* Container untuk generate PDF: offscreen tapi tetap ter-render (html2canvas
-   tidak bisa menangkap elemen dengan display:none). Lebar A4 @96dpi. */
-.cv-print-container {
+/* Wrapper offscreen: menyembunyikan area render dari viewport TANPA mengubah posisi
+   elemen di dalamnya (html2pdf meng-clone cv-print-container, jadi container itu sendiri
+   harus tetap statis di posisi 0,0). html2pdf juga memaksa position: relative pada clone,
+   jadi cv-print-container tidak boleh punya position/offset apa pun. */
+.cv-print-outer {
   position: fixed;
   top: 0;
   left: -12000px;
   width: 794px;
   background: #ffffff;
   z-index: -1;
+}
+
+/* Elemen yang di-pass ke html2pdf: statis, lebar A4 @96dpi */
+.cv-print-container {
+  width: 794px;
+  background: #ffffff;
 }
 </style>
