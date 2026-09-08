@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import date, timedelta
 from typing import Any
 
 import scrapy
@@ -8,6 +9,8 @@ from scrapy_playwright.page import PageMethod
 
 from job_scraper.constants import Platform
 from job_scraper.spiders.base_spider import BaseSpider
+
+_REL_DATE_RE = re.compile(r"(\d+)\s*(menit|jam|hari|minggu|bulan|tahun)", re.IGNORECASE)
 
 
 class KitalulusSpider(BaseSpider):
@@ -29,6 +32,32 @@ class KitalulusSpider(BaseSpider):
 
     def _get_page_methods(self) -> list:
         return [PageMethod("wait_for_load_state", "networkidle")]
+
+    @staticmethod
+    def _relative_to_iso(raw: Any) -> str | None:
+        """Convert a relative Indonesian date string ('3 hari lalu', 'Terakhir
+        diperbarui 2 minggu lalu') to an ISO date (YYYY-MM-DD). Returns None for
+        unparseable input so the backend stores NULL instead of a garbage
+        string like 'Terakhir d'."""
+        if not raw:
+            return None
+        s = str(raw).strip()
+        m = re.match(r"^\d{4}-\d{2}-\d{2}", s)
+        if m:
+            return m.group(0)
+        m = _REL_DATE_RE.search(s)
+        if not m:
+            return None
+        n = int(m.group(1))
+        unit = m.group(2).lower()
+        days = {
+            "menit": 0, "jam": 0,
+            "hari": n, "minggu": n * 7,
+            "bulan": n * 30, "tahun": n * 365,
+        }.get(unit)
+        if days is None:
+            return None
+        return (date.today() - timedelta(days=days)).isoformat()
 
     def _extract_rsf_payload(self, text: str) -> list:
         chunks = []
@@ -129,7 +158,7 @@ class KitalulusSpider(BaseSpider):
                 "salary_max": salary_max if salary_max and salary_max > 0 else None,
                 "salary_currency": "IDR",
                 "source_url": detail_url,
-                "updated_at": job.get("updatedAtStr"),
+                "updated_at": self._relative_to_iso(job.get("updatedAtStr")),
             }
 
             type_str = job.get("typeStr")

@@ -1,3 +1,4 @@
+import re
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -8,6 +9,35 @@ from scrapy_playwright.page import PageMethod
 from job_scraper.constants import Platform
 from job_scraper.items import JobItem
 from job_scraper.logger import get_logger, get_stats_logger
+
+# Titles that are page-section headings, CTA labels, or marketing copy rather
+# than an actual job title. LinkedIn injects company career-page cards into
+# search results ("About the Role", "Send us your CV", joke 404 pages, …) that
+# the card selectors can mistakenly pick up as jobs.
+_BAD_TITLE_RE = re.compile(
+    r"404|not found"
+    r"|^about (the |this )?(role|job|opportunity)|^about us"
+    r"|^job (description|summary)|^summary|^overview|^how to\b"
+    r"|^open positions?\b|^current (job )?vacanc|^vacanc(y|ies)\b"
+    r"|^send us your cv|^submit your resume|^general interest application"
+    r"|^experienced professionals|^career (field|fields|opportunit|page|portal)"
+    r"|\bcareers\b|^why\b|^your\b|^join (us|our team)|^who we are|^apply now"
+    r"|^our benefits|^requirements|^responsibilities|^talent (pool|community)"
+    r"|^kirim lamaran|^deskripsi pekerjaan|^tentang kami|^cara melamar|^daftar sekarang",
+    re.IGNORECASE,
+)
+
+
+def is_plausible_title(title: str) -> bool:
+    t = (title or "").strip()
+    if not t or len(t) < 3 or len(t) > 100:
+        return False
+    if _BAD_TITLE_RE.search(t):
+        return False
+    # Real job titles do not end like sentences.
+    if t.endswith((".", "?", "!", "…", ":", ";")):
+        return False
+    return True
 
 
 class BaseSpider(scrapy.Spider):
@@ -22,7 +52,10 @@ class BaseSpider(scrapy.Spider):
         self.stats_logger = get_stats_logger()
 
         self.max_pages = int(kwargs.get("max_pages", 100))
-        self.max_detail_pages = int(kwargs.get("max_detail_pages", 15))
+        # Detail enrichment is disabled by default: listing data already covers
+        # the job cards, and each detail page costs a full Playwright render
+        # (~2-4s) which dominates scrape time. Enable with -a max_detail_pages=N.
+        self.max_detail_pages = int(kwargs.get("max_detail_pages", 0))
         self.keyword = kwargs.get("keyword", None)
         self.location_filter = kwargs.get("location", None)
 
@@ -46,9 +79,12 @@ class BaseSpider(scrapy.Spider):
         return [PageMethod("wait_for_load_state", "networkidle")]
 
     def _playwright_meta(self, page_methods: list | None = None) -> dict:
+        # playwright_include_page is intentionally NOT set: no spider reads the
+        # Page object, and leaving it on leaks an open page per request (the
+        # page is only closed when the response is garbage-collected), which
+        # slows down long runs and can exhaust the browser.
         return dict(
             playwright=True,
-            playwright_include_page=True,
             playwright_page_goto_kwargs={"wait_until": "domcontentloaded", "timeout": 30000},
             playwright_page_methods=page_methods or self._get_page_methods(),
         )
@@ -70,7 +106,7 @@ class BaseSpider(scrapy.Spider):
         req_meta = dict(
             playwright=True,
             playwright_page_goto_kwargs={"wait_until": "domcontentloaded", "timeout": 30000},
-            playwright_page_methods=[PageMethod("wait_for_timeout", 2000)],
+            playwright_page_methods=[PageMethod("wait_for_load_state", "networkidle")],
             is_detail=True,
         )
         if meta:
@@ -120,6 +156,12 @@ class BaseSpider(scrapy.Spider):
                 item[key] = value
         self._item_count += 1
         return item
+
+    def _plausible_title(self, title: str) -> bool:
+        ok = is_plausible_title(title)
+        if not ok:
+            self.logger_custom.info("Skipping implausible job title: %s", (title or "")[:60])
+        return ok
 
     def closed(self, reason: str) -> None:
         duration = (self.stats_logger or self.logger_custom)

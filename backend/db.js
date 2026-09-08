@@ -250,12 +250,14 @@ export async function updateLinkStatus(url, status, checkedAt) {
 
 // Never-checked rows first, then rows whose last check is older than
 // staleDays, oldest check first — so repeated runs walk through the whole
-// table evenly.
+// table evenly. Rows already confirmed dead (not_found) are skipped: they
+// await deletion by the cleanup grace period instead of re-checking.
 export async function getJobsToCheck(limit = 300, staleDays = 14) {
   const staleCutoff = new Date(Date.now() - staleDays * 24 * 60 * 60 * 1000).toISOString()
   return fetchAll(
     `SELECT id, url, source FROM jobs
-      WHERE linkStatus IS NULL OR linkCheckedAt IS NULL OR linkCheckedAt < ?
+      WHERE (linkStatus IS NULL OR linkStatus != 'not_found')
+        AND (linkCheckedAt IS NULL OR linkCheckedAt < ?)
       ORDER BY (linkCheckedAt IS NULL) DESC, linkCheckedAt ASC
       LIMIT ?`,
     [staleCutoff, limit]
@@ -323,12 +325,21 @@ export const NON_LATIN_RE =
 
 export const URL_RE = /^https?:\/\/[^\s]+$/i
 
+// Titles that are page headings, CTA labels, marketing copy, or error pages
+// rather than real job titles (mostly LinkedIn career-page cards leaking into
+// search results). Mirrors _BAD_TITLE_RE in spiders/base_spider.py.
+const IMPLAUSIBLE_TITLE_RE =
+  /404|not found|about (the |this )?(role|job|opportunity)|^about us|job (description|summary)|^summary$|^overview$|^how to\b|open positions?\b|current (job )?vacanc|vacanc(y|ies)\b|send us your cv|submit your resume|general interest application|experienced professionals|career (field|fields|opportunit|page|portal)|\bcareers\b|^why\b|^your\b|join (us|our team)|^who we are|apply now|our benefits|^requirements$|^responsibilities$|talent (pool|community)|kirim lamaran|deskripsi pekerjaan|tentang kami|cara melamar|daftar sekarang/i
+
 export function isValidJobText(title, company, location) {
   const t = String(title || "").trim()
   const c = String(company || "").trim()
   const l = String(location || "").trim()
   if (!t || t.length < 3) return false
   if (URL_RE.test(t) || URL_RE.test(c)) return false
+  if (IMPLAUSIBLE_TITLE_RE.test(t)) return false
+  // Real job titles don't end like sentences (marketing/heading fragments).
+  if (/[.?!…:;]$/.test(t)) return false
   return !NON_LATIN_RE.test(`${t} ${c} ${l}`)
 }
 

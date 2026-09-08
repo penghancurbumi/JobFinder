@@ -221,6 +221,10 @@ async function getFilteredJobs(search = "", bidang = "all", tipe = "all", sortBy
 
     if (linkStatus && linkStatus !== 'all') {
       if ((j.linkStatus || 'unchecked') !== linkStatus) return false
+    } else if (j.linkStatus === 'not_found') {
+      // Default view hides listings already confirmed dead (404/410 or closed
+      // page). They remain reachable via the dedicated "Nonaktif (404)" filter.
+      return false
     }
 
     return true
@@ -274,21 +278,9 @@ io.on("connection", async (socket) => {
   })
 })
 
-// No auto-scraping: each "Perbarui Data" press scrapes exactly one platform,
-// cycling through PLATFORMS via the persistent scraping_state pointer.
-
-// Remove expired jobs daily (and once at startup) so data doesn't pile up.
-async function runScheduledCleanup() {
-  try {
-    const cleanup = await runCleanup()
-    await refreshJobsCache()
-    if (cleanup.total > 0) console.log("Scheduled cleanup removed:", cleanup.total, "job(s)")
-  } catch (e) {
-    console.error("Scheduled cleanup failed:", e.message)
-  }
-}
-setInterval(runScheduledCleanup, 24 * 60 * 60 * 1000)
-setTimeout(runScheduledCleanup, 5000)
+// No auto-scraping at request level: each "Perbarui Data" press scrapes
+// exactly one platform, cycling through PLATFORMS via the persistent
+// scraping_state pointer. A light scheduled cycle below keeps data fresh.
 
 // ===================== GOOGLE FONTS PROXY =====================
 let googleFontsCache = null
@@ -502,5 +494,29 @@ httpServer.listen(PORT, '0.0.0.0', async () => {
   }, 60_000)
 
   console.log('[Auto-cleanup] Scheduler aktif: setiap 24 jam (pertama dalam 60 detik)')
+
+  // ── Auto refresh scheduler ────────────────────────────────────────────────
+  // scrape: satu platform per tick (round-robin sama seperti tombol manual),
+  // sehingga seluruh 7 platform ter-refresh tanpa aksi user. Interval bisa
+  // dioverride via .env (AUTO_SCRAPE_INTERVAL_HOURS / AUTO_LINK_CHECK_HOURS).
+  // ──────────────────────────────────────────────────────────────────────────
+  const AUTO_SCRAPE_INTERVAL_H = Math.max(Number(process.env.AUTO_SCRAPE_INTERVAL_HOURS) || 3, 1)
+  const AUTO_LINK_CHECK_H = Math.max(Number(process.env.AUTO_LINK_CHECK_HOURS) || 6, 1)
+
+  setInterval(() => {
+    startScrape().catch((e) => console.error("[Auto-scrape] Error:", e.message))
+  }, AUTO_SCRAPE_INTERVAL_H * 60 * 60 * 1000)
+
+  setInterval(() => {
+    startLinkCheck(200).catch((e) => console.error("[Auto-link-check] Error:", e.message))
+  }, AUTO_LINK_CHECK_H * 60 * 60 * 1000)
+
+  // Warm-up: cek link segera agar job mati terdeteksi, dan mulai siklus scrape
+  // pertama 15 menit setelah server start.
+  setTimeout(() => startLinkCheck(300).catch(() => {}), 2 * 60 * 1000)
+  setTimeout(() => startScrape().catch(() => {}), 15 * 60 * 1000)
+
+  console.log(`[Auto-scrape] Scheduler aktif: 1 platform tiap ${AUTO_SCRAPE_INTERVAL_H} jam`)
+  console.log(`[Auto-link-check] Scheduler aktif: tiap ${AUTO_LINK_CHECK_H} jam`)
 })
 

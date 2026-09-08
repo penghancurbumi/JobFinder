@@ -9,7 +9,11 @@ from scrapy_playwright.page import PageMethod
 
 from job_scraper.constants import Platform
 from job_scraper.logger import get_logger, get_stats_logger
-from job_scraper.spiders.base_spider import BaseSpider
+from job_scraper.spiders.base_spider import BaseSpider, is_plausible_title
+
+# LinkedIn geoId for Indonesia. Without it the guest search fuzzy-matches
+# global jobs to random Indonesian villages ("Yaur, Papua", "Ai, Aceh", …).
+INDONESIA_GEO_ID = "103544150"
 
 
 class LinkedInSpider(BaseSpider):
@@ -24,7 +28,7 @@ class LinkedInSpider(BaseSpider):
         self._item_count = 0
         self._error_count = 0
         self._detail_count = 0
-        self.max_detail_pages = int(kwargs.get("max_detail_pages", 15))
+        self.max_detail_pages = int(kwargs.get("max_detail_pages", 0))
 
     async def start(self):
         url = self._build_start_url()
@@ -41,6 +45,9 @@ class LinkedInSpider(BaseSpider):
         if self.keyword:
             params.append(f"keywords={self.keyword}")
         params.append(f"location={self.location_filter or 'Indonesia'}")
+        # Pin the search to Indonesia: without geoId LinkedIn returns global
+        # jobs whose location is fuzzy-matched to Indonesian villages.
+        params.append(f"geoId={INDONESIA_GEO_ID}")
         params.append("start=0")
         return f"{self.start_url}?{'&'.join(params)}"
 
@@ -58,7 +65,7 @@ class LinkedInSpider(BaseSpider):
             req_meta = dict(
                 playwright=True,
                 playwright_page_goto_kwargs={"wait_until": "domcontentloaded", "timeout": 15000},
-                playwright_page_methods=[PageMethod("wait_for_timeout", 1000)],
+                playwright_page_methods=[PageMethod("wait_for_load_state", "networkidle")],
             )
         else:
             req_meta = self._playwright_meta(self._get_page_methods())
@@ -80,6 +87,8 @@ class LinkedInSpider(BaseSpider):
 
         for card in job_cards:
             item_data = self._extract_card_data(card, response)
+            if not self._plausible_title(item_data.get("title", "")):
+                continue
             detail_url = item_data.get("source_url", "")
             if not re.search(r"/jobs/view/\d+", detail_url):
                 continue

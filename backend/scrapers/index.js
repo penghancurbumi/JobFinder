@@ -21,6 +21,23 @@ const MAX_PAGES = 1
 const CATEGORY_TIMEOUT_MS = 15 * 60 * 1000
 // Expired-job cleanup thresholds (see db.js deleteExpiredJobs)
 const EXPIRED_OPTIONS = { maxAgeDays: 90, notSeenDays: 30, notSeenMinAgeDays: 7 }
+// How long a link marked not_found stays quarantined (hidden from the list)
+// before the daily cleanup deletes it. False positives self-heal anyway: the
+// round-robin re-scrape re-inserts still-live listings, so 2 days (> one full
+// 7-platform cycle) is safe. Override via LINK_DEAD_GRACE_DAYS in .env.
+const DEAD_LINK_GRACE_DAYS = Math.max(Number(process.env.LINK_DEAD_GRACE_DAYS) || 2, 0)
+
+// postedDate must be a real calendar date (YYYY-MM-DD). Relative strings like
+// "Terakhir diperbarui" truncated to "Terakhir d" would break date sorting and
+// make expiry comparisons silently fail, so anything non-ISO falls back to
+// today (the listing was just seen by the scraper anyway).
+function normalizePostedDate(raw) {
+  const s = String(raw || "").trim()
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.substring(0, 10)
+  const d = new Date(s)
+  if (!isNaN(d.getTime())) return d.toISOString().substring(0, 10)
+  return new Date().toISOString().substring(0, 10)
+}
 
 export async function insertScrapedFiles(jobTypeFilter) {
   let count = 0
@@ -78,7 +95,7 @@ export async function insertScrapedFiles(jobTypeFilter) {
           }
           
           const expertise = item.skills && item.skills.length > 0 ? item.skills.slice(0, 3).join(", ") : "Others"
-          const postedDate = item.updated_at ? item.updated_at.substring(0, 10) : new Date().toISOString().substring(0, 10)
+          const postedDate = normalizePostedDate(item.updated_at)
           
           // Insert into SQLite, refreshing type/description/salary on duplicate URL
           const query = `
@@ -158,7 +175,7 @@ export async function runCleanup() {
   const removedExpired = await deleteExpiredJobs(EXPIRED_OPTIONS)
   const removedDupes = await deleteDuplicateJobs()
   const removedBad = await deleteBadQualityJobs()
-  const removedDeadLinks = await deleteDeadLinkJobs(7)
+  const removedDeadLinks = await deleteDeadLinkJobs(DEAD_LINK_GRACE_DAYS)
   const total = removedClosed + removedExpired.age + removedExpired.notSeen + removedDupes + removedBad + removedDeadLinks
   console.log(
     `Cleanup done: ${removedClosed} closed/not-found removed, ${removedExpired.age} age-expired, ` +
