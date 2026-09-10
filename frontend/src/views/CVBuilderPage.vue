@@ -532,7 +532,7 @@ const lineOptions = { responsive: true, maintainAspectRatio: false, interaction:
 
 const lineChartData = computed(() => {
   const cats = analysisResult.value?.analysis?.categories || {}
-  return { labels: ['Skills', 'Experience', 'Education', 'Projects', 'Certificates', 'Soft Skills'], datasets: [{ label: 'Skor Kategori', data: [cats.Skills || 0, cats.Experience || 0, cats.Education || 0, cats.Projects || 0, cats.Certificates || 0, cats.SoftSkills || 0], borderColor: '#ffffff', backgroundColor: 'rgba(90, 90, 90, 0.3)', pointBackgroundColor: '#ffffff', fill: true, tension: 0.4 }] }
+  return { labels: ['Technical Skills', 'Experience', 'Education', 'Projects', 'Certificates', 'Soft Skills'], datasets: [{ label: 'Skor Kategori', data: [cats.TechnicalSkills ?? cats.Skills ?? 0, cats.Experience || 0, cats.Education || 0, cats.Projects || 0, cats.Certificates || 0, cats.SoftSkills || 0], borderColor: '#ffffff', backgroundColor: 'rgba(90, 90, 90, 0.3)', pointBackgroundColor: '#ffffff', fill: true, tension: 0.4 }] }
 })
 
 async function analyzeBuiltCV() {

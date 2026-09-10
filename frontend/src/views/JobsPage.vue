@@ -272,7 +272,7 @@ import { useHead } from "@vueuse/head"
 useHead({
   title: 'Cari Lowongan Kerja & Magang — JobFinder',
   meta: [
-    { name: 'description', content: 'Temukan ribuan lowongan kerja dan magang dari LinkedIn, Glints, Jobstreet, Pintarnya, KitaLulus, dan sumber terpercaya lainnya. Filter berdasarkan tipe, lokasi, pengalaman, dan gaji.' },
+    { name: 'description', content: 'Temukan ribuan lowongan kerja dan magang dari Glints, Jobstreet, Pintarnya, KitaLulus, dan sumber terpercaya lainnya. Filter berdasarkan tipe, lokasi, pengalaman, dan gaji.' },
     { property: 'og:title', content: 'Cari Lowongan Kerja & Magang — JobFinder' },
     { property: 'og:description', content: 'Ribuan lowongan kerja dan magang dari seluruh sumber terpercaya di Indonesia dalam satu platform.' },
   ]
@@ -344,7 +344,6 @@ const platformOptions = [
   { value: 'all', label: 'Semua Platform' },
   { value: 'kalibrr', label: 'Kalibrr' },
   { value: 'jobstreet', label: 'JobStreet' },
-  { value: 'linkedin', label: 'LinkedIn' },
   { value: 'glints', label: 'Glints' },
   { value: 'pintarnya', label: 'Pintarnya' },
   { value: 'kitalulus', label: 'Kitalulus' },

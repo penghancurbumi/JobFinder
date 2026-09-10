@@ -95,13 +95,13 @@
 
         <template v-else>
           <!-- Score Summary -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-xl">
-            <div class="col-span-1 bg-surface-elevated rounded-[20px] p-xl mb-xl flex flex-col border border-hairline-dark">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-xl mb-xl">
+            <div class="col-span-1 md:col-span-1 min-w-0 bg-surface-elevated rounded-[20px] p-xl flex flex-col border border-hairline-dark">
               <span class="font-mono uppercase text-[15px] font-bold tracking-[1px] text-stone mb-lg block">ATS Score</span>
               
               <div class="flex flex-col items-center justify-center gap-md py-sm">
                 <div class="w-[200px] h-[200px] shrink-0 relative flex items-center justify-center">
-                  <Doughnut :data="atsChartData" :options="doughnutOptions" />
+                  <Doughnut :data="atsChartData" :options="doughnutOptions" :plugins="[doughnutGradientPlugin]" />
                   <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                     <span class="text-[40px] font-medium text-white leading-none tracking-tight">
                       {{ result.ats.score }}
@@ -113,7 +113,7 @@
                 </div>
               </div>
 
-              <div class="flex flex-col mt-lg px-xl">
+              <div class="flex flex-col mt-lg px-md md:px-xl">
                 <div class="flex flex-row items-center gap-md border-b border-hairline-dark pb-sm">
                   <div class="shrink-0 bg-transparent h-3.5 w-3.5 border-2 border-white rounded-full flex items-center justify-center">
                     <div class="h-1.5 w-1.5 bg-white rounded-full"></div>
@@ -135,9 +135,9 @@
             </div>
 
             <!-- Charts Dashboard -->
-            <div class="col-span-2 bg-surface-elevated rounded-[20px] p-xl mb-xl border border-hairline-dark">
+            <div class="col-span-1 md:col-span-2 min-w-0 bg-surface-elevated rounded-[20px] p-xl border border-hairline-dark">
               <span class="font-mono uppercase text-[15px] font-bold tracking-[1px] mb-lg block text-stone">Analisis Kategori</span>
-              <div class="relative h-[300px] w-full">
+              <div class="relative h-[300px] w-full min-w-0">
                 <Line :data="lineChartData" :options="lineOptions" :plugins="[lineGradientPlugin, crosshairPlugin]" />
               </div>
             </div>
@@ -224,9 +224,47 @@ useHead({
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, CategoryScale, LinearScale, ArcElement)
 
 
-const file = ref(null)
+const file = ref({ name: 'Contoh_CV_Development.pdf', size: 145200 })
 const analyzing = ref(false)
-const result = ref(null)
+
+// Mock data untuk keperluan development & preview styling (ganti ke null saat production)
+const mockResult = {
+  ats: {
+    score: 85,
+    isATS: true,
+    matchedSections: ['Summary', 'Experience', 'Education', 'Skills', 'Contact'],
+    totalSections: 5
+  },
+  eligible: true,
+  analysis: {
+    summary: "CV menunjukkan pengalaman yang sangat solid di bidang pengembangan web front-end dan back-end dengan penguasaan teknologi modern seperti Vue.js, Node.js, dan Python. Struktur dan penamaan bagian sudah memenuhi standar sistem ATS.",
+    categories: {
+      "Format & Struktur": 90,
+      "Pengalaman Kerja": 85,
+      "Relevansi Skill": 80,
+      "Pendidikan": 90,
+      "Keterbacaan ATS": 88
+    },
+    strengths: [
+      "Format penulisan bersih dan mudah diparsing oleh parser ATS.",
+      "Penggunaan kata kerja aksi yang kuat pada deskripsi pengalaman kerja.",
+      "Pencantuman metrik dan hasil pencapaian yang terukur."
+    ],
+    weaknesses: [
+      "Beberapa kata kunci industri spesifik belum dicantumkan pada bagian keahlian.",
+      "Sertifikasi profesional belum dilampirkan secara lengkap."
+    ],
+    keywordMatch: ["Vue.js", "JavaScript", "TypeScript", "Node.js", "TailwindCSS", "REST API", "Git"],
+    missingSkills: ["Docker", "CI/CD", "GraphQL", "AWS"],
+    recommendations: [
+      "Tambahkan sertifikasi atau pelatihan terkait Cloud Computing untuk meningkatkan daya saing.",
+      "Sertakan link portofolio GitHub atau proyek live yang dapat diakses langsung oleh rekruter.",
+      "Optimalkan bagian ringkasan profil agar lebih menonjolkan dampak bisnis dari proyek terdahulu."
+    ]
+  }
+}
+
+const result = ref(mockResult)
 
 function onFileChange(e) {
   const selected = e.target.files[0]
@@ -315,6 +353,32 @@ const lineOptions = {
   }
 }
 
+const doughnutGradientPlugin = {
+  id: 'doughnutGradient',
+  beforeDatasetsDraw(chart) {
+    const { ctx, chartArea } = chart
+    if (!chartArea) return
+
+    const centerX = (chartArea.left + chartArea.right) / 2
+    const centerY = (chartArea.top + chartArea.bottom) / 2
+    const score = result.value?.ats?.score || 0
+    const fraction = Math.min(Math.max(score / 100, 0.01), 1)
+
+    if (typeof ctx.createConicGradient === 'function') {
+      const gradient = ctx.createConicGradient(-Math.PI / 2, centerX, centerY)
+      gradient.addColorStop(0, 'rgba(255,255,255,0.08)')
+      gradient.addColorStop(fraction, '#ffffff')
+
+      chart.data.datasets[0].backgroundColor = [gradient, 'rgba(255, 255, 255, 0.08)']
+
+      const meta = chart.getDatasetMeta(0)
+      if (meta?.data?.[0]) {
+        meta.data[0].options.backgroundColor = gradient
+      }
+    }
+  }
+}
+
 const lineGradientPlugin = {
   id: 'lineGradient',
   beforeDatasetsDraw(chart) {
@@ -351,11 +415,11 @@ const crosshairPlugin = {
 const lineChartData = computed(() => {
   const cats = result.value?.analysis?.categories || {}
   return {
-    labels: ['Skills', 'Experience', 'Education', 'Projects', 'Certificates', 'Soft Skills'],
+    labels: ['Technical Skills', 'Experience', 'Education', 'Projects', 'Certificates', 'Soft Skills'],
     datasets: [{
       label: 'Skor Kategori',
       data: [
-        cats.Skills || 0,
+        cats.TechnicalSkills ?? cats.Skills ?? 0,
         cats.Experience || 0,
         cats.Education || 0,
         cats.Projects || 0,
