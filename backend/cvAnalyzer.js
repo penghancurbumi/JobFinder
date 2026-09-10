@@ -45,7 +45,7 @@ Tolong balas HANYA dengan sebuah JSON object yang valid (tanpa blok markdown sep
   "keywordMatch": ["Keyword cocok 1", "Keyword cocok 2"],
   "recommendations": ["Saran 1", "Saran 2"],
   "categories": {
-    "Skills": 80,
+    "TechnicalSkills": 80,
     "Experience": 75,
     "Education": 90,
     "Projects": 60,

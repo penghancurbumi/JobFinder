@@ -1,7 +1,7 @@
 import { spawn } from "child_process"
 import fs from "fs/promises"
 import path from "path"
-import { runQuery, deleteByUrls, deleteExpiredJobs, findDuplicate, deleteDuplicateJobs, deleteBadQualityJobs, isValidJobText, deleteDeadLinkJobs } from "../db.js"
+import { runQuery, deleteByUrls, deleteExpiredJobs, findDuplicate, deleteDuplicateJobs, deleteBadQualityJobs, isValidJobText, deleteDeadLinkJobs, enforceJobsCap } from "../db.js"
 
 const SCRAPY_PROJECT_DIR = path.join(process.cwd(), "scrapping-job")
 const EXPORTS_DIR = path.join(SCRAPY_PROJECT_DIR, "exports", "json")
@@ -13,8 +13,10 @@ const CLOSED_FILE = path.join(EXPORTS_DIR, "closed.txt")
 // that cannot launch from a hidden/background process (shell:false).
 const PYTHON_EXE = "C:\\Users\\Muhammad Al Fakhreza\\AppData\\Local\\Python\\bin\\python.exe"
 
-// The 7 supported platforms, scraped one at a time (round-robin) on demand.
-const PLATFORMS = ["glints", "jobstreet", "kalibrr", "kitalulus", "linkedin", "pintarnya", "techinasia"]
+// Supported platforms, scraped one at a time (round-robin) on demand.
+// LinkedIn sengaja dikeluarkan: ToS-nya paling agresif (ban IP datacenter)
+// dan datanya paling bermasalah (career-page cards, geo fuzzy-match).
+const PLATFORMS = ["glints", "jobstreet", "kalibrr", "kitalulus", "pintarnya", "techinasia"]
 // How many listing pages to paginate per scrape
 const MAX_PAGES = 1
 // Safety cap per scrape (way above realistic run time)
@@ -26,6 +28,9 @@ const EXPIRED_OPTIONS = { maxAgeDays: 90, notSeenDays: 30, notSeenMinAgeDays: 7 
 // round-robin re-scrape re-inserts still-live listings, so 2 days (> one full
 // 7-platform cycle) is safe. Override via LINK_DEAD_GRACE_DAYS in .env.
 const DEAD_LINK_GRACE_DAYS = Math.max(Number(process.env.LINK_DEAD_GRACE_DAYS) || 2, 0)
+// Hard capacity cap — pure safety valve, never reached in normal operation.
+// Override via MAX_JOBS in .env.
+const MAX_JOBS = Math.max(Number(process.env.MAX_JOBS) || 20000, 1000)
 
 // postedDate must be a real calendar date (YYYY-MM-DD). Relative strings like
 // "Terakhir diperbarui" truncated to "Terakhir d" would break date sorting and
@@ -37,6 +42,17 @@ function normalizePostedDate(raw) {
   const d = new Date(s)
   if (!isNaN(d.getTime())) return d.toISOString().substring(0, 10)
   return new Date().toISOString().substring(0, 10)
+}
+
+// Republishing full job descriptions is the shakiest part of aggregating
+// listings from other sites — store a short snippet instead. The card shows a
+// summary and the "Lamar Sekarang" button leads to the source anyway.
+const DESC_SNIPPET_CHARS = 300
+function toDescriptionSnippet(raw) {
+  const s = String(raw || "").replace(/\s+/g, " ").trim()
+  if (!s) return ""
+  if (s.length <= DESC_SNIPPET_CHARS) return s
+  return s.slice(0, DESC_SNIPPET_CHARS).trimEnd() + "…"
 }
 
 export async function insertScrapedFiles(jobTypeFilter) {
@@ -79,7 +95,13 @@ export async function insertScrapedFiles(jobTypeFilter) {
             ? await findDuplicate(item.title, item.company_name, item.location)
             : null
           if (dup) {
-            await runQuery("UPDATE jobs SET lastSeenAt = ? WHERE id = ?", [lastSeenAt, dup.id])
+            // Sighting dari scraper = bukti job masih hidup di sumbernya.
+            // Reset linkStatus agar false-positive not_found tidak tetap
+            // terkarantina sampai dihapus cleanup padahal masih eksis.
+            await runQuery(
+              "UPDATE jobs SET lastSeenAt = ?, linkStatus = NULL, linkCheckedAt = NULL WHERE id = ?",
+              [lastSeenAt, dup.id]
+            )
             skipped++
             continue
           }
@@ -97,9 +119,11 @@ export async function insertScrapedFiles(jobTypeFilter) {
           const expertise = item.skills && item.skills.length > 0 ? item.skills.slice(0, 3).join(", ") : "Others"
           const postedDate = normalizePostedDate(item.updated_at)
           
-          // Insert into SQLite, refreshing type/description/salary on duplicate URL
+          // Insert into SQLite, refreshing type/description/salary on duplicate URL.
+          // Sighting ulang juga me-reset linkStatus: scraper baru saja melihat
+          // job ini hidup, jadi penilaian link checker sebelumnya basi.
           const query = `
-            INSERT INTO jobs 
+            INSERT INTO jobs
             (title, company, location, jobType, workType, expertise, source, url, description, postedDate, deadlineDate, salary, lastSeenAt)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(url) DO UPDATE SET
@@ -108,7 +132,9 @@ export async function insertScrapedFiles(jobTypeFilter) {
               description = CASE WHEN excluded.description != '' THEN excluded.description ELSE description END,
               salary = CASE WHEN excluded.salary != '' THEN excluded.salary ELSE salary END,
               postedDate = excluded.postedDate,
-              lastSeenAt = excluded.lastSeenAt
+              lastSeenAt = excluded.lastSeenAt,
+              linkStatus = NULL,
+              linkCheckedAt = NULL
           `
           const params = [
             item.title || "Unknown Title",
@@ -119,7 +145,7 @@ export async function insertScrapedFiles(jobTypeFilter) {
             expertise,
             item.platform || "Scraper",
             item.source_url || "",
-            item.description || "",
+            toDescriptionSnippet(item.description),
             postedDate,
             null, // deadlineDate
             salary,
@@ -168,21 +194,23 @@ export async function deleteClosedJobs() {
 
 // Flag jobs that are no longer on the source platforms (404/closed) and remove
 // jobs past the age cap, absent from recent scrape cycles, exact duplicates,
-// of unclear quality (URL-as-title, non-Latin scripts), or confirmed dead
-// (404/410) by the link checker more than 7 days ago.
+// of unclear quality (URL-as-title, non-Latin scripts), confirmed dead
+// (404/410) by the link checker past the grace period, and — only if the hard
+// capacity cap is exceeded — the least-recently-seen rows.
 export async function runCleanup() {
   const removedClosed = await deleteClosedJobs()
   const removedExpired = await deleteExpiredJobs(EXPIRED_OPTIONS)
   const removedDupes = await deleteDuplicateJobs()
   const removedBad = await deleteBadQualityJobs()
   const removedDeadLinks = await deleteDeadLinkJobs(DEAD_LINK_GRACE_DAYS)
-  const total = removedClosed + removedExpired.age + removedExpired.notSeen + removedDupes + removedBad + removedDeadLinks
+  const removedCap = await enforceJobsCap(MAX_JOBS)
+  const total = removedClosed + removedExpired.age + removedExpired.notSeen + removedDupes + removedBad + removedDeadLinks + removedCap
   console.log(
     `Cleanup done: ${removedClosed} closed/not-found removed, ${removedExpired.age} age-expired, ` +
     `${removedExpired.notSeen} not-seen, ${removedDupes} duplicates, ${removedBad} unclear-quality, ` +
-    `${removedDeadLinks} dead-links (total ${total})`
+    `${removedDeadLinks} dead-links, ${removedCap} over-cap (total ${total})`
   )
-  return { removedClosed, ...removedExpired, duplicates: removedDupes, unclear: removedBad, deadLinks: removedDeadLinks, total }
+  return { removedClosed, ...removedExpired, duplicates: removedDupes, unclear: removedBad, deadLinks: removedDeadLinks, overCap: removedCap, total }
 }
 
 // Run a single category scrape, streaming per-spider progress events as they happen.

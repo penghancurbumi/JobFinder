@@ -47,7 +47,10 @@ async function startScrape() {
     return { status: "running", message: "Update data sedang berlangsung." }
   }
 
-  const platform = state?.current_platform || PLATFORMS[0]
+  let platform = state?.current_platform || PLATFORMS[0]
+  // State lama bisa berisi platform yang sudah di-drop (mis. "linkedin") —
+  // jatuhkan ke platform pertama agar round-robin tidak macet.
+  if (!PLATFORMS.includes(platform)) platform = PLATFORMS[0]
   const idx = PLATFORMS.indexOf(platform)
   isScraping = true
   const now = new Date().toISOString()
@@ -250,9 +253,11 @@ io.on("connection", async (socket) => {
   console.log("Client connected via WebSocket")
   try {
     const state = await getScrapingState()
+    let currentPlatform = state?.current_platform || PLATFORMS[0]
+    if (!PLATFORMS.includes(currentPlatform)) currentPlatform = PLATFORMS[0]
     socket.emit("scrape-status", {
       status: isScraping || state?.status === "running" ? "running" : "idle",
-      platform: state?.current_platform || PLATFORMS[0],
+      platform: currentPlatform,
       last_run_at: state?.last_run_at,
       total_jobs_scraped: state?.total_jobs_scraped,
     })
@@ -351,7 +356,8 @@ app.post("/api/jobs/check-links", async (req, res) => {
 app.get("/api/status", async (req, res) => {
   try {
     const state = await getScrapingState()
-    const platform = state?.current_platform || PLATFORMS[0]
+    let platform = state?.current_platform || PLATFORMS[0]
+    if (!PLATFORMS.includes(platform)) platform = PLATFORMS[0]
     const nextIdx = (PLATFORMS.indexOf(platform) + 1) % PLATFORMS.length
     res.json({
       platform,

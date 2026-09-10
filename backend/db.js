@@ -310,6 +310,28 @@ export async function deleteExpiredJobs({
   return { age: ageRes.changes, notSeen: notSeenRes.changes }
 }
 
+// ---- Capacity safety valve ----
+// Routine cleanups (age/not-seen/dead-links/dupes/bad-quality) keep the table
+// balanced under normal operation. This cap only guards against pathological
+// growth (MAX_PAGES raised, new platforms, ingest bug): when the table exceeds
+// maxJobs, the least-recently-seen rows are deleted first — those are the most
+// likely to be gone from their sources anyway.
+export async function enforceJobsCap(maxJobs = 20000) {
+  const row = await fetchOne("SELECT COUNT(*) AS c FROM jobs")
+  const total = row?.c || 0
+  if (total <= maxJobs) return 0
+  const overflow = total - maxJobs
+  const res = await runQuery(
+    `DELETE FROM jobs WHERE id IN (
+       SELECT id FROM jobs
+         ORDER BY COALESCE(lastSeenAt, '') ASC, id ASC
+         LIMIT ?
+     )`,
+    [overflow]
+  )
+  return res.changes
+}
+
 // ---- Data-quality cleanup ----
 // Remove rows that are exact duplicates (same title+company+location+posted
 // date+salary+deadline) keeping the most recently seen row of each group, and
