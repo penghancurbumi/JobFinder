@@ -1,16 +1,12 @@
 import "dotenv/config"
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import Groq from "groq-sdk"
 
-const MODEL = "gemini-3.5-flash"
+const MODEL = "openai/gpt-oss-120b"
 
-function getClient(systemInstruction) {
-  const apiKey = process.env.GEMINI_API_KEY
+function getClient() {
+  const apiKey = process.env.GROQ_API_KEY
   if (!apiKey || apiKey === "your_api_key_here") return null
-  const genAI = new GoogleGenerativeAI(apiKey)
-  return genAI.getGenerativeModel({
-    model: MODEL,
-    systemInstruction
-  })
+  return new Groq({ apiKey })
 }
 
 const JOB_KEYWORDS = [
@@ -214,8 +210,8 @@ Aturan:
 - JANGAN merencanakan, mendraft, atau memeriksa jawabanmu. Langsung tulis jawaban akhir.
 - INGAT: jawab LANGSUNG tanpa ada proses berpikir yang dituliskan.`
 
-  const model = getClient(SYSTEM_PROMPT)
-  if (!model) return "Asisten sedang tidak tersedia. Silakan konfigurasi GEMINI_API_KEY di .env."
+  const client = getClient()
+  if (!client) return "Asisten sedang tidak tersedia. Silakan konfigurasi GROQ_API_KEY di .env."
 
   // Sanitize history: remove markdown artifacts before feeding as context
   const sanitizedHistory = (history || []).slice(-6).map(h => ({
@@ -223,16 +219,23 @@ Aturan:
     content: h.content.replace(/\*\*/g, "")
   }))
 
-  let context = "Riwayat percakapan:\n"
-  for (const h of sanitizedHistory) {
-    context += `${h.role === "user" ? "Pengguna" : "Asisten"}: ${h.content}\n`
-  }
-  context += `\nPengguna: ${message}\nAsisten:`
+  const messages = [
+    { role: "system", content: SYSTEM_PROMPT },
+    ...sanitizedHistory.map(h => ({
+      role: h.role === "user" ? "user" : "assistant",
+      content: h.content,
+    })),
+    { role: "user", content: message },
+  ]
 
   try {
-    const result = await model.generateContent(context)
-    let rawText = result.response.text()
-    return cleanOutput(rawText.trim())
+    const completion = await client.chat.completions.create({
+      model: MODEL,
+      temperature: 0.6,
+      messages,
+    })
+    let rawText = (completion.choices?.[0]?.message?.content || "").trim()
+    return cleanOutput(rawText)
   } catch (e) {
     return `Maaf, terjadi kesalahan: ${e.message}`
   }

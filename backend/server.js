@@ -11,7 +11,6 @@ import { scrapeOnePlatform, runCleanup, PLATFORMS } from "./scrapers/index.js"
 import { analyzeCV } from "./cvAnalyzer.js"
 import { getBuilderSections, getSuggestion } from "./cvBuilder.js"
 import { chat } from "./chatbot.js"
-import { runBot } from "./telegramBot.js"
 import { EXPERTISE_AREAS } from "./constants.js"
 import { fetchAll, fetchOne, runQuery, getJobsCache, loadJobsCache, refreshJobsCache, getScrapingState, updateScrapingState, getJobsToCheck, updateLinkStatus, getLinkCheckStats, deleteDeadLinkJobs } from "./db.js"
 import { checkJobsBatch } from "./linkChecker.js"
@@ -470,7 +469,6 @@ httpServer.listen(PORT, '0.0.0.0', async () => {
     console.error("Failed to load jobs cache:", e.message)
   }
   console.log(`Backend running on http://0.0.0.0:${PORT}`)
-  runBot()
 
   // ── Auto-cleanup harian ──────────────────────────────────────────────────
   // Hanya MENGHAPUS data kadaluarsa/tidak aktif — TIDAK menambah data baru.

@@ -1,13 +1,12 @@
 import "dotenv/config"
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import Groq from "groq-sdk"
 
-const MODEL = "gemini-3.5-flash"
+const MODEL = "openai/gpt-oss-120b"
 
-function getClient(systemInstruction) {
-  const apiKey = process.env.GEMINI_API_KEY
+function getClient() {
+  const apiKey = process.env.GROQ_API_KEY
   if (!apiKey || apiKey === "your_api_key_here") return null
-  const genAI = new GoogleGenerativeAI(apiKey)
-  return genAI.getGenerativeModel({ model: MODEL, systemInstruction })
+  return new Groq({ apiKey })
 }
 
 // Normalisasi teks PDF: collapse spasi ganda, hapus karakter aneh
@@ -27,10 +26,12 @@ export async function analyzeCV(cvText, expertise = "") {
 
   // Selalu analisis dengan AI, tidak pernah blacklist
   const contextStr = expertise ? `di bidang ${expertise}` : "secara profesional dan rekrutmen industri"
-  const model = getClient(`Kamu adalah AI agent handal yang ahli dalam merekrut, menganalisis CV, dan menilai kecocokan karier kandidat ${contextStr}. Jawab dalam bahasa Indonesia. Jangan gunakan asterisks (**) untuk bold. Jangan tampilkan proses berpikirmu.`)
-  if (!model) {
+  const client = getClient()
+  if (!client) {
     return { ats: atsResult, eligible: true, analysis: "AI analysis unavailable (API key not configured)." }
   }
+
+  const systemInstruction = `Kamu adalah AI agent handal yang ahli dalam merekrut, menganalisis CV, dan menilai kecocokan karier kandidat ${contextStr}. Jawab dalam bahasa Indonesia. Jangan gunakan asterisks (**) untuk bold. Jangan tampilkan proses berpikirmu.`
 
   const promptExpertise = expertise ? `untuk posisi/bidang ${expertise}` : `secara menyeluruh berdasarkan profil dan keahlian pada CV`
   const prompt = `Analisis CV berikut ${promptExpertise}.
@@ -60,8 +61,16 @@ CV Text:
 ${normalizedText.slice(0, 3000)}`
 
   try {
-    const result = await model.generateContent(prompt)
-    let analysisStr = result.response.text()
+    const completion = await client.chat.completions.create({
+      model: MODEL,
+      temperature: 0.3,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: systemInstruction },
+        { role: "user", content: prompt },
+      ],
+    })
+    let analysisStr = completion.choices?.[0]?.message?.content || ""
     // Bersihkan dari markdown jika ada
     analysisStr = analysisStr.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
     const analysisObj = JSON.parse(analysisStr)

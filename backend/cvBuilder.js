@@ -1,13 +1,12 @@
 import "dotenv/config"
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import Groq from "groq-sdk"
 
-const MODEL = "gemini-3.5-flash"
+const MODEL = "openai/gpt-oss-120b"
 
 function getClient() {
-  const apiKey = process.env.GEMINI_API_KEY
+  const apiKey = process.env.GROQ_API_KEY
   if (!apiKey || apiKey === "your_api_key_here") return null
-  const genAI = new GoogleGenerativeAI(apiKey)
-  return genAI.getGenerativeModel({ model: MODEL })
+  return new Groq({ apiKey })
 }
 
 export const CV_SECTIONS = [
@@ -46,8 +45,8 @@ export const CV_SECTIONS = [
 ]
 
 export async function getSuggestion(fieldLabel, expertise) {
-  const model = getClient()
-  if (!model) {
+  const client = getClient()
+  if (!client) {
     return `Tip for ${fieldLabel}: Be specific, use keywords relevant to ${expertise}, and include measurable achievements.`
   }
 
@@ -56,8 +55,12 @@ export async function getSuggestion(fieldLabel, expertise) {
 Keep it concise and practical. Example: "Use action verbs like 'developed' and 'implemented'. Include numbers, e.g., 'Reduced load time by 30%'."`
 
   try {
-    const result = await model.generateContent(prompt)
-    return result.response.text().trim()
+    const completion = await client.chat.completions.create({
+      model: MODEL,
+      temperature: 0.5,
+      messages: [{ role: "user", content: prompt }],
+    })
+    return (completion.choices?.[0]?.message?.content || "").trim()
   } catch {
     return `Tip: Be specific and relevant to ${expertise}.`
   }
