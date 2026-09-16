@@ -8,6 +8,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", "sans-serif"],
+        mono: ["IBM Plex Sans", "sans-serif"],
         "american-oak": ["AmericanOak-Script", "cursive"],
         "american-oak-serif": ["AmericanOak-Serif", "serif"],
         "instrument-serif": ["Instrument Serif", "serif"],

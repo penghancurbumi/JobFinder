@@ -91,32 +91,6 @@
           </div>
         </div>
       </section>
-      
-      <section class="bg-surface-elevated rounded-[20px] p-xxl mb-xl">
-        <div class="flex items-center gap-md mb-lg pb-md border-b border-hairline-dark">
-          <span class="w-[40px] h-[40px] rounded-[10px] bg-primary/10 text-primary flex items-center justify-center">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-          </span>
-          <h2 class="text-[20px] font-medium leading-[1.4] m-0 text-on-dark">Telegram Bot Guide</h2>
-        </div>
-        <div>
-          <div class="mb-lg last:mb-0">
-            <h3 class="font-medium mb-xs text-[16px] text-on-dark">How to Use Telegram Bot</h3>
-            <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute">Search for our JobFinderBot on Telegram and start a chat. The bot provides quick access to job search, AI chat, CV tips, and the latest job updates — all without leaving Telegram.</p>
-          </div>
-          <div class="mb-lg last:mb-0">
-            <h3 class="font-medium mb-xs text-[16px] text-on-dark">Available Commands</h3>
-            <ul class="text-[14px] font-normal leading-[1.5] text-on-dark-mute pl-[20px] mt-[8px] list-disc">
-              <li class="mb-[4px]"><code>/start</code> — Start the bot</li>
-              <li class="mb-[4px]"><code>/search &lt;keyword&gt;</code> — Search for jobs by keyword</li>
-              <li class="mb-[4px]"><code>/chat</code> — Enter chat mode with AI Career Assistant</li>
-              <li class="mb-[4px]"><code>/cv</code> — Get CV writing tips</li>
-              <li class="mb-[4px]"><code>/jobs</code> — Browse job listings</li>
-              <li class="mb-[4px]"><code>/help</code> — Show help information</li>
-            </ul>
-          </div>
-        </div>
-      </section>
 
     </div>
   </div>
