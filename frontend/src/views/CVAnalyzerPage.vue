@@ -527,7 +527,7 @@ const analysisCategories = computed(() => {
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, Title, CategoryScale, LinearScale, ArcElement)
 
 
-const file = ref({ name: 'Contoh_CV_Development.pdf', size: 145200 })
+const file = ref(null)
 const analyzing = ref(false)
 
 // Mock data untuk keperluan development & preview styling (ganti ke null saat production)
@@ -568,7 +568,11 @@ const mockResult = {
   }
 }
 
-const result = ref(mockResult)
+// Production: mulai tanpa hasil (kosong) sampai user mengunggah & analisis CV.
+// Development: set VITE_USE_CV_MOCK=true di frontend/.env untuk melihat hasil
+// contoh (mockResult) saat menyetel styling tanpa perlu upload PDF.
+const USE_CV_MOCK = import.meta.env.VITE_USE_CV_MOCK === 'true'
+const result = ref(USE_CV_MOCK ? mockResult : null)
 
 // Persentase ATS yang bergerak dari 0 � dipakai untuk mengisi progress bar,
 // agar bar bergerak berbarengan dengan angka count-up (satu sumber animasi).
