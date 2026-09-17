@@ -71,11 +71,13 @@ services:
   cloudflared:
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
-    command: tunnel --no-autoupdate run
-    environment:
-      # Token didapat dari: Cloudflare Zero Trust > Networks > Tunnels > (buat) >
-      # pilih Docker > copy token. Isi di file .env root (lihat deploy.md).
-      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    # Pakai credentials file + config.yml (bukan token), hasil `tunnel login` &
+    # `tunnel create`. Folder ~/.cloudflared di-host di-mount read-only.
+    # CLOUDFLARED_DIR diisi di .env root (path absolut, Compose tidak expand ~):
+    #   CLOUDFLARED_DIR=/home/<user>/.cloudflared
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes:
+      - ${CLOUDFLARED_DIR:?set CLOUDFLARED_DIR in .env}:/etc/cloudflared:ro
     depends_on:
       - frontend
     mem_limit: 128m
