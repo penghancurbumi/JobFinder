@@ -1,0 +1,39 @@
+# ---- Node ----
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# ---- Env & secrets (JANGAN pernah di-commit) ----
+.env
+.env.local
+.env.*.local
+backend/.env
+backend/scrapping-job/.env
+!**/.env.example
+
+# ---- SQLite runtime database ----
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# ---- Frontend build output ----
+frontend/dist/
+
+# ---- Scraping runtime artifacts ----
+backend/scrapping-job/exports/json/*.json
+backend/scrapping-job/exports/json/archive/
+backend/scrapping-job/**/__pycache__/
+backend/scrapping-job/**/*.pyc
+backend/scrapping-job/logs/
+backend/scrapping-job/storage/
+
+# ---- Logs ----
+*.log
+backend/*.log
+
+# ---- OS / IDE ----
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

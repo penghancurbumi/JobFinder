@@ -1,0 +1,92 @@
+# =============================================================================
+# JobFinder — production stack (VPS laptop, RAM 4GB)
+# -----------------------------------------------------------------------------
+# Services:
+#   backend     : Node (Express + Socket.io) + Python (Scrapy + Playwright)
+#   frontend    : Vue build served by nginx, sekaligus reverse proxy /api & /socket.io
+#   cloudflared : Cloudflare Tunnel -> expose frontend ke internet publik (HTTPS)
+#
+# Menjalankan:  docker compose up -d --build
+# =============================================================================
+
+services:
+  backend:
+    build:
+      context: ./backend
+    image: jobfinder-backend:latest
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      PYTHON_EXE: python3
+      NODE_OPTIONS: --max-old-space-size=384
+
+      # --- Tuning untuk RAM 4GB: perlambat jadwal agar mesin tidak babak belur
+      AUTO_SCRAPE_INTERVAL_HOURS: "12"
+      AUTO_LINK_CHECK_HOURS: "12"
+      MAX_JOBS: "20000"
+
+      # SQLite disimpan di volume (db.js membaca DB_PATH)
+      DB_PATH: /data/jobs.sqlite
+
+      # Batasi concurrency Scrapy (default 8 -> turunkan untuk CPU 2-core)
+      CONCURRENT_REQUESTS: "4"
+      CONCURRENT_REQUESTS_PER_DOMAIN: "2"
+      DOWNLOAD_DELAY: "1.5"
+    volumes:
+      # SQLite persistent (db.js: DB_PATH=/data/jobs.sqlite)
+      - backend-data:/data
+      # Export JSON scrapy (scrapers/index.js: process.cwd()/scrapping-job/exports)
+      - scraper-exports:/app/scrapping-job/exports
+    # Hard limit: backend + Chromium jangan lebih dari 2GB
+    mem_limit: 2g
+    memswap_limit: 2g
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+    networks:
+      - jobfinder
+    # Tidak expose ke host — hanya diakses lewat nginx
+    expose:
+      - "3000"
+
+  frontend:
+    build:
+      context: ./frontend
+    image: jobfinder-frontend:latest
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      # Hanya localhost: cloudflared yang mengaksesnya, port tidak dibuka ke LAN
+      - "127.0.0.1:8080:80"
+    mem_limit: 128m
+    memswap_limit: 128m
+    networks:
+      - jobfinder
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      # Token didapat dari: Cloudflare Zero Trust > Networks > Tunnels > (buat) >
+      # pilih Docker > copy token. Isi di file .env root (lihat deploy.md).
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    depends_on:
+      - frontend
+    mem_limit: 128m
+    memswap_limit: 128m
+    networks:
+      - jobfinder
+
+networks:
+  jobfinder:
+    driver: bridge
+
+volumes:
+  backend-data:
+  scraper-exports:

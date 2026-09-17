@@ -1,0 +1,15 @@
+# Pastikan file yang dipakai Linux/Docker punya line-ending LF (bukan CRLF),
+# meskipun repo ini dikerjakan di Windows.
+* text=auto
+
+# Script & config yang harus LF
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+*.conf text eol=lf
+.env.example text eol=lf
+
+# File yang boleh CRLF (Windows-native)
+*.bat text eol=crlf
+*.cmd text eol=crlf

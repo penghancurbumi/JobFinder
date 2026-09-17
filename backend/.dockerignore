@@ -1,0 +1,28 @@
+node_modules
+npm-debug.log*
+*.log
+.env
+.env.*
+!.env.example
+
+# SQLite runtime data (dipasang lewat volume di production)
+jobs.sqlite
+jobs.sqlite-shm
+jobs.sqlite-wal
+
+# Scraping runtime artifacts
+scrapping-job/exports/json/*.json
+scrapping-job/exports/json/archive
+scrapping-job/**/__pycache__
+scrapping-job/**/*.pyc
+scrapping-job/logs
+scrapping-job/storage
+
+# Dev/test leftovers
+check_jobs.mjs
+verify_filter.cjs
+spawn_test.cjs
+.git
+.gitignore
+Dockerfile
+.dockerignore

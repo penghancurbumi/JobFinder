@@ -9,9 +9,16 @@ const ARCHIVE_DIR = path.join(EXPORTS_DIR, "archive")
 const NOT_FOUND_FILE = path.join(EXPORTS_DIR, "not_found.txt")
 const CLOSED_FILE = path.join(EXPORTS_DIR, "closed.txt")
 
-// Real Python interpreter. The `python` on PATH is the Windows Store alias stub
-// that cannot launch from a hidden/background process (shell:false).
-const PYTHON_EXE = "C:\\Users\\Muhammad Al Fakhreza\\AppData\\Local\\Python\\bin\\python.exe"
+// Real Python interpreter. On Windows the `python` on PATH is often the
+// Microsoft Store alias stub which cannot launch from a background/hidden
+// process (shell:false), so an absolute path may be needed there. On Linux
+// (Ubuntu server/VPS) the interpreter is `python3`. Override with the
+// PYTHON_EXE env var in production/containers.
+const PYTHON_EXE =
+  process.env.PYTHON_EXE ||
+  (process.platform === "win32"
+    ? "C:\\Users\\Muhammad Al Fakhreza\\AppData\\Local\\Python\\bin\\python.exe"
+    : "python3")
 
 // Supported platforms, scraped one at a time (round-robin) on demand.
 // LinkedIn sengaja dikeluarkan: ToS-nya paling agresif (ban IP datacenter)
@@ -218,12 +225,11 @@ function runCategory(cmd, category, onProgress) {
   return new Promise((resolve) => {
     let child
     try {
-      // Windows: `python` in PATH is the Microsoft Store alias stub which fails to
-      // launch from a background/hidden process with shell:false. Use the real
-      // interpreter explicitly (fall back to PATH resolution if it is absent).
-      const exe = PYTHON_EXE || "python"
+      // Use the resolved interpreter explicitly (Windows Store stub workaround /
+      // Linux `python3`). cmd starts with "python" — replace the token with the
+      // real interpreter and keep the remaining args untouched.
       const args = cmd.split(/\s+/).slice(1)
-      child = spawn(exe, args, { cwd: SCRAPY_PROJECT_DIR, shell: false })
+      child = spawn(PYTHON_EXE, args, { cwd: SCRAPY_PROJECT_DIR, shell: false })
     } catch (e) {
       console.error(`Failed to start scrape for ${category}:`, e.message)
       return resolve()
@@ -297,6 +303,7 @@ export async function scrapeOnePlatform(platform, index, total, onProgress) {
   console.log(`Scraping platform: ${platform} (${index}/${total})...`)
 
   const cmd = `python -m scrapy crawl ${platform} -a max_pages=${MAX_PAGES}`
+  // note: cmd's "python" token is replaced by PYTHON_EXE inside runCategory()
   const run = await runCategory(cmd, platform, (evt) => {
     if (evt.spider) {
       onProgress?.({ status: "platform-spider", platform, spider: evt.spider, done: evt.status === "done", items: evt.items, message: evt.message })
