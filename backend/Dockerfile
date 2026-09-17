@@ -48,12 +48,14 @@ RUN python3 -m playwright install --with-deps chromium && rm -rf /var/lib/apt/li
 # --- Node deps (layer terpisah supaya caching efisien)
 WORKDIR /app
 COPY package*.json ./
-# Paksa sqlite3 build dari sumber di dalam container ini. Prebuilt binary-nya
-# dibangun di runner glibc baru (2.38) sehingga tidak bisa dimuat di bookworm
-# (glibc 2.36) -> ERR_DLOPEN_FAILED "version GLIBC_2.38 not found".
-ENV npm_config_build_from_source=true
-RUN npm ci --omit=dev
-# Matikan lagi agar tidak mempengaruhi operasi npm lain di runtime
+# sqlite3 mengunduh prebuilt binary dari GitHub Release yang dibangun di runner
+# glibc baru (2.38) sehingga gagal dimuat di node:20-bookworm (glibc 2.36):
+#   ERR_DLOPEN_FAILED libm.so.6: version GLIBC_2.38 not found
+# Paksa kompilasi dari sumber melawan glibc milik image ini.
+#   - npm_config_build_from_source : dibaca npm saat install
+#   - npm_config_build_from_source=true juga menonaktifkan prebuild-install
+RUN npm ci --omit=dev --build-from-source \
+    && node -e "require('sqlite3'); console.log('sqlite3 OK di container ini')"
 ENV npm_config_build_from_source=
 
 # --- App source
