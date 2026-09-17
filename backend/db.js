@@ -13,14 +13,20 @@ const dbPath = process.env.DB_PATH
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Error opening SQLite database:', err.message)
-  } else {
-    console.log('Connected to SQLite database.')
+    return
+  }
 
+  console.log('Connected to SQLite database.')
+
+  // db.serialize() menjamin semua statement di bawah dijalankan BERURUTAN
+  // (bukan paralel). Tanpa ini, CREATE INDEX/ALTER TABLE bisa dieksekusi
+  // sebelum CREATE TABLE selesai -> "no such table: main.jobs" pada DB baru.
+  db.serialize(() => {
     // Performance tuning: WAL allows concurrent reads/writes, NORMAL speeds up commits
-    db.run("PRAGMA journal_mode = WAL", () => {})
-    db.run("PRAGMA synchronous = NORMAL", () => {})
-    db.run("PRAGMA cache_size = -16000", () => {})
-    db.run("PRAGMA mmap_size = 268435456", () => {})
+    db.run("PRAGMA journal_mode = WAL")
+    db.run("PRAGMA synchronous = NORMAL")
+    db.run("PRAGMA cache_size = -16000")
+    db.run("PRAGMA mmap_size = 268435456")
 
     // Create jobs table if it doesn't exist
     db.run(`
@@ -44,39 +50,37 @@ const db = new sqlite3.Database(dbPath, (err) => {
     })
 
     // Add workType column if missing (migration for existing DBs)
-    db.run("ALTER TABLE jobs ADD COLUMN workType TEXT", () => {})
+    db.run("ALTER TABLE jobs ADD COLUMN workType TEXT")
 
     // Add lastSeenAt for expired-job pruning (migration for existing DBs).
     // Backfill so existing rows are treated as "seen just now" (prevents an
     // immediate mass-delete on the first cleanup after upgrade).
-    db.run("ALTER TABLE jobs ADD COLUMN lastSeenAt TEXT", () => {})
-    db.run("UPDATE jobs SET lastSeenAt = ? WHERE lastSeenAt IS NULL", [new Date().toISOString()], () => {})
+    db.run("ALTER TABLE jobs ADD COLUMN lastSeenAt TEXT")
+    db.run("UPDATE jobs SET lastSeenAt = ? WHERE lastSeenAt IS NULL", [new Date().toISOString()])
 
     // Link-health tracking: verifies stored URLs still resolve (not 404/410).
     // NULL linkStatus = never checked. linkCheckedAt drives re-check staleness.
-    db.run("ALTER TABLE jobs ADD COLUMN linkStatus TEXT", () => {})
-    db.run("ALTER TABLE jobs ADD COLUMN linkCheckedAt TEXT", () => {})
-    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_linkstatus ON jobs(linkStatus)", () => {})
+    db.run("ALTER TABLE jobs ADD COLUMN linkStatus TEXT")
+    db.run("ALTER TABLE jobs ADD COLUMN linkCheckedAt TEXT")
+    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_linkstatus ON jobs(linkStatus)")
 
     // Remove the discontinued closed-listing markers (isClosed/closedAt) from
     // databases created during the "mark-closed" iteration. The index must be
     // dropped first, otherwise ALTER TABLE ... DROP COLUMN fails. Errors are
     // ignored: on a fresh DB the columns never existed.
-    db.run("DROP INDEX IF EXISTS idx_jobs_closed", () => {
-      db.run("ALTER TABLE jobs DROP COLUMN isClosed", () => {
-        db.run("ALTER TABLE jobs DROP COLUMN closedAt", () => {})
-      })
-    })
+    db.run("DROP INDEX IF EXISTS idx_jobs_closed")
+    db.run("ALTER TABLE jobs DROP COLUMN isClosed")
+    db.run("ALTER TABLE jobs DROP COLUMN closedAt")
 
     // Indexes for the most common filters/ordering
     db.run("CREATE INDEX IF NOT EXISTS idx_jobs_posted ON jobs(postedDate DESC, id DESC)", (err) => {
       if (err) console.error('Error creating index:', err.message)
     })
-    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_source ON jobs(source)", () => {})
-    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_jobtype ON jobs(jobType)", () => {})
-    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_worktype ON jobs(workType)", () => {})
-    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_company ON jobs(company)", () => {})
-    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_lastseen ON jobs(lastSeenAt)", () => {})
+    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_source ON jobs(source)")
+    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_jobtype ON jobs(jobType)")
+    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_worktype ON jobs(workType)")
+    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_company ON jobs(company)")
+    db.run("CREATE INDEX IF NOT EXISTS idx_jobs_lastseen ON jobs(lastSeenAt)")
 
     db.run(`
       CREATE TABLE IF NOT EXISTS chat_sessions (
@@ -106,10 +110,9 @@ const db = new sqlite3.Database(dbPath, (err) => {
       if (err) console.error('Error creating scraping_state table:', err.message)
     })
     db.run(
-      `INSERT OR IGNORE INTO scraping_state (id, current_platform, status) VALUES (1, 'jobstreet', 'idle')`,
-      () => {}
+      `INSERT OR IGNORE INTO scraping_state (id, current_platform, status) VALUES (1, 'jobstreet', 'idle')`
     )
-  }
+  })
 })
 
 // Promisified helper functions
