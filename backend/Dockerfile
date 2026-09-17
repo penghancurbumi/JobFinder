@@ -51,11 +51,13 @@ COPY package*.json ./
 # sqlite3 mengunduh prebuilt binary dari GitHub Release yang dibangun di runner
 # glibc baru (2.38) sehingga gagal dimuat di node:20-bookworm (glibc 2.36):
 #   ERR_DLOPEN_FAILED libm.so.6: version GLIBC_2.38 not found
-# Paksa kompilasi dari sumber melawan glibc milik image ini.
-#   - npm_config_build_from_source : dibaca npm saat install
-#   - npm_config_build_from_source=true juga menonaktifkan prebuild-install
+# Paksa kompilasi dari sumber melawan glibc milik image ini:
+#   - npm_config_build_from_source=true : dibaca npm & node-gyp
+#   - npm_config_build_from_source juga menonaktifkan prebuild-install
+ENV npm_config_build_from_source=true
 RUN npm ci --omit=dev --build-from-source \
     && node -e "require('sqlite3'); console.log('sqlite3 OK di container ini')"
+# Matikan lagi agar tidak mempengaruhi operasi npm lain di runtime
 ENV npm_config_build_from_source=
 
 # --- App source
