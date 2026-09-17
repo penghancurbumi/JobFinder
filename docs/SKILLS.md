@@ -1,6 +1,6 @@
 # AI Skills Documentation
 
-**Project Name:** JobFinder
+**Project Name:** BidikKerja
 
 **Version:** 2.0
 
@@ -14,7 +14,7 @@
 
 ## Deskripsi
 
-Dokumen ini mendefinisikan seluruh AI Skill yang digunakan selama proses pengembangan platform JobFinder.
+Dokumen ini mendefinisikan seluruh AI Skill yang digunakan selama proses pengembangan platform BidikKerja.
 
 Tujuan utama dokumen ini adalah memberikan standar penggunaan skill sehingga seluruh AI Agent, developer, dan kontributor menghasilkan implementasi yang konsisten, terdokumentasi, dan sesuai dengan kebutuhan proyek.
 
@@ -265,7 +265,7 @@ Ketika menemukan masalah yang belum diketahui, AI harus:
 - Melakukan analisis terlebih dahulu.
 - Mencari referensi resmi.
 - Membandingkan beberapa solusi.
-- Memilih solusi yang paling sesuai dengan arsitektur JobFinder.
+- Memilih solusi yang paling sesuai dengan arsitektur BidikKerja.
 
 ---
 
@@ -323,6 +323,6 @@ AI Agent tidak diperbolehkan:
 
 # Penutup
 
-Dokumen ini menjadi standar penggunaan AI Skill dalam pengembangan JobFinder.
+Dokumen ini menjadi standar penggunaan AI Skill dalam pengembangan BidikKerja.
 
 Seluruh AI Agent dan developer diharapkan mengikuti panduan ini agar proses pengembangan berlangsung secara konsisten, efisien, dan sesuai dengan tujuan proyek.

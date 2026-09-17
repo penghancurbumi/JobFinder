@@ -1,10 +1,10 @@
-# JobFinder
+# BidikKerja
 
 ## Overview
 
-JobFinder adalah platform agregator pencarian kerja dan magang berbasis web yang dirancang khusus untuk pasar Indonesia. Platform ini mengumpulkan lowongan pekerjaan dari berbagai website penyedia lowongan sehingga pengguna tidak perlu membuka banyak platform secara terpisah.
+BidikKerja adalah platform agregator pencarian kerja dan magang berbasis web yang dirancang khusus untuk pasar Indonesia. Platform ini mengumpulkan lowongan pekerjaan dari berbagai website penyedia lowongan sehingga pengguna tidak perlu membuka banyak platform secara terpisah.
 
-Selain sebagai mesin pencari lowongan kerja, JobFinder juga menyediakan berbagai fitur berbasis Artificial Intelligence (AI) untuk membantu pengguna mempersiapkan karier, seperti analisis CV berbasis ATS, pembuat CV interaktif, chatbot karier, serta integrasi Telegram Bot.
+Selain sebagai mesin pencari lowongan kerja, BidikKerja juga menyediakan berbagai fitur berbasis Artificial Intelligence (AI) untuk membantu pengguna mempersiapkan karier, seperti analisis CV berbasis ATS, pembuat CV interaktif, chatbot karier, serta integrasi Telegram Bot.
 
 Platform dikembangkan menggunakan arsitektur terpisah (Frontend, Backend, dan Scraping Service) sehingga mudah dikembangkan dan dipelihara.
 
@@ -12,7 +12,7 @@ Platform dikembangkan menggunakan arsitektur terpisah (Frontend, Backend, dan Sc
 
 # Tujuan Platform
 
-JobFinder dibuat untuk membantu pencari kerja memperoleh informasi lowongan secara lebih cepat, lengkap, dan terpusat.
+BidikKerja dibuat untuk membantu pencari kerja memperoleh informasi lowongan secara lebih cepat, lengkap, dan terpusat.
 
 Tujuan utama platform meliputi:
 
@@ -121,7 +121,7 @@ Chatbot berbasis Google Gemini yang dapat membantu pengguna:
 * Memberikan saran karier.
 * Menjelaskan posisi pekerjaan.
 * Memberikan tips wawancara.
-* Memberikan rekomendasi pekerjaan dari database JobFinder.
+* Memberikan rekomendasi pekerjaan dari database BidikKerja.
 * Menjawab pertanyaan mengenai CV.
 
 ---
@@ -316,7 +316,7 @@ Beberapa pengembangan yang direncanakan:
 
 # Kontribusi
 
-Kontribusi terhadap pengembangan JobFinder sangat terbuka.
+Kontribusi terhadap pengembangan BidikKerja sangat terbuka.
 
 Sebelum melakukan perubahan kode, pastikan membaca:
 

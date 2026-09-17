@@ -302,10 +302,10 @@ import ClassicATSTemplate from '@/components/cv-templates/ClassicATSTemplate.vue
 import ExecutiveATSTemplate from '@/components/cv-templates/ExecutiveATSTemplate.vue'
 
 useHead({
-  title: 'Pembuat CV ATS-Friendly — JobFinder',
+  title: 'Pembuat CV ATS-Friendly — BidikKerja',
   meta: [
     { name: 'description', content: 'Buat CV profesional berstandar ATS langkah demi langkah dengan panduan asisten AI. Template minimalis yang dioptimalkan untuk sistem perekrutan otomatis di Indonesia.' },
-    { property: 'og:title', content: 'Pembuat CV ATS-Friendly — JobFinder' },
+    { property: 'og:title', content: 'Pembuat CV ATS-Friendly — BidikKerja' },
     { property: 'og:description', content: 'Buat CV ATS-friendly dengan panduan AI. Template profesional dan siap lamar.' },
   ]
 })
@@ -569,7 +569,7 @@ function buildPdfFilename() {
   const custom = customFileName.value.trim()
   if (custom) return sanitizeFilename(custom).replace(/\.pdf$/i, '') + '.pdf'
   const name = previewTemplateRef.value?.formData?.full_name || templateRef.value?.formData?.full_name || ''
-  return (name ? 'CV-' + sanitizeFilename(name) : 'CV-JobFinder') + '.pdf'
+  return (name ? 'CV-' + sanitizeFilename(name) : 'CV-BidikKerja') + '.pdf'
 }
 
 async function downloadPDF() {
@@ -650,9 +650,9 @@ onMounted(async () => {
   } catch { }
   fetchGoogleFonts()
 
-  const savedTemplate = localStorage.getItem('jobfinder_cv_template_v2')
+  const savedTemplate = localStorage.getItem('bidikkerja_cv_template_v2')
   if (savedTemplate) selectedTemplate.value = savedTemplate
-  const savedMaxStep = localStorage.getItem('jobfinder_cv_maxStep_v2')
+  const savedMaxStep = localStorage.getItem('bidikkerja_cv_maxStep_v2')
   if (savedMaxStep) { try { maxStepReached.value = parseInt(savedMaxStep) || 0 } catch { } }
 
   await nextTick()
@@ -668,11 +668,11 @@ onBeforeUnmount(() => {
 })
 
 watch(selectedTemplate, val => {
-  localStorage.setItem('jobfinder_cv_template_v2', val)
+  localStorage.setItem('bidikkerja_cv_template_v2', val)
   currentStep.value = 0; maxStepReached.value = 0; analysisResult.value = null
 })
 
-watch(maxStepReached, val => localStorage.setItem('jobfinder_cv_maxStep_v2', val.toString()))
+watch(maxStepReached, val => localStorage.setItem('bidikkerja_cv_maxStep_v2', val.toString()))
 
 watch(currentStep, async () => {
   await nextTick()

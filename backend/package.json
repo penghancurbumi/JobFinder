@@ -1,5 +1,5 @@
 {
-  "name": "intern-job-finder-backend",
+  "name": "bidikkerja-backend",
   "type": "module",
   "scripts": {
     "start": "node server.js",

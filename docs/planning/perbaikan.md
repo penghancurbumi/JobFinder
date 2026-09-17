@@ -1,4 +1,4 @@
-Perbaikan Platform JobFinder
+Perbaikan Platform BidikKerja
 
 1. Aplikasi yang di gunakan untuk scrapping baru 3 : Jobstreet, kalibrr,techinasia
 2. data scrapping dari plaform pencarian job hanya mengambil 1 halaman saja dari plaform tersebut max_pages=1
@@ -14,6 +14,6 @@ Perbaikan Platform JobFinder
     - caveman
     - ponytail
     - dan yang lainnya
-11. tambahkan design.md untuk design dari platform jobfinder dengan menggunakan getdesign.md, tasteskill untuk tampilan nya 
+11. tambahkan design.md untuk design dari platform BidikKerja dengan menggunakan getdesign.md, tasteskill untuk tampilan nya 
 12. setiap user kehalaman /jobs selalu melakukan scrapping ke website harus nya scapping di lakukan pada saat user melakukan reload halaman dan juga menklik button perbarui data 
 

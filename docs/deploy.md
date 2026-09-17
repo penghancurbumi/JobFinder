@@ -1,4 +1,4 @@
-# Deploy JobFinder ke VPS Laptop (Ubuntu, RAM 4GB) + Cloudflare Tunnel
+# Deploy BidikKerja ke VPS Laptop (Ubuntu, RAM 4GB) + Cloudflare Tunnel
 
 Panduan langkah demi langkah dari nol sampai live publik.
 Arsitektur: **backend (Node+Python) + frontend/nginx + cloudflared** dalam 3 container.
@@ -80,18 +80,18 @@ MAX_JOBS=20000
 ## 4. (Sekali saja) Buat Cloudflare Tunnel & ambil token
 
 1. Buka https://one.dash.cloudflare.com → **Networks → Tunnels → Create a tunnel**.
-2. Pilih **Cloudflared**, beri nama (mis. `jobfinder`).
+2. Pilih **Cloudflared**, beri nama (mis. `bidikkerja`).
 3. Pilih environment **Docker**. Cloudflare menampilkan perintah seperti:
    ```
    cloudflared service install eyJhIjoi...panjang...token
    ```
    Copy nilai token panjang itu (setelah `install`).
 4. Di tab **Public Hostname**, klik **Add a public hostname**:
-   - **Subdomain**: `jobfinder` (atau `www`)
+   - **Subdomain**: `bidikkerja` (atau `www`)
    - **Domain**: domainmu
    - **Service Type**: `HTTP`
    - **URL**: `frontend:80`   ← nama service docker-compose + port container
-5. Save. Nanti `https://jobfinder.domainmu.com` otomatis mengarah ke container.
+5. Save. Nanti `https://bidikkerja.domainmu.com` otomatis mengarah ke container.
 
 ---
 
@@ -137,7 +137,7 @@ curl -I http://127.0.0.1:8080/healthz    # harus 200 ok
 
 ## 7. Uji dari luar
 
-Buka di browser: `https://jobfinder.domainmu.com`
+Buka di browser: `https://bidikkerja.domainmu.com`
 
 Cloudflare otomatis memberi HTTPS + sertifikat. Uji juga tombol **Perbarui Data**
 (trigger scraping) dan fitur AI (butuh `GROQ_API_KEY` benar).
@@ -197,7 +197,7 @@ crontab -e
 ## 10. Monitoring & kesehatan
 
 - **Cloudflare dashboard** → Tunnel status (connected/down).
-- **Uptime Kuma** (opsional, container kecil) untuk alert kalau `https://jobfinder.domainmu.com/healthz` down.
+- **Uptime Kuma** (opsional, container kecil) untuk alert kalau `https://bidikkerja.domainmu.com/healthz` down.
 - Cek disk: `df -h` — SQLite + exports akan tumbuh. `MAX_JOBS=20000` membatasi jumlah job.
 - Cek suhu laptop: `sudo apt install lm-sensors && sensors` (laptop tua 24/7 rawan panas).
 

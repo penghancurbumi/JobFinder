@@ -96,7 +96,7 @@
       <div class="w-full mx-auto px-[32px] md:px-[72px]">
         <div class="mb-xxl">
           <span class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-lg block">Panduan</span>
-          <h2 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark">Mulai dengan JobFinder</h2>
+          <h2 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark">Mulai dengan BidikKerja</h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-xl">
           <div class="bg-surface-elevated rounded-[20px] p-xxl flex flex-col border border-hairline-dark shadow-sm">
@@ -128,13 +128,13 @@ import { ref, onMounted } from "vue"
 import { useHead } from "@vueuse/head"
 
 useHead({
-  title: 'JobFinder — Temukan Karier Masa Depanmu',
+  title: 'BidikKerja — Temukan Karier Masa Depanmu',
   meta: [
     {
       name: 'description',
       content: 'Platform agregasi lowongan kerja dan magang terlengkap di Indonesia. Temukan ribuan peluang dari LinkedIn, Glints, Jobstreet, dan sumber terpercaya lainnya — dilengkapi analisis CV berbasis AI dan pembuat CV ATS-friendly.'
     },
-    { property: 'og:title', content: 'JobFinder — Temukan Karier Masa Depanmu' },
+    { property: 'og:title', content: 'BidikKerja — Temukan Karier Masa Depanmu' },
     { property: 'og:description', content: 'Agregasi lowongan kerja dan magang dari seluruh sumber terpercaya Indonesia, lengkap dengan analisis CV AI dan pembuat dokumen ATS.' },
   ]
 })

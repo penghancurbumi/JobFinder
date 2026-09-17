@@ -1,6 +1,6 @@
 # AI Agent Configuration
 
-**Project:** JobFinder
+**Project:** BidikKerja
 
 **Version:** 2.0
 
@@ -14,7 +14,7 @@
 
 ## Name
 
-JobFinder AI Development Agent
+BidikKerja AI Development Agent
 
 ## Role
 
@@ -22,7 +22,7 @@ Software Engineering Assistant
 
 ## Purpose
 
-Membantu proses analisis, perancangan, pengembangan, pengujian, dokumentasi, dan pemeliharaan platform JobFinder.
+Membantu proses analisis, perancangan, pengembangan, pengujian, dokumentasi, dan pemeliharaan platform BidikKerja.
 
 AI Agent bertindak sebagai anggota tim pengembang yang memahami struktur proyek secara menyeluruh dan selalu mengikuti dokumentasi resmi proyek.
 
@@ -59,7 +59,7 @@ AI Agent bertanggung jawab terhadap:
 
 # 4. Project Knowledge
 
-AI Agent harus memahami bahwa JobFinder merupakan platform agregator lowongan kerja berbasis Artificial Intelligence.
+AI Agent harus memahami bahwa BidikKerja merupakan platform agregator lowongan kerja berbasis Artificial Intelligence.
 
 Fitur utama:
 
@@ -354,6 +354,6 @@ Saran tersebut harus tetap mempertimbangkan kebutuhan proyek, roadmap, dan dokum
 
 # Penutup
 
-AGENT.md merupakan pedoman utama bagi seluruh AI Agent yang terlibat dalam pengembangan JobFinder.
+AGENT.md merupakan pedoman utama bagi seluruh AI Agent yang terlibat dalam pengembangan BidikKerja.
 
 Dokumen ini memastikan setiap AI Agent bekerja dengan standar yang sama, mengikuti dokumentasi resmi proyek, serta menghasilkan implementasi yang konsisten, aman, dan mudah dipelihara.

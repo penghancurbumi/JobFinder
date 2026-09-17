@@ -4,7 +4,7 @@
         <div class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr_1fr] gap-xxl md:gap-xl mb-block">
           <div class="flex flex-col gap-sm">
           <div class="flex items-center gap-xs mb-sm">
-              <span class="text-[20px] font-medium leading-[1.4] text-on-dark">JobFinder</span>
+              <span class="text-[20px] font-medium leading-[1.4] text-on-dark">BidikKerja</span>
           </div>
           <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute max-w-[280px]">Platform agregasi lowongan kerja dan alat karier untuk pencari kerja di Indonesia.</p>
           </div>
@@ -44,7 +44,7 @@
       </div>
 
       <div class="flex justify-between items-center pt-lg border-t border-hairline-dark">
-          <span class="text-[13px] font-normal leading-[1.5] text-on-dark-mute">&copy; {{ new Date().getFullYear() }} JobFinder. All rights reserved.</span>
+          <span class="text-[13px] font-normal leading-[1.5] text-on-dark-mute">&copy; {{ new Date().getFullYear() }} BidikKerja. All rights reserved.</span>
           <span class="text-[13px] font-normal leading-[1.5] text-stone">Built with editorial precision</span>
       </div>
       </div>

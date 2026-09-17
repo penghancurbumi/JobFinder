@@ -1,6 +1,6 @@
 # Product Roadmap
 
-**Project Name:** JobFinder
+**Project Name:** BidikKerja
 
 **Version:** 2.0
 
@@ -14,7 +14,7 @@
 
 ## Deskripsi
 
-Roadmap ini menjelaskan tahapan pengembangan platform JobFinder mulai dari versi awal hingga target jangka panjang.
+Roadmap ini menjelaskan tahapan pengembangan platform BidikKerja mulai dari versi awal hingga target jangka panjang.
 
 Dokumen ini digunakan sebagai panduan bagi seluruh developer, UI/UX Designer, Project Manager, AI Agent, dan kontributor dalam menentukan prioritas pekerjaan.
 
@@ -34,7 +34,7 @@ Menjadi platform agregator lowongan kerja berbasis Artificial Intelligence terba
 
 # 3. Product Goals
 
-Target utama pengembangan JobFinder adalah:
+Target utama pengembangan BidikKerja adalah:
 
 - Mengumpulkan lowongan kerja dari berbagai platform.
 - Menyediakan pengalaman pencarian kerja yang cepat dan mudah.
@@ -491,7 +491,7 @@ Planned
 
 ## Objective
 
-Mengembangkan JobFinder menjadi platform karier berbasis AI yang lebih lengkap.
+Mengembangkan BidikKerja menjadi platform karier berbasis AI yang lebih lengkap.
 
 ---
 
@@ -806,7 +806,7 @@ Pengembangan jangka panjang meliputi:
 
 # Penutup
 
-Roadmap ini menjadi panduan pengembangan jangka pendek, menengah, dan panjang bagi platform JobFinder.
+Roadmap ini menjadi panduan pengembangan jangka pendek, menengah, dan panjang bagi platform BidikKerja.
 
 Seluruh proses implementasi harus mengikuti urutan prioritas yang telah ditetapkan agar pengembangan berjalan secara terstruktur, konsisten, dan sesuai dengan visi produk.
 

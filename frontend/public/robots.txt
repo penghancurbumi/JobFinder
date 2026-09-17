@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://jobfinder.com/sitemap.xml
+Sitemap: https://bidikkerja.my.id/sitemap.xml

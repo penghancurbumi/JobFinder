@@ -270,10 +270,10 @@ import CustomSelect from "../components/CustomSelect.vue"
 import { useHead } from "@vueuse/head"
 
 useHead({
-  title: 'Cari Lowongan Kerja & Magang — JobFinder',
+  title: 'Cari Lowongan Kerja & Magang — BidikKerja',
   meta: [
     { name: 'description', content: 'Temukan ribuan lowongan kerja dan magang dari Glints, Jobstreet, Pintarnya, KitaLulus, dan sumber terpercaya lainnya. Filter berdasarkan tipe, lokasi, pengalaman, dan gaji.' },
-    { property: 'og:title', content: 'Cari Lowongan Kerja & Magang — JobFinder' },
+    { property: 'og:title', content: 'Cari Lowongan Kerja & Magang — BidikKerja' },
     { property: 'og:description', content: 'Ribuan lowongan kerja dan magang dari seluruh sumber terpercaya di Indonesia dalam satu platform.' },
   ]
 })

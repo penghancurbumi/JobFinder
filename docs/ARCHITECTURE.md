@@ -1,6 +1,6 @@
 # System Architecture Document
 
-**Project Name:** JobFinder
+**Project Name:** BidikKerja
 
 **Version:** 2.0
 
@@ -14,9 +14,9 @@
 
 ## 1.1 Deskripsi
 
-JobFinder merupakan platform agregator lowongan kerja berbasis Artificial Intelligence yang dirancang untuk membantu pencari kerja menemukan informasi lowongan dari berbagai platform dalam satu aplikasi.
+BidikKerja merupakan platform agregator lowongan kerja berbasis Artificial Intelligence yang dirancang untuk membantu pencari kerja menemukan informasi lowongan dari berbagai platform dalam satu aplikasi.
 
-Selain menyediakan layanan pencarian pekerjaan, JobFinder juga memiliki beberapa layanan AI seperti AI CV Analyzer, AI CV Builder, AI Career Chatbot, serta Telegram Bot yang saling terintegrasi.
+Selain menyediakan layanan pencarian pekerjaan, BidikKerja juga memiliki beberapa layanan AI seperti AI CV Analyzer, AI CV Builder, AI Career Chatbot, serta Telegram Bot yang saling terintegrasi.
 
 Platform dibangun menggunakan arsitektur modular sehingga setiap layanan dapat dikembangkan secara independen tanpa mempengaruhi layanan lainnya.
 
@@ -39,7 +39,7 @@ Arsitektur sistem dirancang dengan tujuan sebagai berikut.
 
 # 3. Architecture Principles
 
-Pengembangan JobFinder mengikuti beberapa prinsip berikut.
+Pengembangan BidikKerja mengikuti beberapa prinsip berikut.
 
 ## Modular Architecture
 
@@ -172,7 +172,7 @@ Developer hanya perlu menambahkan Spider baru tanpa mengubah seluruh sistem.
 
 # 5. System Components
 
-JobFinder terdiri dari beberapa komponen utama.
+BidikKerja terdiri dari beberapa komponen utama.
 
 ## Frontend
 
@@ -518,7 +518,7 @@ Seluruh proses data berjalan satu arah sehingga memudahkan debugging dan pemelih
 
 ## Overview
 
-Scraping Service merupakan komponen yang bertanggung jawab untuk mengambil data lowongan pekerjaan dari berbagai platform dan mengubahnya menjadi data yang dapat digunakan oleh JobFinder.
+Scraping Service merupakan komponen yang bertanggung jawab untuk mengambil data lowongan pekerjaan dari berbagai platform dan mengubahnya menjadi data yang dapat digunakan oleh BidikKerja.
 
 Scraping dijalankan sebagai service terpisah menggunakan Python dan Scrapy sehingga tidak membebani Backend API.
 
@@ -1234,7 +1234,7 @@ Seluruh error harus dicatat ke dalam log sehingga mudah dianalisis.
 
 ## Overview
 
-JobFinder dirancang menggunakan arsitektur yang mendukung pengembangan lokal maupun deployment ke lingkungan production.
+BidikKerja dirancang menggunakan arsitektur yang mendukung pengembangan lokal maupun deployment ke lingkungan production.
 
 Seluruh komponen aplikasi dipisahkan menjadi beberapa service sehingga mudah dikembangkan, dipelihara, dan diskalakan.
 
@@ -1371,7 +1371,7 @@ Setiap service memiliki container masing-masing sehingga proses deployment menja
 
 # 22. Security Architecture
 
-Keamanan merupakan bagian penting dalam pengembangan JobFinder.
+Keamanan merupakan bagian penting dalam pengembangan BidikKerja.
 
 ---
 
@@ -1545,7 +1545,7 @@ Backup dilakukan secara berkala sesuai kebutuhan.
 
 # 27. Scalability Strategy
 
-Arsitektur JobFinder dirancang agar mudah dikembangkan.
+Arsitektur BidikKerja dirancang agar mudah dikembangkan.
 
 Pengembangan yang dapat dilakukan di masa depan meliputi:
 
@@ -1672,7 +1672,7 @@ Alasan:
 
 # 30. Kesimpulan
 
-Arsitektur JobFinder dirancang menggunakan pendekatan modular yang memisahkan Frontend, Backend, Database, Scraping Service, Artificial Intelligence, dan Telegram Bot menjadi komponen yang saling terintegrasi namun tetap independen.
+Arsitektur BidikKerja dirancang menggunakan pendekatan modular yang memisahkan Frontend, Backend, Database, Scraping Service, Artificial Intelligence, dan Telegram Bot menjadi komponen yang saling terintegrasi namun tetap independen.
 
 Pendekatan ini memberikan beberapa keuntungan:
 
@@ -1683,4 +1683,4 @@ Pendekatan ini memberikan beberapa keuntungan:
 - Mendukung integrasi AI.
 - Siap untuk deployment ke lingkungan production.
 
-Seluruh implementasi teknis pada proyek JobFinder harus mengacu pada dokumen Architecture ini agar pengembangan tetap konsisten, terdokumentasi, dan sesuai dengan tujuan sistem.
+Seluruh implementasi teknis pada proyek BidikKerja harus mengacu pada dokumen Architecture ini agar pengembangan tetap konsisten, terdokumentasi, dan sesuai dengan tujuan sistem.

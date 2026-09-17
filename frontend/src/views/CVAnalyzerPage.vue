@@ -489,10 +489,10 @@ import CountUpBar from "../components/CountUpBar.vue"
 import { useCountUp } from "../composables/useCountUp"
 
 useHead({
-  title: 'Analisis CV & ATS Score ? JobFinder',
+  title: 'Analisis CV & ATS Score — BidikKerja',
   meta: [
     { name: 'description', content: 'Unggah CV Anda dan dapatkan analisis mendalam berbasis AI. Simulasikan skor ATS, temukan kelemahan CV, dan dapatkan rekomendasi perbaikan yang komprehensif.' },
-    { property: 'og:title', content: 'Analisis CV & ATS Score ? JobFinder' },
+    { property: 'og:title', content: 'Analisis CV & ATS Score — BidikKerja' },
     { property: 'og:description', content: 'Simulasi ATS dan analisis CV berbasis AI untuk pencari kerja Indonesia.' },
   ]
 })

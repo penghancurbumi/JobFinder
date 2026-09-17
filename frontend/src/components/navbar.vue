@@ -9,7 +9,7 @@
     >
       <div class="w-full mx-auto flex flex-row items-center justify-between">
         <router-link to="/" class="text-[25px] md:text-[30px] font-medium text-on-dark no-underline tracking-[-0.02em] leading-none flex items-center gap-[8px]">
-          JobFinder
+          BidikKerja
         </router-link>
 
         <!-- Desktop Nav -->
@@ -64,7 +64,7 @@
 
         <!-- Footer -->
         <div class="absolute flex justify-between items-center bottom-0 left-0 right-0 px-[32px] py-[30px]">
-          <p class="text-[14px] font-normal leading-[1.6] text-on-dark-mute">JobFinder &copy; 2026</p>
+          <p class="text-[14px] font-normal leading-[1.6] text-on-dark-mute">BidikKerja &copy; 2026</p>
           
           <div class="flex flex-row gap-sm">
             <Icon icon="mdi:github" width="30"/>

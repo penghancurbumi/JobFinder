@@ -4,8 +4,8 @@
       <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark mb-xs">Asisten AI</h1>
       <p class="text-[12px] md:text-[16px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute mb-xl">Konsultasikan perjalanan karir Anda, struktur dokumen CV, hingga strategi wawancara.</p>
 
-    <div class="bg-surface-elevated border border-hairline-dark rounded-[20px] overflow-hidden flex flex-col h-[500px]">
-      <div class="flex-1 overflow-y-auto p-xl flex flex-col gap-lg bg-surface-deep" ref="chatRef">
+    <div class="overflow-hidden flex flex-col h-[500px]">
+      <div class="flex-1 overflow-y-auto px-[24px] py-[24px] flex flex-col gap-lg" ref="chatRef">
         <div v-if="loadingHistory" class="font-mono text-[11px] uppercase tracking-[0.5px] font-semibold text-center text-stone p-xl">Memuat riwayat...</div>
 
         <div v-for="(msg, i) in messages" :key="i" class="flex" :class="msg.role === 'user' ? 'justify-end' : 'justify-start'">
@@ -51,10 +51,10 @@ import axios from "axios"
 import { useHead } from "@vueuse/head"
 
 useHead({
-  title: 'Asisten AI Karier — JobFinder',
+  title: 'Asisten AI Karier — BidikKerja',
   meta: [
     { name: 'description', content: 'Konsultasikan perjalanan karier Anda dengan asisten AI. Tanya soal lowongan kerja, strategi membuat CV ATS, tips wawancara, hingga saran pengembangan karier secara personal.' },
-    { property: 'og:title', content: 'Asisten AI Karier — JobFinder' },
+    { property: 'og:title', content: 'Asisten AI Karier — BidikKerja' },
     { property: 'og:description', content: 'Dapatkan saran karier personal dari asisten AI untuk persiapan kerja dan pembuatan CV.' },
   ]
 })

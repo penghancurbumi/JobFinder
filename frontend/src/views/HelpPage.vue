@@ -3,7 +3,7 @@
     <div class="text-center mb-xxl">
       <p class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone">Help Center</p>
       <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark mb-md">How can we help you?</h1>
-      <p class="text-mute max-w-[600px] mx-auto text-[18px] font-normal leading-[1.56] tracking-[-0.09px]">Find guides, tutorials, and answers to common questions about JobFinder.</p>
+      <p class="text-mute max-w-[600px] mx-auto text-[18px] font-normal leading-[1.56] tracking-[-0.09px]">Find guides, tutorials, and answers to common questions about BidikKerja.</p>
     </div>
 
     <div class="flex flex-col gap-lg max-w-[800px] mx-auto">
@@ -16,12 +16,12 @@
         </div>
         <div>
           <div class="mb-lg last:mb-0">
-            <h3 class="font-medium mb-xs text-[16px] text-on-dark">What is JobFinder?</h3>
-            <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute">JobFinder is an AI-powered job aggregation platform that collects job listings from multiple sources across Indonesia — including JobStreet, Kalibrr, Glints, Tech in Asia, LinkedIn, KitaLulus, Pintarnya, and Fastwork — into a single application. Beyond job search, it helps you improve your CV with AI analysis, build professional CVs, and get personalized career recommendations.</p>
+            <h3 class="font-medium mb-xs text-[16px] text-on-dark">What is BidikKerja?</h3>
+            <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute">BidikKerja is an AI-powered job aggregation platform that collects job listings from multiple sources across Indonesia — including JobStreet, Kalibrr, Glints, Tech in Asia, LinkedIn, KitaLulus, Pintarnya, and Fastwork — into a single application. Beyond job search, it helps you improve your CV with AI analysis, build professional CVs, and get personalized career recommendations.</p>
           </div>
           <div class="mb-lg last:mb-0">
             <h3 class="font-medium mb-xs text-[16px] text-on-dark">How to Use the Platform</h3>
-            <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute">JobFinder is designed to be intuitive. Start by searching for jobs, then use filters to narrow results. Upload your CV for AI-powered analysis, build a new CV with the CV Builder, or ask the AI Career Chatbot for personalized advice. All features are accessible from the navigation bar.</p>
+            <p class="text-[14px] font-normal leading-[1.5] text-on-dark-mute">BidikKerja is designed to be intuitive. Start by searching for jobs, then use filters to narrow results. Upload your CV for AI-powered analysis, build a new CV with the CV Builder, or ask the AI Career Chatbot for personalized advice. All features are accessible from the navigation bar.</p>
           </div>
         </div>
       </section>

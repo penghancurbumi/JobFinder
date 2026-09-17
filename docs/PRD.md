@@ -1,6 +1,6 @@
 # Product Requirements Document (PRD)
 
-**Project Name:** JobFinder
+**Project Name:** BidikKerja
 
 **Version:** 2.0
 
@@ -20,7 +20,7 @@ Mencari pekerjaan di Indonesia saat ini mengharuskan pengguna membuka banyak pla
 
 Selain itu, banyak pencari kerja mengalami kesulitan dalam membuat CV yang sesuai dengan standar Applicant Tracking System (ATS), memahami kekurangan CV yang dimiliki, serta memperoleh rekomendasi pekerjaan yang relevan dengan kemampuan mereka.
 
-JobFinder dikembangkan sebagai platform agregator lowongan kerja berbasis Artificial Intelligence yang menggabungkan berbagai sumber lowongan pekerjaan ke dalam satu aplikasi. Selain menyediakan pencarian pekerjaan, platform ini juga membantu pengguna meningkatkan kualitas dokumen lamaran melalui AI CV Analyzer, AI CV Builder, AI Career Chatbot, dan Telegram Bot.
+BidikKerja dikembangkan sebagai platform agregator lowongan kerja berbasis Artificial Intelligence yang menggabungkan berbagai sumber lowongan pekerjaan ke dalam satu aplikasi. Selain menyediakan pencarian pekerjaan, platform ini juga membantu pengguna meningkatkan kualitas dokumen lamaran melalui AI CV Analyzer, AI CV Builder, AI Career Chatbot, dan Telegram Bot.
 
 ---
 
@@ -32,7 +32,7 @@ Menjadi platform pencarian kerja dan pengembangan karier berbasis Artificial Int
 
 # 3. Mission
 
-JobFinder memiliki beberapa misi utama:
+BidikKerja memiliki beberapa misi utama:
 
 * Mengumpulkan lowongan pekerjaan dari berbagai platform dalam satu sistem.
 * Membantu pengguna menemukan pekerjaan yang sesuai dengan kemampuan dan minat.
@@ -46,7 +46,7 @@ JobFinder memiliki beberapa misi utama:
 
 # 4. Product Goals
 
-Platform JobFinder dikembangkan untuk mencapai tujuan berikut:
+Platform BidikKerja dikembangkan untuk mencapai tujuan berikut:
 
 1. Menjadi pusat agregasi lowongan kerja dari berbagai platform.
 2. Mempermudah pencarian kerja melalui fitur pencarian dan filter yang lengkap.
@@ -161,7 +161,7 @@ Pain Point:
 
 # 8. User Journey
 
-Pengguna membuka JobFinder.
+Pengguna membuka BidikKerja.
 
 ↓
 
@@ -555,7 +555,7 @@ Chatbot harus mampu membaca database lowongan sehingga dapat memberikan rekomend
 
 # 13. Telegram Bot
 
-Telegram Bot menyediakan akses cepat terhadap JobFinder melalui Telegram.
+Telegram Bot menyediakan akses cepat terhadap BidikKerja melalui Telegram.
 
 Fitur:
 
@@ -599,7 +599,7 @@ Minimal berisi:
 
 # 16. Product Improvements (Version 2)
 
-Dokumen berikut merupakan daftar kebutuhan pengembangan (Product Backlog) yang wajib diimplementasikan pada versi berikutnya dari platform JobFinder.
+Dokumen berikut merupakan daftar kebutuhan pengembangan (Product Backlog) yang wajib diimplementasikan pada versi berikutnya dari platform BidikKerja.
 
 Seluruh poin pada bagian ini bersifat **Mandatory** dan menjadi acuan utama selama proses pengembangan.
 
@@ -609,7 +609,7 @@ Seluruh poin pada bagian ini bersifat **Mandatory** dan menjadi acuan utama sela
 
 ## Kondisi Saat Ini
 
-Saat ini JobFinder hanya mendukung proses scraping dari tiga platform:
+Saat ini BidikKerja hanya mendukung proses scraping dari tiga platform:
 
 - JobStreet
 - Kalibrr
@@ -621,7 +621,7 @@ Jumlah sumber lowongan masih terbatas sehingga data pekerjaan yang diperoleh bel
 
 ## Tujuan
 
-Menjadikan JobFinder sebagai platform agregator lowongan kerja yang menyediakan informasi pekerjaan dari berbagai sumber terpercaya di Indonesia.
+Menjadikan BidikKerja sebagai platform agregator lowongan kerja yang menyediakan informasi pekerjaan dari berbagai sumber terpercaya di Indonesia.
 
 ---
 
@@ -883,7 +883,7 @@ Untuk versi saat ini belum diperlukan pembuatan logo.
 
 Identitas platform cukup menggunakan teks:
 
-**JobFinder**
+**BidikKerja**
 
 ---
 
@@ -893,7 +893,7 @@ Gunakan identitas berikut:
 
 Nama Platform
 
-JobFinder
+BidikKerja
 
 ---
 
@@ -951,7 +951,7 @@ Call To Action.
 
 ## Acceptance Criteria
 
-Pengguna baru dapat memahami fungsi JobFinder dalam waktu kurang dari 10 detik setelah membuka halaman utama.
+Pengguna baru dapat memahami fungsi BidikKerja dalam waktu kurang dari 10 detik setelah membuka halaman utama.
 ---
 
 # 16.7 Help Center
@@ -966,7 +966,7 @@ Pengguna baru harus dapat memahami cara menggunakan platform tanpa perlu bantuan
 
 ## Tujuan
 
-Menyediakan pusat bantuan (Help Center) yang menjelaskan penggunaan seluruh fitur JobFinder.
+Menyediakan pusat bantuan (Help Center) yang menjelaskan penggunaan seluruh fitur BidikKerja.
 
 ---
 
@@ -980,7 +980,7 @@ Halaman ini minimal berisi:
 
 Menjelaskan:
 
-- Apa itu JobFinder.
+- Apa itu BidikKerja.
 - Cara menggunakan platform.
 - Alur penggunaan.
 
@@ -1408,14 +1408,14 @@ Preview
 
 # 16.14 Kesimpulan Product Improvements
 
-Seluruh Product Improvements pada versi 2.0 bertujuan untuk meningkatkan kualitas platform JobFinder dari sisi fitur, performa, desain, pengalaman pengguna, serta integrasi Artificial Intelligence.
+Seluruh Product Improvements pada versi 2.0 bertujuan untuk meningkatkan kualitas platform BidikKerja dari sisi fitur, performa, desain, pengalaman pengguna, serta integrasi Artificial Intelligence.
 
 Seluruh requirement pada bagian ini bersifat **Mandatory** dan menjadi acuan utama sebelum platform dinyatakan siap memasuki tahap produksi (Production Release).
 ---
 
 # 17. Non-Functional Requirements
 
-Selain memenuhi seluruh kebutuhan fungsional, JobFinder juga harus memenuhi kebutuhan non-fungsional agar platform memiliki performa, keamanan, dan skalabilitas yang baik.
+Selain memenuhi seluruh kebutuhan fungsional, BidikKerja juga harus memenuhi kebutuhan non-fungsional agar platform memiliki performa, keamanan, dan skalabilitas yang baik.
 
 ---
 
@@ -1731,7 +1731,7 @@ Pengembangan berikutnya dapat mencakup fitur-fitur berikut.
 
 # Penutup
 
-Dokumen Product Requirements Document (PRD) ini menjadi acuan utama dalam proses pengembangan platform JobFinder.
+Dokumen Product Requirements Document (PRD) ini menjadi acuan utama dalam proses pengembangan platform BidikKerja.
 
 Seluruh developer, UI/UX Designer, AI Agent, maupun kontributor diwajibkan mengacu pada dokumen ini sebelum melakukan penambahan fitur, perubahan sistem, maupun proses refactoring.
 
