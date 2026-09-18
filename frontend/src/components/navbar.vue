@@ -14,7 +14,7 @@
 
         <!-- Desktop Nav -->
         <div class="hidden items-center lg:flex gap-xl">
-          <router-link to="/" class="nav-link" active-class="nav-link-active">Home</router-link>
+          <router-link to="/" class="nav-link" active-class="nav-link-active">Beranda</router-link>
           <router-link to="/jobs" class="nav-link" active-class="nav-link-active">Peluang</router-link>
           <router-link to="/cv-analyzer" class="nav-link" active-class="nav-link-active">Analisis CV</router-link>
           <router-link to="/cv-builder" class="nav-link" active-class="nav-link-active">Pembuat CV</router-link>
