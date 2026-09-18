@@ -1,46 +1,229 @@
 <template>
-  <div class="min-h-screen pt-[50px] bg-canvas-dark text-on-dark font-sans">
-    <div class="w-full mx-auto px-[32px] md:px-[72px]">
-      <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] text-on-dark mb-xs">Asisten AI</h1>
-      <p class="text-[12px] md:text-[16px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute mb-xl">Konsultasikan perjalanan karir Anda, struktur dokumen CV, hingga strategi wawancara.</p>
+  <div class="w-full flex-1 min-h-0 bg-[#000000] text-white font-sans flex flex-col items-center">
+    <div class="w-full max-w-[800px] mx-auto flex flex-col relative flex-1 min-h-0">
+  
+      <template v-if="!chatStarted">
+        <div
+          class="w-full flex-1 min-h-0 flex flex-col items-center justify-end md:justify-center px-[20px] md:px-0 pt-[48px] pb-[24px] md:py-[64px]"
+        >
 
-    <div class="overflow-hidden flex flex-col h-[500px]">
-      <div class="flex-1 overflow-y-auto px-[24px] py-[24px] flex flex-col gap-lg" ref="chatRef">
-        <div v-if="loadingHistory" class="font-mono text-[11px] uppercase tracking-[0.5px] font-semibold text-center text-stone p-xl">Memuat riwayat...</div>
-
-        <div v-for="(msg, i) in messages" :key="i" class="flex" :class="msg.role === 'user' ? 'justify-end' : 'justify-start'">
-          <div class="max-w-[80%] px-[16px] py-[12px] rounded-[20px] text-[15px] leading-[1.6] whitespace-pre-wrap tracking-[0.24px]" 
-               :class="msg.role === 'user' ? 'bg-white text-ink rounded-br-[4px]' : 'bg-surface-elevated text-on-dark rounded-bl-[4px]'">
-            <span v-html="msg.role === 'assistant' ? renderContent(msg.content) : escapeHtml(msg.content)"></span><span v-if="msg.streaming" class="stream-cursor"></span>
-          </div>
-        </div>
-
-        <div v-if="loading" class="flex justify-start">
-          <div class="max-w-[80%] px-[16px] py-[12px] rounded-[20px] text-[15px] leading-[1.6] whitespace-pre-wrap tracking-[0.24px] bg-surface-elevated text-on-dark rounded-bl-[4px]">
-            <span class="thinking-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
-            <span class="text-stone text-sm">AI sedang berpikir</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="w-full overflow-x-auto border-t border-hairline-dark bg-surface-deep scrollbar-hide">
-        <div class="flex flex-nowrap gap-sm px-xl py-sm w-max">
-          <button
-            v-for="q in quickQuestions"
-            :key="q.text"
-            class="bg-surface-elevated text-on-dark-mute border border-hairline-dark rounded-full px-[14px] py-[6px] text-[13px] font-sans cursor-pointer transition-all duration-200 whitespace-nowrap hover:bg-canvas-dark hover:text-on-dark"
-            @click="sendQuick(q.text)"
+          <!-- Heading -->
+          <h1
+            class="w-full flex-1 md:flex-none flex items-center justify-center
+                   text-[36px] sm:text-[40px] md:text-[44px]
+                   font-medium
+                   leading-[1.2]
+                   tracking-[-0.5px]
+                   text-center
+                   mb-0 md:mb-[32px]"
           >
-            {{ q.label }}
-          </button>
-        </div>
-      </div>
+            How Can I Help With Your Career?
+          </h1>
 
-      <div class="flex gap-sm px-lg py-sm bg-surface-elevated border-t border-hairline-dark items-center">
-        <input class="border-0 bg-transparent text-on-dark h-[44px] flex-1 focus:outline-none focus:ring-0 placeholder:text-stone" v-model="input" placeholder="Tanyakan seputar persiapan karir..." @keyup.enter="send" :disabled="loading" />
-        <button class="inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer bg-on-dark text-ink hover:bg-white/90 px-[20px] h-[40px] text-[14px] shrink-0 disabled:opacity-50 disabled:cursor-not-allowed" @click="send" :disabled="loading || !input.trim()">Kirim</button>
-      </div>
-    </div>
+          <!-- AI Input -->
+          <div
+            class="w-full p-[14px] md:p-[16px] flex flex-col gap-[10px] md:gap-[12px] bg-[#171717] border border-[#303030] rounded-[16px]"
+          >
+
+            <!-- Placeholder / Input -->
+            <input
+              v-model="input"
+              class="w-full h-[24px] bg-transparent border-0 outline-none focus:outline-none focus:ring-0 text-[14px] md:text-[15px] text-white placeholder:text-[#777]"
+              placeholder="Ask BidikKerja AI Anything..."
+              @keyup.enter="send"
+              :disabled="loading"
+            />
+
+            <!-- Bottom Controls -->
+            <div class="flex items-center justify-between">
+
+              <!-- Attachment -->
+              <button
+                type="button"
+                class="w-[36px] h-[36px] md:w-[40px] md:h-[40px] bg-[#101010] rounded-full flex items-center justify-center text-[#999] hover:text-white hover:bg-white/10 transition-colors"
+                aria-label="Tambah lampiran"
+              >
+                <Icon
+                  icon="ant-design:plus-outlined"
+                  width="18"
+                  height="18"
+                />
+              </button>
+
+              <!-- Send -->
+              <button
+                type="button"
+                class="w-[36px] h-[36px] md:w-[40px] md:h-[40px] rounded-full bg-[#e5e5e5] text-black flex items-center justify-center transition-all hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                @click="send"
+                :disabled="loading || !input.trim()"
+                aria-label="Kirim pesan"
+              >
+                <Icon
+                  icon="akar-icons:arrow-up"
+                  width="18"
+                  height="18"
+                />
+              </button>
+
+            </div>
+          </div>
+
+          <!-- Quick Questions -->
+          <div
+            class="hidden md:flex w-full flex-wrap justify-center gap-[8px] mt-[16px] md:mt-[20px]"
+          >
+            <button
+              v-for="q in quickQuestions"
+              :key="q.text"
+              class="bg-[#171717] text-[#999] border border-[#303030] rounded-full px-[12px] md:px-[16px] py-[7px] md:py-[8px] text-[12px] md:text-[13px] font-normal whitespace-nowrap transition-colors hover:bg-[#222] hover:text-white"
+              @click="sendQuick(q.text)"
+            >
+              {{ q.label }}
+            </button>
+          </div>
+
+        </div>
+      </template>
+
+      <template v-else>
+
+        <!-- Chat Messages -->
+        <div
+          ref="chatRef"
+          class="w-full px-[16px] md:px-[24px] pt-[16px] md:pt-[24px] pb-[170px] md:pb-[190px] flex flex-col gap-xxl"
+        >
+
+          <div
+            v-if="loadingHistory"
+            class="font-mono text-[11px] uppercase tracking-[0.5px] font-semibold text-center text-[#777] p-[24px]"
+          >
+            Memuat riwayat...
+          </div>
+
+          <div
+            v-for="(msg, i) in messages"
+            :key="i"
+            class="flex"
+            :class="
+              msg.role === 'user'
+                ? 'justify-end'
+                : 'justify-start'
+            "
+          >
+            <!-- Output AI: tanpa bubble / background -->
+            <div
+              v-if="msg.role === 'assistant'"
+              class="w-full text-[14px] md:text-[15px] leading-[1.7] whitespace-pre-wrap tracking-[0.24px] text-white"
+            >
+              <span v-html="renderContent(msg.content)"></span>
+              <span v-if="msg.streaming" class="stream-cursor"></span>
+            </div>
+
+            <!-- Pesan user: tetap dengan bubble -->
+            <div
+              v-else
+              class="max-w-[88%] md:max-w-[80%] px-[14px] md:px-[16px] py-[10px] md:py-[12px] rounded-[15px] text-[14px] md:text-[15px] leading-[1.6] whitespace-pre-wrap tracking-[0.24px] bg-white text-black rounded-br-[4px]"
+            >
+              <span v-html="escapeHtml(msg.content)"></span>
+            </div>
+          </div>
+
+          <!-- Thinking -->
+          <div
+            v-if="loading"
+            class="flex justify-start"
+          >
+            <div
+              class="text-[15px] leading-[1.7] text-white"
+            >
+              <span class="thinking-dots">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+              </span>
+
+              <span class="text-[#777] text-sm">
+                AI sedang berpikir
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+
+        <!-- Fixed Chat Input -->
+        <div class="fixed left-1/2 -translate-x-1/2 bottom-[16px] md:bottom-[24px] w-full max-w-[800px] px-[16px] md:px-[24px] z-20">
+          <div
+            class="w-full
+                   p-[14px] md:p-[16px]
+                   flex flex-col gap-[10px] md:gap-[12px]
+                   bg-[#171717]
+                   border border-[#303030]
+                   rounded-[16px]"
+          >
+
+            <input
+              v-model="input"
+              class="w-full h-[24px]
+                     bg-transparent
+                     border-0 outline-none
+                     focus:outline-none focus:ring-0
+                     text-[14px] md:text-[15px]
+                     text-white
+                     placeholder:text-[#777]"
+              placeholder="Ask BidikKerja AI Anything..."
+              @keyup.enter="send"
+              :disabled="loading"
+            />
+
+            <div class="flex items-center justify-between">
+
+              <button
+                type="button"
+                class="w-[36px] h-[36px] md:w-[40px] md:h-[40px]
+                       rounded-full
+                       flex items-center justify-center
+                       text-[#999]
+                       hover:text-white
+                       hover:bg-white/10
+                       transition-colors"
+                aria-label="Tambah lampiran"
+              >
+                <Icon
+                  icon="ant-design:plus-outlined"
+                  width="18"
+                  height="18"
+                />
+              </button>
+
+              <button
+                type="button"
+                class="w-[36px] h-[36px] md:w-[40px] md:h-[40px]
+                       rounded-full
+                       bg-[#e5e5e5]
+                       text-black
+                       flex items-center justify-center
+                       transition-all
+                       hover:bg-white
+                       disabled:opacity-50
+                       disabled:cursor-not-allowed"
+                @click="send"
+                :disabled="loading || !input.trim()"
+                aria-label="Kirim pesan"
+              >
+                <Icon
+                  icon="akar-icons:arrow-up"
+                  width="18"
+                  height="18"
+                />
+              </button>
+
+            </div>
+          </div>
+        </div>
+
+      </template>
+
     </div>
   </div>
 </template>
@@ -49,6 +232,7 @@
 import { ref, nextTick, onMounted, onUnmounted } from "vue"
 import axios from "axios"
 import { useHead } from "@vueuse/head"
+import { Icon } from "@iconify/vue"
 
 useHead({
   title: 'Asisten AI Karier — BidikKerja',
@@ -62,6 +246,7 @@ useHead({
 
 const messages = ref([])
 const input = ref("")
+const chatStarted = ref(false)
 const loading = ref(false)
 const loadingHistory = ref(true)
 const chatRef = ref(null)
@@ -69,10 +254,11 @@ const sessionId = ref("")
 let typeTimers = []
 
 const quickQuestions = [
-  { label: "Lowongan Software Dev", text: "Saya ingin cari lowongan software development" },
-  { label: "Magang UI/UX Design", text: "Saya ingin cari magang di bidang UI/UX design" },
-  { label: "Tips membuat CV ATS", text: "Bagaimana cara membuat CV yang ramah ATS?" },
-  { label: "Persiapan wawancara", text: "Berikan tips persiapan wawancara kerja" }
+  { label: "Find Jobs", text: "Bantu saya mencari lowongan kerja yang cocok" },
+  { label: "Resume Analysis", text: "Tolong analisis resume/CV saya" },
+  { label: "CV Templates", text: "Tampilkan template CV yang tersedia" },
+  { label: "Career Advice", text: "Berikan saran pengembangan karier saya" },
+  { label: "Application Status", text: "Bagaimana cara memantau status lamaran kerja saya?" }
 ]
 
 onMounted(async () => {
@@ -142,6 +328,7 @@ async function sendQuick(text) {
 
 async function sendMessage(text) {
   const userMsg = text
+  chatStarted.value = true
   messages.value.push({ role: "user", content: userMsg })
   loading.value = true
   scrollDown()
@@ -170,19 +357,12 @@ async function sendMessage(text) {
 
 function scrollDown() {
   nextTick(() => {
-    if (chatRef.value) chatRef.value.scrollTop = chatRef.value.scrollHeight
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })
   })
 }
 </script>
 
 <style scoped>
-.scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
 .typing::after {
   content: " ";
   display: inline-block;
