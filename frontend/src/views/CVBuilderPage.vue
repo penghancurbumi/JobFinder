@@ -11,7 +11,7 @@
       <div class="flex flex-col md:flex-row gap-xl print:hidden items-start">
 
         <!-- Sidebar Navigation -->
-        <aside class="w-full md:w-[280px] shrink-0 md:sticky top-[100px] bg-surface-elevated rounded-[20px] py-xl border border-hairline-dark">
+        <aside class="w-full md:w-[280px] shrink-0 md:sticky top-[100px] bg-surface-elevated rounded-[15px] py-xl border border-hairline-dark">
           <!-- Target Expertise -->
           <div class="mb-[24px] px-[16px]">
             <label class="text-[14px] mb-md text-on-dark-mute block font-semibold">Target Keahlian / Bidang</label>
@@ -58,7 +58,7 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-grow min-w-0 bg-surface-elevated rounded-[20px] p-xl md:p-xxl w-full border border-hairline-dark">
+        <main class="flex-grow min-w-0 bg-surface-elevated rounded-[15px] p-xl md:p-xxl w-full border border-hairline-dark">
 
           <!-- ===== STEP 0: TEMPLATE SELECT ===== -->
           <div v-if="currentStep === 0">

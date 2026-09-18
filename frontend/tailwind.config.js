@@ -23,7 +23,7 @@ export default {
         "surface-soft": "#f4f4f4",
         "surface-card": "#ffffff",
         "surface-deep": "#0a0a0a",
-        "surface-elevated": "#16181a",
+        "surface-elevated": "#171717",
         "hairline-light": "#e2e2e7",
         "hairline-dark": "rgba(255, 255, 255, 0.12)",
         "hairline-strong": "#191c1f",

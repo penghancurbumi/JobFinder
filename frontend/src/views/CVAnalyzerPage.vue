@@ -1,18 +1,18 @@
-﻿<template>
+<template>
   <div class="min-h-screen pt-[50px] md:pt-[88px] bg-canvas-dark text-on-dark font-sans">
     <div class="w-full mx-auto px-[32px] md:px-[72px]">
       <p class="font-mono uppercase text-[13px] font-bold tracking-[1px] text-stone mb-xs">ATS Simulator</p>
       <h1 class="text-[32px] md:text-[40px] font-medium leading-[1.2] tracking-[-0.4px] mb-sm text-on-dark">CV Analyzer</h1>
       <p class="text-[12px] md:text-[16px] font-normal leading-[1.56] tracking-[-0.09px] text-on-dark-mute mb-xl">Unggah CV Anda untuk mendapatkan analisis mendalam berbasis AI dan simulasi sistem ATS.</p>
 
-      <section class="bg-[#191919] border border-hairline-dark rounded-[15px] p-xl mb-xl">
+      <section class="bg-[#171717] border border-hairline-dark rounded-[15px] p-xl mb-xl">
         <div class="mb-md gap-sm">
           <label class="mb-lg block text-on-dark font-medium text-lg" for="cv-upload">Unggah Dokumen CV (PDF)</label>
           <div class="flex gap-md items-center flex-wrap">
             
             <div class="relative flex-1 min-w-[200px] h-[200px]">
               <label
-                class="absolute inset-0 bg-[#191919] border-2 border-dashed border-hairline-dark rounded-sm flex items-center justify-center px-4 cursor-pointer hover:bg-surface-elevated"
+                class="absolute inset-0 bg-[#171717] border-2 border-dashed border-hairline-dark rounded-sm flex items-center justify-center px-4 cursor-pointer hover:bg-surface-elevated"
               >
                 <input
                   id="cv-upload"
@@ -101,7 +101,7 @@
             <div class="col-span-1 flex flex-col gap-lg">
 
               <!-- Kolom 1: AI Analysis Summary -->
-              <div class="min-w-0 bg-[#191919] rounded-[15px] p-[20px] flex flex-col border border-hairline-dark">
+              <div class="min-w-0 bg-[#171717] rounded-[15px] p-[20px] flex flex-col border border-hairline-dark">
                 <div class="inline-flex items-center gap-[12px] mb-xs">
                   <div class="flex items-center justify-center w-5 h-5 text-white">
                     <Icon icon="octicon:sparkle-fill-16" width="30" />
@@ -112,7 +112,7 @@
               </div>
 
               <!-- Kolom 2: Score Dashboard (CV Analyzer) -->
-              <div class="min-w-0 bg-[#191919] rounded-[15px] p-[20px] border border-hairline-dark">
+              <div class="min-w-0 bg-[#171717] rounded-[15px] p-[20px] border border-hairline-dark">
                 <!-- Header: CV Analyzer / ATS Evaluation -->
                 <div class="flex items-center justify-between border-b border-[#313131] pb-2">
                   <h2 class="font-mono text-[12px] md:text-[15px] text-stone">CV Analyzer <span class="font-semibold text-white">/ ATS Evaluation</span></h2>
@@ -220,7 +220,7 @@
             </div>
 
             <!-- KANAN: 1 kolom (ANALISIS KATEGORI) -->
-            <div class="col-span-1 min-w-0 bg-[#191919] rounded-[15px] p-xl border border-hairline-dark">
+            <div class="col-span-1 min-w-0 bg-[#171717] rounded-[15px] p-xl border border-hairline-dark">
               <div class="flex items-center justify-between mb-xl">
                 <h3 class="font-mono text-[16px] sm:text-[18px] lg:text-[20px] font-medium tracking-[1px] text-white">ANALISIS KATEGORI</h3>
                 <div class="w-[30px] h-[30px] rounded-[5px] border border-hairline-dark flex items-center justify-center shrink-0">
@@ -232,11 +232,11 @@
                 <div
                   v-for="card in categoryCards"
                   :key="card.label"
-                  class="min-w-0 bg-[#1F1F1F] px-4 py-3 rounded-sm border border-[#444444]"
+                  class="min-w-0 bg-[#171717] px-4 py-3 rounded-sm border border-[#444444]"
                 >
                   <div class="flex items-center justify-between gap-2">
                     <div class="flex items-center gap-2">
-                      <div class="w-[32px] h-[32px] rounded-full flex items-center justify-center bg-[#19181B] shrink-0">
+                      <div class="w-[32px] h-[32px] rounded-full flex items-center justify-center bg-[#171717] shrink-0">
                         <Icon :icon="card.icon" width="22"/>
                       </div>
                       <span class="text-[13px] sm:text-[15px] truncate">{{ card.label }}</span>
@@ -244,7 +244,7 @@
 
                     <Icon icon="fluent-mdl2:more" class="shrink-0"/>
                   </div>
-                  <div class="bg-[#181818] px-4 py-4 sm:py-5 border border-[#4C4C4C] rounded-sm mt-sm">
+                  <div class="bg-[#171717] px-4 py-4 sm:py-5 border border-[#4C4C4C] rounded-sm mt-sm">
                     <div class="flex items-center justify-between gap-2 flex-wrap">
                       <span class="text-3xl sm:text-4xl lg:text-5xl leading-none"><CountUp :to="card.value" suffix="/100" /></span>
                       <p class="text-[12px] sm:text-[14px] text-[#BBBBBB]">{{ card.status }}</p>
@@ -256,7 +256,7 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr] gap-lg mb-xl">
-            <div class="w-full rounded-[15px] border border-hairline-dark bg-[#191919] p-xl">
+            <div class="w-full rounded-[15px] border border-hairline-dark bg-[#171717] p-xl">
             <!-- Header -->
             <div class="grid grid-cols-2 gap-3 md:grid-cols-[0.7fr_1.65fr_120px] items-center">
               <h3 class="font-sans text-[12px] font-semibold tracking-[-0.3px] text-white">
@@ -335,7 +335,7 @@
             </div>
           </div>
 
-          <div class="bg-[#191919] rounded-[15px] p-xl border border-hairline-dark space-y-7">
+          <div class="bg-[#171717] rounded-[15px] p-xl border border-hairline-dark space-y-7">
             <h3 class="font-mono text-[18px] font-medium tracking-[1px] text-white mb-md">Keyword Analysis</h3>
 
             <div class="flex flex-col gap-xs">
@@ -365,7 +365,7 @@
             </div>
           </div>
 
-          <div class="bg-[#191919] rounded-[15px] p-xl border border-hairline-dark space-y-3">
+          <div class="bg-[#171717] rounded-[15px] p-xl border border-hairline-dark space-y-3">
             <h3 class="font-mono text-[18px] font-medium tracking-[1px] text-white mb-md">AI Improvement Insights</h3>
 
             <div
@@ -406,7 +406,7 @@
             <article
               v-for="job in recommendedJobs"
               :key="job.id"
-              class="rounded-[12px] border border-[#45454b] bg-[#1F1F1F] p-xl"
+              class="rounded-[12px] border border-[#45454b] bg-[#171717] p-xl"
             >
               <!-- Job Header -->
               <div class="flex items-start justify-between gap-4">
@@ -506,7 +506,7 @@ function scoreStatus(score) {
   return 'NEED WORKS'
 }
 
-// Tabel ANALISIS KATEGORI � dari categories AI
+// Tabel ANALISIS KATEGORI ? dari categories AI
 const CATEGORY_TABLE_MAP = [
   { key: 'TechnicalSkills', label: 'TECHNICAL SKILL', icon: 'solar:atom-linear' },
   { key: 'Experience',      label: 'EXPERIENCE',      icon: 'solar:case-linear' },
@@ -574,7 +574,7 @@ const mockResult = {
 const USE_CV_MOCK = import.meta.env.VITE_USE_CV_MOCK === 'true'
 const result = ref(USE_CV_MOCK ? mockResult : null)
 
-// Persentase ATS yang bergerak dari 0 � dipakai untuk mengisi progress bar,
+// Persentase ATS yang bergerak dari 0 ? dipakai untuk mengisi progress bar,
 // agar bar bergerak berbarengan dengan angka count-up (satu sumber animasi).
 const atsTarget = computed(() => Number(result.value?.ats?.score ?? 0) || 0)
 const { percent: atsPercent } = useCountUp(atsTarget, { duration: 1100, max: 100 })
@@ -604,7 +604,7 @@ const analysisBreakdown = computed(() => {
   })
 })
 
-// 4 kartu besar ANALISIS KATEGORI � dari categories AI
+// 4 kartu besar ANALISIS KATEGORI ? dari categories AI
 const CATEGORY_CARDS_MAP = [
   { key: 'TechnicalSkills', label: 'ATS Compatibility', icon: 'humbleicons:shield-check' },
   { key: 'SoftSkills',      label: 'Keyword Matching',  icon: 'iconmind:text-search-duotone-regular' },
@@ -620,7 +620,7 @@ const categoryCards = computed(() => {
   })
 })
 
-// Keyword Analysis � dari keywordMatch & missingSkills AI
+// Keyword Analysis ? dari keywordMatch & missingSkills AI
 const keywordAnalysis = computed(() => {
   const a = result.value?.analysis || {}
   const matched = a.keywordMatch || []
@@ -635,7 +635,7 @@ const keywordAnalysis = computed(() => {
   }
 })
 
-// AI Improvement Insights � dari recommendations AI
+// AI Improvement Insights ? dari recommendations AI
 const improvementInsights = computed(() => {
   const recs = result.value?.analysis?.recommendations || []
   return recs.slice(0, 3).map((text, i) => ({
@@ -740,7 +740,7 @@ const recommendedJobs = computed(() => {
         match: score,
         matchLabel: matchLabel(score),
         metadata,
-        description: description.length > 180 ? description.slice(0, 180) + "�" : description,
+        description: description.length > 180 ? description.slice(0, 180) + "…" : description,
       }
     })
 })
