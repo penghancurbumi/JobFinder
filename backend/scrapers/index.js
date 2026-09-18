@@ -30,11 +30,6 @@ const MAX_PAGES = 1
 const CATEGORY_TIMEOUT_MS = 15 * 60 * 1000
 // Expired-job cleanup thresholds (see db.js deleteExpiredJobs)
 const EXPIRED_OPTIONS = { maxAgeDays: 90, notSeenDays: 30, notSeenMinAgeDays: 7 }
-// How long a link marked not_found stays quarantined (hidden from the list)
-// before the daily cleanup deletes it. False positives self-heal anyway: the
-// round-robin re-scrape re-inserts still-live listings, so 2 days (> one full
-// 7-platform cycle) is safe. Override via LINK_DEAD_GRACE_DAYS in .env.
-const DEAD_LINK_GRACE_DAYS = Math.max(Number(process.env.LINK_DEAD_GRACE_DAYS) || 2, 0)
 // Hard capacity cap — pure safety valve, never reached in normal operation.
 // Override via MAX_JOBS in .env.
 const MAX_JOBS = Math.max(Number(process.env.MAX_JOBS) || 20000, 1000)
@@ -103,8 +98,7 @@ export async function insertScrapedFiles(jobTypeFilter) {
             : null
           if (dup) {
             // Sighting dari scraper = bukti job masih hidup di sumbernya.
-            // Reset linkStatus agar false-positive not_found tidak tetap
-            // terkarantina sampai dihapus cleanup padahal masih eksis.
+            // Reset status link agar data lama yang masih eksis tetap segar.
             await runQuery(
               "UPDATE jobs SET lastSeenAt = ?, linkStatus = NULL, linkCheckedAt = NULL WHERE id = ?",
               [lastSeenAt, dup.id]
@@ -202,14 +196,14 @@ export async function deleteClosedJobs() {
 // Flag jobs that are no longer on the source platforms (404/closed) and remove
 // jobs past the age cap, absent from recent scrape cycles, exact duplicates,
 // of unclear quality (URL-as-title, non-Latin scripts), confirmed dead
-// (404/410) by the link checker past the grace period, and — only if the hard
-// capacity cap is exceeded — the least-recently-seen rows.
+// (404/410) by the link checker, and — only if the hard capacity cap is
+// exceeded — the least-recently-seen rows.
 export async function runCleanup() {
   const removedClosed = await deleteClosedJobs()
   const removedExpired = await deleteExpiredJobs(EXPIRED_OPTIONS)
   const removedDupes = await deleteDuplicateJobs()
   const removedBad = await deleteBadQualityJobs()
-  const removedDeadLinks = await deleteDeadLinkJobs(DEAD_LINK_GRACE_DAYS)
+  const removedDeadLinks = await deleteDeadLinkJobs()
   const removedCap = await enforceJobsCap(MAX_JOBS)
   const total = removedClosed + removedExpired.age + removedExpired.notSeen + removedDupes + removedBad + removedDeadLinks + removedCap
   console.log(

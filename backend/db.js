@@ -248,20 +248,25 @@ export async function findDuplicate(title, company, location) {
 }
 
 // ---- Link health (active/404 verification) ----
-// linkStatus: 'active' (2xx), 'not_found' (404/410), 'unknown' (bot-blocked
-// 401/403/429, 5xx, timeout — inconclusive, never treated as dead),
-// NULL/'unchecked' (not verified yet).
+// linkStatus: 'active' (2xx), 'unknown' (bot-blocked 401/403/429, 5xx,
+// timeout — inconclusive, never treated as dead), NULL/'unchecked' (not yet
+// verified). Dead links ('not_found') are deleted immediately — a 404/410 or a
+// "listing closed" page is definitive, there is no data left to keep.
 export async function updateLinkStatus(url, status, checkedAt) {
+  if (status === "not_found") {
+    const res = await runQuery("DELETE FROM jobs WHERE url = ?", [url])
+    return res.changes
+  }
   await runQuery(
     "UPDATE jobs SET linkStatus = ?, linkCheckedAt = ? WHERE url = ?",
     [status, checkedAt, url]
   )
+  return 0
 }
 
 // Never-checked rows first, then rows whose last check is older than
 // staleDays, oldest check first — so repeated runs walk through the whole
-// table evenly. Rows already confirmed dead (not_found) are skipped: they
-// await deletion by the cleanup grace period instead of re-checking.
+// table evenly.
 export async function getJobsToCheck(limit = 300, staleDays = 14) {
   const staleCutoff = new Date(Date.now() - staleDays * 24 * 60 * 60 * 1000).toISOString()
   return fetchAll(
@@ -286,14 +291,11 @@ export async function getLinkCheckStats() {
   return stats
 }
 
-// Remove jobs confirmed dead by the link checker after a grace period, so a
-// temporary outage on the source site doesn't wipe good data.
-export async function deleteDeadLinkJobs(maxAgeDays = 7) {
-  const cutoff = new Date(Date.now() - maxAgeDays * 24 * 60 * 60 * 1000).toISOString()
-  const res = await runQuery(
-    `DELETE FROM jobs WHERE linkStatus = 'not_found' AND linkCheckedAt IS NOT NULL AND linkCheckedAt < ?`,
-    [cutoff]
-  )
+// Remove any leftover jobs marked not_found. Dead links are now deleted the
+// moment they're detected (see updateLinkStatus), so this only sweeps rows
+// flagged before that change — no grace period.
+export async function deleteDeadLinkJobs() {
+  const res = await runQuery("DELETE FROM jobs WHERE linkStatus = 'not_found'")
   return res.changes
 }
 
